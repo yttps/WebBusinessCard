@@ -40,7 +40,7 @@ export default function ListCompany() {
         }
 
         getCompany();
-    }, [companyApi]);
+    }, []);
 
     return (
         <>
