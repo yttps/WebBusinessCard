@@ -16,28 +16,18 @@ export default function ListCompany() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const companyApi = new CompanyApi();
 
-    // async function getCompany() {
-        // const res = await companyApi.GetAllCompany();
-        // setDataCompany(res);
-    // }
-
-    const viewDetailCompany = async (id: string) => {
-
-        console.log('id', id);
-    };        
-    
     const getCompany = async () => {
         try {
             const res = await companyApi.GetAllCompany();
             setDataCompany(res);
-            setDataFetched(true); 
+            setDataFetched(true);
         } catch (error) {
             console.error('Error fetching general users:', error);
         }
     }
 
     useEffect(() => {
-        if (!dataFetched) { 
+        if (!dataFetched) {
             getCompany();
         }
     }, [dataFetched]);
@@ -87,12 +77,14 @@ export default function ListCompany() {
                                     <td id={`abbreviationCompany${index}`}>{item.abbreviation}</td>
                                     <td id={`businesTypeCompany${index}`}>{item.businessType}</td>
                                     <td id={`websiteCompany${index}`}>{item.website}</td>
-                                    <td id='btnEdit'>
-                                        <NavLink to={`/ListCompany/${item.id}`}>
-                                            <Button variant="warning" onClick={() => viewDetailCompany(item.id)}>
-                                                แสดงข้อมูล
-                                            </Button>
-                                        </NavLink>
+                                    <td id={`btnEdit`}>
+                                        {typeof window !== 'undefined' && (
+                                            <NavLink to={`/ListCompany/${item.id}`}>
+                                                <Button variant="warning">
+                                                    แสดงข้อมูล
+                                                </Button>
+                                            </NavLink>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
