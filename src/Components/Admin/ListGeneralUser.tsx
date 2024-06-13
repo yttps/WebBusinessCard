@@ -1,12 +1,13 @@
-import React , { useEffect, useState }from 'react'
+import { useEffect, useState }from 'react'
 import Header from '../Header/Header'
 import { GeneralUserApi } from '@/ApiEndpoints/GeneralUserApi';
-import { Button, InputGroup, Form , Table } from 'react-bootstrap';
-import ListCompany from './ListCompany';
+import { InputGroup, Form , Table } from 'react-bootstrap';
+// import ListCompany from './ListCompany';
 
 function ListGeneralUser() {
 
     const [searchQuery, setSearchQuery] = useState('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const generalUserApi = new GeneralUserApi();
 
     // const filteredData = data.filter((item: Detail_GeneralUser) => {
@@ -14,16 +15,19 @@ function ListGeneralUser() {
     //     return item && item.firstname && item.firstname.toLowerCase().includes(searchQuery.toLowerCase());
     // });
 
-    async function getAllGeneralUser() {
-        
-        const res = generalUserApi.GetAllGeneralUser();
-        console.log(res);
-
-    }
-
-    useEffect(() =>{
-        getAllGeneralUser();
-    } , []);
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const response = await generalUserApi.GetAllGeneralUser();
+            console.log(response); // Handle or use the fetched data as needed
+          } catch (error) {
+            console.error('Error fetching general users:', error);
+            // Handle errors gracefully (e.g., display an error message)
+          }
+        };
+    
+        fetchData();
+      }, [generalUserApi]);
 
     return (
         <>

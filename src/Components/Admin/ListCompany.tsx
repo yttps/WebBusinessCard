@@ -11,13 +11,14 @@ export default function ListCompany() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [dataCompany, setDataCompany] = useState<GetAllCompany[]>([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const companyApi = new CompanyApi();
 
-    async function getCompany() {
+    // async function getCompany() {
+        // const res = await companyApi.GetAllCompany();
+        // setDataCompany(res);
 
-        const res = await companyApi.GetAllCompany();
-        setDataCompany(res);
-    }
+    // }
 
     const viewDetailCompany = async (id: string) => {
 
@@ -25,8 +26,21 @@ export default function ListCompany() {
     };
 
     useEffect(() => {
+
+        // getCompany();
+
+        const getCompany = async () => {
+
+            try {
+                const res = await companyApi.GetAllCompany();
+                setDataCompany(res);
+            } catch (error) {
+                console.error('Error fetching general users:', error);
+            }
+        }
+
         getCompany();
-    }, []);
+    }, [companyApi]);
 
     return (
         <>
