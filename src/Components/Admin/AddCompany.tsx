@@ -100,7 +100,10 @@ function AddCompany() {
             text: 'เพิ่มข้อมูลสำเร็จ',
             icon: 'success',
           });
-          window.location.reload();
+          // window.location.reload();
+          companyapi.GetAllCompany();
+          setShow(true);
+
         }
         if (res == 400) {
           Swal.fire({
@@ -108,6 +111,7 @@ function AddCompany() {
             text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
             icon: 'error',
           });
+          return;
         }
       }
       else {
@@ -116,6 +120,7 @@ function AddCompany() {
           text: 'กรอกข้อมูลให้ครบ',
           icon: 'error',
         });
+        return;
       }
     }
   }
