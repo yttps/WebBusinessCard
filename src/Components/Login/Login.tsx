@@ -37,6 +37,7 @@ export default function Login() {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
                     navigate('ListCompany');
+                    console.log('loginnnnn');
                 }
 
                 if (res.role === "company") {
