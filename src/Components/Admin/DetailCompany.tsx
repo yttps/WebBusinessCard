@@ -10,34 +10,36 @@ export default function DetailCompany() {
     const companyapi = new CompanyApi();
     const [companyById, setCompanyById] = useState<GetDataCompanyById[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [dataFetched, setDataFetched] = useState(false);
+
+    const fetchData = async () => {
+
+        try {
+
+            if (companyId) {
+
+                const response = await companyapi.GetDataCompanyById(companyId!); // Assuming API call
+                setCompanyById(response);
+                setDataFetched(true);
+                console.log('in get by id', companyById);
+
+                if (companyById) {
+                    setIsLoading(true);
+                }
+            }
+
+        } catch (error) {
+            console.error('Error fetching company data:', error);
+            // Handle error gracefully (e.g., display error message to user)
+        }
+    };
+
 
     useEffect(() => {
-
-        const fetchData = async () => {
-
-            try {
-
-                if (companyId) {
-                    
-                    const response = await companyapi.GetDataCompanyById(companyId!); // Assuming API call
-                    setCompanyById(response);
-                    console.log('in get by id', companyById);
-
-                    if (companyById) {
-                        setIsLoading(true);
-                    }
-                }
-
-
-            } catch (error) {
-                console.error('Error fetching company data:', error);
-                // Handle error gracefully (e.g., display error message to user)
-            }
-        };
-
-        fetchData();
-        
-    }, [companyById, companyId, companyapi])
+        if (!dataFetched) {
+            fetchData();
+        }
+    }, [dataFetched])
 
     if (isLoading) {
         return (

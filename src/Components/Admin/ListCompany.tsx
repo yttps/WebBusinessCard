@@ -37,7 +37,6 @@ export default function ListCompany() {
     }
 
     useEffect(() => {
-        
         if (!dataFetched) { 
             getCompany();
         }
