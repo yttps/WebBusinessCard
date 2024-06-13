@@ -101,8 +101,8 @@ function AddCompany() {
             icon: 'success',
           });
           // window.location.reload();
-          companyapi.GetAllCompany();
-          setShow(true);
+          await companyapi.GetAllCompany();
+          handleClose();
 
         }
         if (res == 400) {
