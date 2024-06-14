@@ -55,7 +55,6 @@ function AddCompany() {
         return;
       }
     }
-
     else{
       Swal.fire({
         title: 'Upload Error!',
@@ -101,12 +100,13 @@ function AddCompany() {
     const phoneRegex = /^\d+$/;
 
     if (!hasAySymbolEmail || !hasAySymbolWeb) {
+
       Swal.fire({
         title: 'Add Data Error!',
         text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
         icon: 'error',
       });
-      return 400;
+      return;
     }
 
     if (!phoneRegex.test(phoneNumber)) {
@@ -115,7 +115,7 @@ function AddCompany() {
         text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
         icon: 'error',
       });
-      return 400;
+      return;
     }
 
     if (email && password && businessType && name && 
@@ -123,16 +123,16 @@ function AddCompany() {
         district && province && country) {
 
       const res = await companyapi.AddDataCompany(email, password, businessType, name, phoneNumber, website, yearFounded, subdistrict, district, province, country);
+      console.log('chkkkkkk' , res);
       return res;
 
     } else {
-
       Swal.fire({
         title: 'Add Data Error!',
         text: 'กรอกข้อมูลให้ครบ',
         icon: 'error',
       });
-      return 400;
+      return;
     }
   };
 

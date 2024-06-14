@@ -1,8 +1,8 @@
 import axios from 'axios';
 // import { GetAllCompany } from '@/Model/GetAllCompany';
 
-// const hostUrl = " https://ab3d-1-46-31-5.ngrok-free.app";
-const url = "https://business-api-638w.onrender.com";   //use host 
+const url = "https://business-api-638w.onrender.com";   
+// const url = "http://localhost:8080";   
 const axiosHeaders = {
     "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
 }
@@ -52,10 +52,6 @@ export class CompanyApi {
         const formLogo = new FormData();
         const folderName = 'logo';
 
-     
-        console.log("folder name", folderName);
-        console.log("file", file);
-
         formLogo.append('image', file);
         formLogo.append('folder', folderName);
        
@@ -71,11 +67,9 @@ export class CompanyApi {
             console.log('Company ID is not available');
         }
 
-
-   
-
-
         try {
+
+            console.log('log' , formLogo);
 
             const res = await fetch(`${url}/upload`, {
                 method: 'POST',

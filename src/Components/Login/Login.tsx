@@ -30,6 +30,7 @@ export default function Login() {
 
 
             const res = await loginapi.LoginUserData(email, password);
+            console.log(email , password);
             
             if (res) {
 
@@ -48,21 +49,15 @@ export default function Login() {
 
                 if (res.role === "hr") {
 
-                    // Swal.fire({
-                    //     title: 'Login Success',
-                    //     icon: 'success',
-                    // }).then(() => {
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
                     navigate('ListEmployees');
-                    // });
-
                 }
             }
 
             else {
                 Swal.fire({
                     title: 'Login Error',
-                    text: 'Invalid credentials',
+                    text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง!',
                     icon: 'error',
                 });
             }
@@ -71,7 +66,7 @@ export default function Login() {
             console.log(error);
             Swal.fire({
                 title: 'Error',
-                text: 'An error occurred while logging in',
+                text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง!',
                 icon: 'error',
             });
         }

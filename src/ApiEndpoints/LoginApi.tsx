@@ -2,7 +2,8 @@ import axios from 'axios';
 // import { LoginUserData } from '@/Model/LoginUserData';
 const url = "https://business-api-638w.onrender.com";
 
-// const hostUrl = "https://ab3d-1-46-31-5.ngrok-free.app";
+// const url = "http://localhost:8080";
+
 
 
 export class LoginApi {
@@ -15,6 +16,7 @@ export class LoginApi {
             password: password
         }
         const resLogin = await axios.post(url + '/login', datalogin);
+        console.log('chk' , resLogin.status);
         return resLogin.data; 
 
     } catch (error) {
