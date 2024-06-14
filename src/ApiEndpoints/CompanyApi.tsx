@@ -45,6 +45,36 @@ export class CompanyApi {
         }
     }
 
+    async UploadLogo(file : File) {
+
+        const formLogo = new FormData();
+        const companyId = localStorage.getItem("id");
+        const folderName = 'logo';
+
+        formLogo.append('image' , file);
+        formLogo.append('folder' , folderName);
+
+        if (companyId !== null) {
+            formLogo.append('uid', companyId);
+        }
+
+        try {
+            
+            const res = await fetch(`${url}/upload`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: formLogo
+            });
+
+            console.log('in context upload logo', res.status);
+            return res.status;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
     async AddDataCompany(
         email: string, password: string,
         businessType: string, name: string, phoneNumber: string,

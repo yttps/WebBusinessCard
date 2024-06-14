@@ -10,119 +10,125 @@ function AddCompany() {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const companyapi = new CompanyApi();
+  const [file, setFile] = useState<File | null>(null);
 
-
-  const [imageData, setImageData] = useState({
+  const [imageData] = useState({
     base64textString: '',
     imageName: '',
     showImage: false,
   });
 
-  const convertToBase64 = (event: ChangeEvent<HTMLInputElement>) => {
 
-    const files = event.target.files;
+  const uploadData = async () => {
 
-    if (files && files.length > 0) {
+    if (file) {
 
-      const file = files[0];
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
+      const resUploadData = await addData();
+      const resUploadLogo = await addLogo(file);
 
-      reader.onload = () => {
-        setImageData({
-          base64textString: reader.result as string,
-          imageName: file.name,
-          showImage: true,
-        });
-      };
+      if (resUploadData == 200 && resUploadLogo == 200) {
 
-      console.log(imageData.base64textString); //to use
-
-      reader.onerror = (error) => {
-        console.log('Error: ', error);
-      };
-    }
-  };
-
-  const addData = async () => {
-
-    const email = document.getElementById('email') as HTMLInputElement;
-    const password = document.getElementById('password') as HTMLInputElement;
-    const businessType = document.getElementById('businessType') as HTMLInputElement;
-    const name = document.getElementById('name') as HTMLInputElement;
-    const phoneNumber = document.getElementById('phoneNumber') as HTMLInputElement;
-    const website = document.getElementById('website') as HTMLInputElement;
-    const yearFounded = document.getElementById('yearFounded') as HTMLInputElement;
-    //address
-    const subdistrict = document.getElementById('subdistrict') as HTMLInputElement;
-    const district = document.getElementById('district') as HTMLInputElement;
-    const province = document.getElementById('province') as HTMLInputElement;
-    const country = document.getElementById('country') as HTMLInputElement;
-
-    const hasAySymbolEmail = email.value.includes('@');
-    const hasAySymbolWeb = website.value.includes('@');
-    const phoneRegex = /^\d+$/;
-
-    if (!hasAySymbolEmail || !hasAySymbolWeb) {
-
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
-        icon: 'error',
-      });
-      return;
-    }
-
-    else if (!phoneRegex.test(phoneNumber.value)) {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-        icon: 'error',
-      });
-      return;
-    }
-
-    else {
-
-      if (email.value && password.value &&
-        businessType.value && name.value &&
-        phoneNumber.value && website.value && yearFounded.value && subdistrict.value &&
-        district.value && province.value && country.value) {
-
-        const res = await companyapi.AddDataCompany(email.value, password.value,
-          businessType.value, name.value,
-          phoneNumber.value, website.value, yearFounded.value, subdistrict.value,
-          district.value, province.value, country.value);
-
-        if (res == 200) {
-          Swal.fire({
-            title: 'Success!',
-            text: 'เพิ่มข้อมูลสำเร็จ',
-            icon: 'success',
-          });
-          await companyapi.GetAllCompany();
-          handleClose();
-
-        }
-        if (res == 400) {
-          Swal.fire({
-            title: 'Error!',
-            text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
-            icon: 'error',
-          });
-          return;
-        }
-      }
-      else {
         Swal.fire({
-          title: 'Add Data Error!',
-          text: 'กรอกข้อมูลให้ครบ',
+          title: 'Success!',
+          text: 'เพิ่มข้อมูลสำเร็จ',
+          icon: 'success',
+        });
+
+        await companyapi.GetAllCompany();
+        handleClose();
+      }
+      if (resUploadData == 400) {
+
+        Swal.fire({
+          title: 'Error!',
+          text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
+          icon: 'error',
+        });
+        return;
+      }
+      if (resUploadLogo == 500) {
+        Swal.fire({
+          title: 'Upload Error!',
+          text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
           icon: 'error',
         });
         return;
       }
     }
   }
+
+  const addLogo = async (file: File): Promise<number | undefined> => {
+
+    try {
+
+      const res = await companyapi.UploadLogo(file);
+      return res;
+
+    } catch (error) {
+
+      console.log('Error in addLogo method: ', error);
+      return 500;
+    }
+  };
+
+  const addData = async (): Promise<number | undefined> => {
+
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+    const businessType = (document.getElementById('businessType') as HTMLInputElement).value;
+    const name = (document.getElementById('name') as HTMLInputElement).value;
+    const phoneNumber = (document.getElementById('phoneNumber') as HTMLInputElement).value;
+    const website = (document.getElementById('website') as HTMLInputElement).value;
+    const yearFounded = (document.getElementById('yearFounded') as HTMLInputElement).value;
+    const subdistrict = (document.getElementById('subdistrict') as HTMLInputElement).value;
+    const district = (document.getElementById('district') as HTMLInputElement).value;
+    const province = (document.getElementById('province') as HTMLInputElement).value;
+    const country = (document.getElementById('country') as HTMLInputElement).value;
+
+    const hasAySymbolEmail = email.includes('@');
+    const hasAySymbolWeb = website.includes('@');
+    const phoneRegex = /^\d+$/;
+
+    if (!hasAySymbolEmail || !hasAySymbolWeb) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
+        icon: 'error',
+      });
+      return 400;
+    }
+
+    if (!phoneRegex.test(phoneNumber)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+        icon: 'error',
+      });
+      return 400;
+    }
+
+    if (email && password && businessType && name && phoneNumber && website && yearFounded && subdistrict && district && province && country) {
+
+      const res = await companyapi.AddDataCompany(email, password, businessType, name, phoneNumber, website, yearFounded, subdistrict, district, province, country);
+      return res;
+
+    } else {
+
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'กรอกข้อมูลให้ครบ',
+        icon: 'error',
+      });
+      return 400;
+    }
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFile(event.target.files[0]);
+    }
+  };
+
 
   return (
     <>
@@ -170,9 +176,8 @@ function AddCompany() {
           <br />
           <div className="container mt-1">
             <h4>Logo บริษัท</h4>
-            <label className="btn btn-primary">
-              Upload File
-              <input type="file" id='selectImg' onChange={convertToBase64} />
+            <label>
+              <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
             </label>
             {imageData.showImage && (
               <div>
@@ -189,7 +194,7 @@ function AddCompany() {
           <Button variant="secondary" onClick={handleClose}>
             ยกเลิก
           </Button>
-          <Button variant="primary" onClick={addData}>
+          <Button variant="primary" onClick={uploadData}>
             ตกลง
           </Button>
         </Modal.Footer>
