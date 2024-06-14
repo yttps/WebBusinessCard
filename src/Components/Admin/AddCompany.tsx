@@ -55,6 +55,15 @@ function AddCompany() {
         return;
       }
     }
+
+    else{
+      Swal.fire({
+        title: 'Upload Error!',
+        text: 'โปรดเลือกรูปภาพโลโก้ก่อน!',
+        icon: 'error',
+      });
+      return;
+    }
   }
 
   const addLogo = async (file: File): Promise<number | undefined> => {
@@ -109,7 +118,9 @@ function AddCompany() {
       return 400;
     }
 
-    if (email && password && businessType && name && phoneNumber && website && yearFounded && subdistrict && district && province && country) {
+    if (email && password && businessType && name && 
+        phoneNumber && website && yearFounded && subdistrict && 
+        district && province && country) {
 
       const res = await companyapi.AddDataCompany(email, password, businessType, name, phoneNumber, website, yearFounded, subdistrict, district, province, country);
       return res;

@@ -45,21 +45,38 @@ export class CompanyApi {
         }
     }
 
-    async UploadLogo(file : File) {
+    async UploadLogo(file: File) {
+
+
 
         const formLogo = new FormData();
-        const companyId = localStorage.getItem("id");
         const folderName = 'logo';
 
-        formLogo.append('image' , file);
-        formLogo.append('folder' , folderName);
+     
+        console.log("folder name", folderName);
+        console.log("file", file);
 
-        if (companyId !== null) {
-            formLogo.append('uid', companyId);
+        formLogo.append('image', file);
+        formLogo.append('folder', folderName);
+       
+
+        const companyIdString = localStorage.getItem('LoggedIn');
+
+        if (companyIdString !== null) {
+            const companyId = JSON.parse(companyIdString); 
+            formLogo.append('uid', companyId.id);
+            console.log("com id", companyId.id);
+
+        } else {
+            console.log('Company ID is not available');
         }
 
+
+   
+
+
         try {
-            
+
             const res = await fetch(`${url}/upload`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

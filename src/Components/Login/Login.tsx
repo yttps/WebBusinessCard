@@ -30,7 +30,7 @@ export default function Login() {
 
 
             const res = await loginapi.LoginUserData(email, password);
-            console.log(res.role);
+            
             if (res) {
 
                 if (res.role === "admin") {
