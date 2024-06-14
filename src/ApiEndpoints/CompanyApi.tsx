@@ -80,7 +80,8 @@ export class CompanyApi {
             const res = await fetch(`${url}/upload`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: formLogo
+                body: formLogo,
+                mode: "cors", 
             });
 
             console.log('in context upload logo', res.status);
