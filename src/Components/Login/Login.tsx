@@ -36,8 +36,8 @@ export default function Login() {
                 if (res.role === "admin") {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
-                    navigate('ListCompany');
-                    console.log('loginnnnn');
+                    navigate('ListCompany');                
+                    console.log('loginnnn');
                 }
 
                 if (res.role === "company") {
@@ -118,7 +118,7 @@ export default function Login() {
                     </Form>
                 </div>
             </div>
-            <Link to="/SelectedTem">Selec tem</Link>
+            <Link to="/SelectedTem">Selectedtem</Link>
             <br />
             <Link to="/CreateCard">CreateCard</Link>
             <br />

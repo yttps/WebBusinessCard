@@ -1,6 +1,6 @@
 import axios from 'axios';
 // import { LoginUserData } from '@/Model/LoginUserData';
-const url = "http://localhost:8080";
+const url = "https://business-api-638w.onrender.com";
 
 // const hostUrl = "https://ab3d-1-46-31-5.ngrok-free.app";
 

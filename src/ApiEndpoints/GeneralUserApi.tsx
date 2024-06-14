@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { GetAllGeneralUser } from '@/Model/GetAllGeneralUser';
 
-const url = "http://localhost:8080";   //use host 
+const url = "https://business-api-638w.onrender.com";   //use host 
 
 
 export class GeneralUserApi {
