@@ -1,3 +1,7 @@
+--- update file to deploy ---
 git add .
 git commit -m "web commit"
 git push -u origin main 
+
+--- update ---
+E:\Project\Web\business_API_main2\business_API>git pull origin main

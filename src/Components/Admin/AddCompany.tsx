@@ -100,7 +100,6 @@ function AddCompany() {
             text: 'เพิ่มข้อมูลสำเร็จ',
             icon: 'success',
           });
-          // window.location.reload();
           await companyapi.GetAllCompany();
           handleClose();
 
