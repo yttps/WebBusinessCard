@@ -85,6 +85,8 @@ function AddCompany() {
     const province = (document.getElementById('province') as HTMLInputElement).value;
     const country = (document.getElementById('country') as HTMLInputElement).value;
 
+    console.log("chk" , email , password , businessType , name , phoneNumber , website , yearFounded , subdistrict , district , province , country);
+
     const hasAySymbolEmail = email.includes('@');
     const hasAySymbolWeb = website.includes('@');
     const phoneRegex = /^\d+$/;
