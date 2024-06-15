@@ -21,6 +21,7 @@ export default function ListCompany() {
             const res = await companyApi.GetAllCompany();
             setDataCompany(res);
             setDataFetched(true);
+            
         } catch (error) {
             console.error('Error fetching general users:', error);
         }
@@ -29,6 +30,7 @@ export default function ListCompany() {
     useEffect(() => {
         if (!dataFetched) {
             getCompany();
+            console.log('get data com' , dataCompany);
         }
     }, [dataFetched]);
 

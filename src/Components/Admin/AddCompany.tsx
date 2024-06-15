@@ -18,16 +18,86 @@ function AddCompany() {
     showImage: false,
   });
 
+  const getEmailValue = (): string => {
+    const emailElement = document.getElementById('email') as HTMLInputElement | null;
+    return emailElement ? emailElement.value : '';
+  };
+
+  const getPasswordValue = (): string => {
+    const passwordElement = document.getElementById('password') as HTMLInputElement | null;
+    return passwordElement ? passwordElement.value : '';
+  };
+
+  const getBusinessTypeValue = (): string => {
+    const businessTypeElement = document.getElementById('businessType') as HTMLInputElement | null;
+    return businessTypeElement ? businessTypeElement.value : '';
+  };
+
+  const getNameValue = (): string => {
+    const nameElement = document.getElementById('name') as HTMLInputElement | null;
+    return nameElement ? nameElement.value : '';
+  };
+
+  const getPhoneNumberValue = (): string => {
+    const phoneNumberElement = document.getElementById('phoneNumber') as HTMLInputElement | null;
+    return phoneNumberElement ? phoneNumberElement.value : '';
+  };
+
+  const getWebsiteValue = (): string => {
+    const websiteElement = document.getElementById('website') as HTMLInputElement | null;
+    return websiteElement ? websiteElement.value : '';
+  };
+
+  const getYearFoundedValue = (): string => {
+    const yearFoundedElement = document.getElementById('yearFounded') as HTMLInputElement | null;
+    return yearFoundedElement ? yearFoundedElement.value : '';
+  };
+
+  const getSubdistrictValue = (): string => {
+    const subdistrictElement = document.getElementById('subdistrict') as HTMLInputElement | null;
+    return subdistrictElement ? subdistrictElement.value : '';
+  };
+
+  const getDistrictValue = (): string => {
+    const districtElement = document.getElementById('district') as HTMLInputElement | null;
+    return districtElement ? districtElement.value : '';
+  };
+
+  const getProvinceValue = (): string => {
+    const provinceElement = document.getElementById('province') as HTMLInputElement | null;
+    return provinceElement ? provinceElement.value : '';
+  };
+
+  const getCountryValue = (): string => {
+    const countryElement = document.getElementById('country') as HTMLInputElement | null;
+    return countryElement ? countryElement.value : '';
+  };
+
+  const formData = {
+    email: getEmailValue(),
+    password: getPasswordValue(),
+    businessType: getBusinessTypeValue(),
+    name: getNameValue(),
+    phoneNumber: getPhoneNumberValue(),
+    website: getWebsiteValue(),
+    yearFounded: getYearFoundedValue(),
+    subdistrict: getSubdistrictValue(),
+    district: getDistrictValue(),
+    province: getProvinceValue(),
+    country: getCountryValue(),
+  };
+
 
   const uploadData = async () => {
 
-    if (file) {
+    if (file && formData) {
 
       const resUploadData = await addData();
       const resUploadLogo = await addLogo(file);
 
       if (resUploadData == 200 && resUploadLogo == 200) {
 
+        clearImageCache();
         Swal.fire({
           title: 'Success!',
           text: 'เพิ่มข้อมูลสำเร็จ',
@@ -55,10 +125,10 @@ function AddCompany() {
         return;
       }
     }
-    else{
+    else {
       Swal.fire({
         title: 'Upload Error!',
-        text: 'โปรดเลือกรูปภาพโลโก้ก่อน!',
+        text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
         icon: 'error',
       });
       return;
@@ -81,22 +151,20 @@ function AddCompany() {
 
   const addData = async (): Promise<number | undefined> => {
 
-    const email = (document.getElementById('email') as HTMLInputElement).value;
-    const password = (document.getElementById('password') as HTMLInputElement).value;
-    const businessType = (document.getElementById('businessType') as HTMLInputElement).value;
-    const name = (document.getElementById('name') as HTMLInputElement).value;
-    const phoneNumber = (document.getElementById('phoneNumber') as HTMLInputElement).value;
-    const website = (document.getElementById('website') as HTMLInputElement).value;
-    const yearFounded = (document.getElementById('yearFounded') as HTMLInputElement).value;
-    const subdistrict = (document.getElementById('subdistrict') as HTMLInputElement).value;
-    const district = (document.getElementById('district') as HTMLInputElement).value;
-    const province = (document.getElementById('province') as HTMLInputElement).value;
-    const country = (document.getElementById('country') as HTMLInputElement).value;
+    const emailValue = getEmailValue();
+    const passwordValue = getPasswordValue();
+    const businessTypeValue = getBusinessTypeValue();
+    const nameValue = getNameValue();
+    const phoneNumberValue = getPhoneNumberValue();
+    const websiteValue = getWebsiteValue();
+    const yearFoundedValue = getYearFoundedValue();
+    const subdistrictValue = getSubdistrictValue();
+    const districtValue = getDistrictValue();
+    const provinceValue = getProvinceValue();
+    const countryValue = getCountryValue();
 
-    console.log("chk" , email , password , businessType , name , phoneNumber , website , yearFounded , subdistrict , district , province , country);
-
-    const hasAySymbolEmail = email.includes('@');
-    const hasAySymbolWeb = website.includes('@');
+    const hasAySymbolEmail = emailValue.includes('@');
+    const hasAySymbolWeb = websiteValue.includes('@');
     const phoneRegex = /^\d+$/;
 
     if (!hasAySymbolEmail || !hasAySymbolWeb) {
@@ -109,7 +177,7 @@ function AddCompany() {
       return;
     }
 
-    if (!phoneRegex.test(phoneNumber)) {
+    if (!phoneRegex.test(phoneNumberValue)) {
       Swal.fire({
         title: 'Add Data Error!',
         text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
@@ -118,12 +186,31 @@ function AddCompany() {
       return;
     }
 
-    if (email && password && businessType && name && 
-        phoneNumber && website && yearFounded && subdistrict && 
-        district && province && country) {
+    if (emailValue &&
+      passwordValue &&
+      businessTypeValue &&
+      nameValue &&
+      phoneNumberValue &&
+      websiteValue &&
+      yearFoundedValue &&
+      subdistrictValue &&
+      districtValue &&
+      provinceValue &&
+      countryValue) {
 
-      const res = await companyapi.AddDataCompany(email, password, businessType, name, phoneNumber, website, yearFounded, subdistrict, district, province, country);
-      console.log('chkkkkkk' , res);
+      const res = await companyapi.AddDataCompany(        
+        emailValue,
+        passwordValue,
+        businessTypeValue,
+        nameValue,
+        phoneNumberValue,
+        websiteValue,
+        yearFoundedValue,
+        subdistrictValue,
+        districtValue,
+        provinceValue,
+        countryValue);
+      console.log('chkkkkkk', res);
       return res;
 
     } else {
@@ -139,6 +226,20 @@ function AddCompany() {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       setFile(event.target.files[0]);
+    }
+  };
+
+  const clearImageCache = () => {
+    if ('caches' in window) {
+      caches.keys().then(function (keyList) {
+        return Promise.all(
+          keyList.map(function (key) {
+            return caches.delete(key);
+          })
+        );
+      }).then(function () {
+        console.log('Image cache cleared');
+      });
     }
   };
 

@@ -5,3 +5,17 @@ git push -u origin main
 
 --- update ---
 E:\Project\Web\business_API_main2\business_API>git pull origin main
+
+-- CORS --
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+// ใช้ cors middleware
+app.use(cors());
+
+// การตั้งค่าคำขอทั้งหมด
+app.use(cors({ origin: '*' }));
+
+// หรือจำกัดเฉพาะบาง origin
+app.use(cors({ origin: 'https://webbusinesscard.onrender.com' }));

@@ -1,7 +1,7 @@
 import axios from 'axios';
 // import { GetAllCompany } from '@/Model/GetAllCompany';
 
-const url = "https://business-api-638w.onrender.com";   
+const url = "https://business-api-638w.onrender.com";
 // const url = "http://localhost:8080";   
 const axiosHeaders = {
     "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
@@ -35,8 +35,6 @@ export class CompanyApi {
             });
 
             const companyDataById = res.data;
-
-            console.log('in context', companyDataById);
             return companyDataById;
 
         } catch (error) {
@@ -45,46 +43,52 @@ export class CompanyApi {
         }
     }
 
-    async UploadLogo(file: File) {
+    async UploadLogo(Logo: File) {
 
-
-
-        const formLogo = new FormData();
-        const folderName = 'logo';
-
-        formLogo.append('image', file);
-        formLogo.append('folder', folderName);
-       
-
+ 
         const companyIdString = localStorage.getItem('LoggedIn');
 
         if (companyIdString !== null) {
-            const companyId = JSON.parse(companyIdString); 
-            formLogo.append('uid', companyId.id);
-            console.log("com id", companyId.id);
+
+            const companyId = JSON.parse(companyIdString);
+            const folderName = 'logo';
+            const formData = new FormData();
+
+            formData.append('file', Logo);
+            formData.append('folder', folderName);
+            formData.append('uid', companyId.id);
+
+            // const data = {
+            //     file: Logo,
+            //     folderName: folderName,
+            //     companyId: companyId.id
+            // }
+
+            console.log('////////' , formData);
+
+            try {
+
+
+                const res = await fetch(`${url}/upload` , {
+                    method:'POST',
+                    body:formData
+                });
+                
+                // const res = await axios.post(`${url}/upload`, formData);
+                console.log('in context upload logo', res.status);
+                return res.status;
+
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+
 
         } else {
             console.log('Company ID is not available');
         }
 
-        try {
 
-            console.log('log' , formLogo);
-
-            const res = await fetch(`${url}/upload`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: formLogo,
-                mode: "cors", 
-            });
-
-            console.log('in context upload logo', res.status);
-            return res.status;
-
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
     }
 
     async AddDataCompany(
