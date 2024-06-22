@@ -48,9 +48,6 @@ function AddCompanyBranch() {
   };
 
 
-
-
-
   const uploadData = async () => {
 
     console.log('check form data'  , formData);
@@ -140,22 +137,22 @@ function AddCompanyBranch() {
             <p>ชื่อสาขา - Name branch</p>
             <hr />
             <br />
-            <Form.Label htmlFor="inputPassword5">ชื่อสาขา</Form.Label>
+            <Form.Label htmlFor="name">ชื่อสาขา</Form.Label>
             <Form.Control type="text" id="name" required />
             <br />
             <p>ที่อยู่ - Address</p>
             <hr />
             <br />
-            <Form.Label htmlFor="inputPassword5">ตำบล</Form.Label>
+            <Form.Label htmlFor="subdistrict">ตำบล</Form.Label>
             <Form.Control type="text" id="subdistrict" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">อำเภอ</Form.Label>
+            <Form.Label htmlFor="district">อำเภอ</Form.Label>
             <Form.Control type="text" id="district" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">จังหวัด</Form.Label>
+            <Form.Label htmlFor="province">จังหวัด</Form.Label>
             <Form.Control type="text" id="province" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">ประเทศ</Form.Label>
+            <Form.Label htmlFor="country">ประเทศ</Form.Label>
             <Form.Control type="text" id="country" required />
             <br />
           </form>
