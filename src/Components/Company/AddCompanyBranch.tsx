@@ -52,8 +52,10 @@ function AddCompanyBranch() {
 
 
   const uploadData = async () => {
-    if (formData.name && formData.subdistrict && formData.district
-      && formData.province && formData.country
+
+    console.log('check form data'  , formData);
+    if (formData.name && formData.subdistrict && 
+      formData.district && formData.province && formData.country
     ) {
   
       const resUploadData = await addData();
