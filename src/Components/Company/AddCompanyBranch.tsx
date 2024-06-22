@@ -7,7 +7,6 @@ import { Button, Modal, Form } from "react-bootstrap";
 function AddCompanyBranch() {
 
   const [show, setShow] = useState(false);
-
   const handleClose = () => setShow(false); 
   const handleShow = () => setShow(true);
   const companyapi = new CompanyApi();
@@ -51,6 +50,7 @@ function AddCompanyBranch() {
   const uploadData = async () => {
 
     console.log('check form data'  , formData);
+
     if (formData.name && formData.subdistrict && 
       formData.district && formData.province && formData.country
     ) {
@@ -90,24 +90,15 @@ function AddCompanyBranch() {
 
   const addData = async (): Promise<number | undefined> => {
 
-    const nameValue = getNameValue();
-    const subdistrictValue = getSubdistrictValue();
-    const districtValue = getDistrictValue();
-    const provinceValue = getProvinceValue();
-    const countryValue = getCountryValue();
-
-    if (nameValue &&
-      subdistrictValue &&
-      districtValue &&
-      provinceValue &&
-      countryValue) {
+    if (formData.name && formData.subdistrict && 
+      formData.district && formData.province && formData.country) {
 
       const res = await companyapi.AddCompanyBranch(
-        nameValue,
-        subdistrictValue,
-        districtValue,
-        provinceValue,
-        countryValue);
+        formData.name,
+        formData.subdistrict,
+        formData.district,
+        formData.province,
+        formData.country);
 
       return res;
 
@@ -127,7 +118,7 @@ function AddCompanyBranch() {
       <Button variant="success" onClick={handleShow}>
         เพิ่มสาขาบริษัท
       </Button>
-
+  
       <Modal show={show} onHide={handleClose} animation={false}>
         <Modal.Header closeButton>
           <Modal.Title>เพิ่มสาขาบริษัท</Modal.Title>
@@ -155,19 +146,19 @@ function AddCompanyBranch() {
             <Form.Label htmlFor="country">ประเทศ</Form.Label>
             <Form.Control type="text" id="country" required />
             <br />
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             ยกเลิก
           </Button>
-          <Button variant="primary" onClick={uploadData}>
+          <Button variant="primary" type="submit">
             ตกลง
           </Button>
-        </Modal.Footer>
+        </form>
+        </Modal.Body>
       </Modal>
     </>
   );
+  
+  
 }
 
 export default AddCompanyBranch
