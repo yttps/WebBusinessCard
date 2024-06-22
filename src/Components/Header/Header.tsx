@@ -25,7 +25,7 @@ export default function Header() {
             {[false].map((expand) => (
                 <Navbar key={'expand'} expand={expand} className="bg-body-tertiary mb-4">
                     <Container fluid>
-                        <Navbar.Brand href="#">Navbar Offcanvas</Navbar.Brand>
+                        <Navbar.Brand href="#">Home Page</Navbar.Brand>
                         <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
                         <Navbar.Offcanvas
                             id={`offcanvasNavbar-expand-${expand}`}

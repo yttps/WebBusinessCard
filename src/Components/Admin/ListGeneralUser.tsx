@@ -1,33 +1,35 @@
-import { useEffect, useState }from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../Header/Header'
 import { GeneralUserApi } from '@/ApiEndpoints/GeneralUserApi';
-import { InputGroup, Form , Table } from 'react-bootstrap';
-// import ListCompany from './ListCompany';
+import { InputGroup, Form, Table , Button} from 'react-bootstrap';
+import { GetAllGeneralUser } from '@/Model/GetAllGeneralUser';
+import { Link } from 'react-router-dom';
 
 function ListGeneralUser() {
 
     const [searchQuery, setSearchQuery] = useState('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const generalUserApi = new GeneralUserApi();
+    const [dataFetched, setDataFetched] = useState(false);
+    const [dataGeneralUsers, setDataGeneralUsers] = useState<GetAllGeneralUser[]>([]);
 
-    // const filteredData = data.filter((item: Detail_GeneralUser) => {
-    //     // Check if item and item.name are defined before calling toLowerCase()
-    //     return item && item.firstname && item.firstname.toLowerCase().includes(searchQuery.toLowerCase());
-    // });
+    const fetchData = async () => {
+        try {
+            const response = await generalUserApi.GetAllGeneralUsers(); //get by users not form company
+            setDataGeneralUsers(response);
+            setDataFetched(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-          try {
-            const response = await generalUserApi.GetAllGeneralUser();
-            console.log(response); // Handle or use the fetched data as needed
-          } catch (error) {
+            console.log("res general users", dataGeneralUsers);
+
+        } catch (error) {
             console.error('Error fetching general users:', error);
-            // Handle errors gracefully (e.g., display an error message)
-          }
-        };
-    
-        fetchData();
-      }, [generalUserApi]);
+        }
+    };
+    useEffect(() => {
+        if (!dataFetched) {
+            fetchData();
+        }
+    }, [dataFetched]);
 
     return (
         <>
@@ -51,9 +53,9 @@ function ListGeneralUser() {
                         />
                     </InputGroup>
                 </div>
-                {/* <div id='general-btn'>
-                        <Button variant="primary" onClick={linktocomponent}>บริษัท</Button>
-                    </div> */}
+                <Link to="/ListCompany">
+                    <Button variant="primary">ข้อมูลบริษัท</Button>
+                </Link>
                 <br />
                 <div id='tableCon2'>
                     <Table striped bordered hover variant="write">

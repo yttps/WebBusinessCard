@@ -56,6 +56,7 @@
 
     .formname {
         margin: 0 15px;
+        text-align: center;
     }
 
     .loginTitle {
@@ -66,3 +67,19 @@
         font-size: 14px;
     }
 }
+
+.link-text {
+    color: inherit;
+    text-decoration: none;
+}
+
+.regis-btn {
+    width: 100%;
+    margin-top: 20px;
+    border: none;
+}
+
+.regis-btn:hover {
+    background-color: #00b436;
+}
+

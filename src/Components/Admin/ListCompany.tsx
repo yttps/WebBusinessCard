@@ -3,9 +3,8 @@ import AddCompany from '@/Components/Admin/AddCompany';
 import Header from '@/Components/Header/Header';
 import { Button, Form, InputGroup, Table } from 'react-bootstrap';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
-// import ListGeneralUser from './ListGeneralUser';
 import { GetAllCompany } from '@/Model/GetAllCompany';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 export default function ListCompany() {
 
@@ -21,16 +20,20 @@ export default function ListCompany() {
             const res = await companyApi.GetAllCompany();
             setDataCompany(res);
             setDataFetched(true);
-            
+
         } catch (error) {
             console.error('Error fetching general users:', error);
         }
     }
 
+    const filteredData = dataCompany.filter((company) =>
+        company?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     useEffect(() => {
         if (!dataFetched) {
             getCompany();
-            console.log('get data com' , dataCompany);
+            console.log('get data com', dataCompany);
         }
     }, [dataFetched]);
 
@@ -40,10 +43,11 @@ export default function ListCompany() {
             <br />
             <div id='con1' className="container">
                 <div id='headerCon1'>
-                    <p>
-                        รายชื่อบริษัท
-                    </p>
+                    <p>รายชื่อบริษัท</p>
                     <AddCompany />
+                    <Link to="/ListGeneralUser">
+                        <Button variant="primary">บุคคลทั่วไป</Button>
+                    </Link>
                 </div>
                 <hr />
                 <div id='headerCon2'>
@@ -56,42 +60,43 @@ export default function ListCompany() {
                         />
                     </InputGroup>
                 </div>
-                <div id='general-btn'>
-                    {/* <Button variant="primary" onClick={linktocomponent}>บุคคลทั่วไป</Button> */}
-                </div>
+                <div id='general-btn'></div>
                 <br />
                 <div id='tableCon2'>
-                    <Table striped bordered hover variant="write">
-                        <thead>
-                            <tr>
-                                <th>no.</th>
-                                <th>ชื่อบริษัท</th>
-                                <th>ชื่อย่อบริษัท</th>
-                                <th>ประเภทธุรกิจ</th>
-                                <th>เว็บไซต์</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {dataCompany.map((item: GetAllCompany, index: number) => (
-                                <tr key={index}>
-                                    <td id={`idCompany${index}`}></td>
-                                    <td id={`nameCompany${index}`}>{item.name}</td>
-                                    <td id={`abbreviationCompany${index}`}>{item.abbreviation}</td>
-                                    <td id={`businesTypeCompany${index}`}>{item.businessType}</td>
-                                    <td id={`websiteCompany${index}`}>{item.website}</td>
-                                    <td id={`btnEdit`}>
-                                        {typeof window !== 'undefined' && (
-                                            <NavLink to={`/ListCompany/${item.id}`}>
-                                                <Button variant="warning">
-                                                    แสดงข้อมูล
-                                                </Button>
-                                            </NavLink>
-                                        )}
-                                    </td>
+                    {filteredData.length > 0 ? (
+                        <Table striped bordered hover variant="write">
+                            <thead>
+                                <tr>
+                                    <th>no.</th>
+                                    <th>ชื่อบริษัท</th>
+                                    <th>ชื่อย่อบริษัท</th>
+                                    <th>ประเภทธุรกิจ</th>
+                                    <th>เว็บไซต์</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </Table>
+                            </thead>
+                            <tbody>
+                                {filteredData.map((item: GetAllCompany, index: number) => (
+                                    <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td>{item.name}</td>
+                                        <td>{item.abbreviation}</td>
+                                        <td>{item.businessType}</td>
+                                        <td>{item.website}</td>
+                                        <td>
+                                            {typeof window !== 'undefined' && (
+                                                <NavLink to={`/ListCompany/${item.id}`}>
+                                                    <Button variant="warning">แสดงข้อมูล</Button>
+                                                </NavLink>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <p>Not found data company</p>
+                    )}
                 </div>
             </div>
         </>

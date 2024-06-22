@@ -5,32 +5,53 @@ const axiosHeaders = {
     "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
 }
 
-export class EmployeesApi {
+export class HrApi {
 
     private urlLogo: string = '';
 
-    async GetAllEmployees() {
+    async GetAllHr() {
 
-        try {
+        const loggedInData = localStorage.getItem("LoggedIn");
 
-            const res = await axios.get(url + '/users', {
-                headers: axiosHeaders,
-            });
-            const companyData = res.data;
-            console.log('in context', companyData);
-            return companyData;
+        if (loggedInData) {
 
-        } catch (error) {
-            console.error(error);
-            throw error;
+            const parsedData = JSON.parse(loggedInData);
+            const CompanyId = parsedData.id;
+            const endpoint = `https://business-api-638w.onrender.com/users/by-companyandposition/${CompanyId}/HR`;
+
+            if (CompanyId) {
+
+                try {
+
+                    const res = await axios.get(endpoint, {
+                        headers: axiosHeaders,
+                    });
+                    console.log('in context', res);
+                    const companyData = res.data;
+
+                    return companyData;
+
+                } catch (error) {
+                    console.error(error);
+                    throw error;
+                }
+
+            }
+
+
+
+        } else {
+            console.log("No logged in data found");
         }
+
+
     }
 
-    async GetDataEmployeesById(id: string) {
+    async GetDataHrById(id: string) {
 
         try {
 
-            const res = await axios.get(`${url}/users/${id}`, {
+            const res = await axios.get(`${url}/companies/${id}`, {
                 headers: axiosHeaders,
             });
 
@@ -43,7 +64,7 @@ export class EmployeesApi {
         }
     }
 
-    async UploadProfile(Logo: File) {
+    async UploadLogo(Logo: File) {
 
         const companyIdString = localStorage.getItem('LoggedIn');
 
@@ -68,7 +89,7 @@ export class EmployeesApi {
                 if (res.ok) {
 
                     const data = await res.json();
-                    this.setUrlProfile(data.Url)
+                    this.setUrlLogo(data.Url)
                     console.log('Upload logo successful:', res.status);
                     return res.status;
                 }
@@ -89,25 +110,25 @@ export class EmployeesApi {
         }
     }
 
-    async AddDataEmployee(
-        firstnameValue : string ,
-        lastnameValue  : string ,
-        emailValue : string ,
-        passwordValue : string ,
-        genderValue  : string ,
-        phoneValue  : string ,
-        subdistrictValue  : string ,
-        districtValue  : string ,
-        provinceValue  : string ,
-        countryValue  : string ,
-        companyBranchValue  : string ,
-        departmentValue  : string ,
-        positionValue  : string ,
-        startworkValue  : string) {
+    async AddDataHr(
+        firstnameValue: string,
+        lastnameValue: string,
+        emailValue: string,
+        passwordValue: string,
+        genderValue: string,
+        phoneValue: string,
+        subdistrictValue: string,
+        districtValue: string,
+        provinceValue: string,
+        countryValue: string,
+        companyBranchValue: string,
+        departmentValue: string,
+        positionValue: string,
+        startworkValue: string) {
 
-        const dataEmployee = {
-            firstname : firstnameValue , 
-            lastname : lastnameValue ,
+        const dataHr = {
+            firstname: firstnameValue,
+            lastname: lastnameValue,
             email: emailValue,
             password: passwordValue,
             gender: genderValue,
@@ -115,9 +136,9 @@ export class EmployeesApi {
             subdistrict: subdistrictValue,
             district: districtValue,
             province: provinceValue,
-            country: countryValue , 
+            country: countryValue,
             companyBranch: companyBranchValue,
-            department:departmentValue,
+            department: departmentValue,
             position: positionValue,
             startwork: startworkValue
         }
@@ -127,7 +148,7 @@ export class EmployeesApi {
             const res = await fetch(`${url}/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataEmployee)
+                body: JSON.stringify(dataHr)
             });
 
             console.log('in context', res.status);
@@ -139,7 +160,7 @@ export class EmployeesApi {
         }
     }
 
-    async DeleteEmployee(companyId: string) {
+    async DeleteHr(companyId: string) {
 
         try {
 
@@ -156,7 +177,7 @@ export class EmployeesApi {
         }
     }
 
-    setUrlProfile = (url: string) => {
+    setUrlLogo = (url: string) => {
         this.urlLogo = url;
         return this.urlLogo;
     }

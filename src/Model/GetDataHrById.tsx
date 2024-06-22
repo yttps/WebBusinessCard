@@ -1,4 +1,4 @@
-export interface GetDataCompanyById {
+export interface GetDataHrById {
     website:      string;
     password:     string;
     address:      string;
@@ -8,5 +8,4 @@ export interface GetDataCompanyById {
     email:        string;
     name:         string;
     id:           string;
-    logo:         string;
 }

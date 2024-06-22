@@ -6,8 +6,6 @@ import React, { useRef } from 'react';
 import Swal from 'sweetalert2';
 import { LoginApi } from '@/ApiEndpoints/LoginApi';
 
-
-
 export default function Login() {
 
     const navigate = useNavigate();
@@ -15,8 +13,6 @@ export default function Login() {
 
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-
-
 
 
     async function loginUserData(e: React.MouseEvent<HTMLFormElement>) {
@@ -30,14 +26,14 @@ export default function Login() {
 
 
             const res = await loginapi.LoginUserData(email, password);
-            console.log(email , password);
-            
+            console.log(email, password);
+
             if (res) {
 
                 if (res.role === "admin") {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
-                    navigate('ListCompany');                
+                    navigate('ListCompany');
                     console.log('loginnnn');
                 }
 
@@ -77,13 +73,7 @@ export default function Login() {
             <Navbar className="bg-body-tertiary">
                 <Container>
                     <Navbar.Brand href="#home">
-                        <img
-                            alt=""
-                            src="https://www.pngitem.com/pimgs/m/650-6503651_navbar-logo-hd-png-download.png"
-                            width="30"
-                            height="30"
-                            className="d-inline-block align-top"
-                        />{' '}
+                        {' '}
                         Login Page
                     </Navbar.Brand>
                 </Container>
@@ -107,9 +97,14 @@ export default function Login() {
                         </Form.Group>
                         <Form.Group className="mb-4" controlId="formBasicCheckbox">
                         </Form.Group>
+                        
                         <Button variant="primary" type="submit" className='submit-btn' >
                             Login
                         </Button>
+                        <br />
+                        <Link to="/Register" className="link-text">
+                            <Button variant="success" className='regis-btn'>Register</Button>
+                        </Link>
                     </Form>
                 </div>
             </div>

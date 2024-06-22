@@ -1,13 +1,14 @@
 import axios from 'axios';
-// import { GetAllCompany } from '@/Model/GetAllCompany';
 
 const url = "https://business-api-638w.onrender.com";
-// const url = "http://localhost:8080";   
+// const url = "http://localhost:3000";   
 const axiosHeaders = {
     "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
 }
 
 export class CompanyApi {
+
+    private urlLogo: string = '';
 
     async GetAllCompany() {
 
@@ -43,50 +44,46 @@ export class CompanyApi {
         }
     }
 
-    async UploadLogo(Logo: File) {
+    async UploadLogo(Logo: File, companyid: string) {
 
- 
-        const companyIdString = localStorage.getItem('LoggedIn');
+        const folderName = 'logo';
+        const formData = new FormData();
+        console.log('id', companyid);
 
-        if (companyIdString !== null) {
+        formData.append('file', Logo);
+        formData.append('folder', folderName);
+        formData.append('collection', 'companies')
+        formData.append('uid', companyid);
 
-            const companyId = JSON.parse(companyIdString);
-            const folderName = 'logo';
-            const formData = new FormData();
+        console.log('formdata', formData);
 
-            formData.append('file', Logo);
-            formData.append('folder', folderName);
-            formData.append('uid', companyId.id);
+        try {
 
-            // const data = {
-            //     file: Logo,
-            //     folderName: folderName,
-            //     companyId: companyId.id
-            // }
+            const res = await fetch(`${url}/upload-image`, {
+                method: 'POST',
+                body: formData
+            });
 
-            console.log('////////' , formData);
+            if (res.ok) {
 
-            try {
-
-
-                const res = await fetch(`${url}/upload` , {
-                    method:'POST',
-                    body:formData
-                });
-                
-                // const res = await axios.post(`${url}/upload`, formData);
+                const data = await res.json();
+                this.setUrlLogo(data.Url)
+                console.log('Upload logo successful:', res.status);
+                return res.status;
+            }
+            else {
                 console.log('in context upload logo', res.status);
                 return res.status;
-
-            } catch (error) {
-                console.error(error);
-                throw error;
             }
 
 
-        } else {
-            console.log('Company ID is not available');
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
+
+
+
 
 
     }
@@ -108,28 +105,107 @@ export class CompanyApi {
             subdistrict: subdistrict,
             district: district,
             province: province,
-            country: country
+            country: country,
+            logo: 'logo'
         }
+
+
 
         try {
 
-
-            // const res = await fetch.post(`${url}/companies`, dataCompany, {
-            //     headers: axiosHeaders,
+            // const res = await fetch(`${url}/companies`, {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(dataCompany)
             // });
 
-            const res = await fetch(`${url}/companies`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataCompany)
-            });
+            const res = await axios.post(`${url}/companies`, dataCompany);
+            console.log("upload data in context", res.data.companyId);
+            return res.data.companyId;
 
-            console.log('in context', res.status);
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async DeleteCompany(companyId: string) {
+
+        try {
+
+            const urlWithId = `${url}/companies/${companyId}`;
+            const res = await axios.delete(urlWithId);
+            console.log('delete company status', res.status);
             return res.status;
 
         } catch (error) {
             console.error(error);
             throw error;
         }
+    }
+
+    async AddCompanyBranch(
+        // selectedPosition: {[key: string]: string[]}, 
+        nameBranches : string , 
+        subdistrict: string ,
+        district : string ,
+        province : string , 
+        country : string ) {
+
+        const loggedInData = localStorage.getItem("LoggedIn");
+
+        if (loggedInData) {
+
+            const parsedData = JSON.parse(loggedInData);
+            const CompanyId = parsedData.id;
+            const endpoint = `${url}/companybranches`;
+
+            if (CompanyId) {
+
+                try {
+
+                    const dataBranch = {
+                        // name: selectedPosition,
+                        name : nameBranches,
+                        companyID : CompanyId,
+                        subdistrict: subdistrict, 
+                        district: district, 
+                        province: province, 
+                        country: country
+                    }
+
+                    console.log('check' , dataBranch);
+
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dataBranch)
+                    });
+
+                    // const res = await axios.post(endpoint, {
+                    //     headers: axiosHeaders,
+                    // });
+
+                    console.log('in context', res.status);
+
+                    return res.status;
+
+                } catch (error) {
+                    console.error(error);
+                    throw error;
+                }
+
+            }
+
+
+
+        } else {
+            console.log("No logged in data found");
+        }
+    }
+
+    setUrlLogo = (url: string) => {
+        this.urlLogo = url;
+        return this.urlLogo;
     }
 }
