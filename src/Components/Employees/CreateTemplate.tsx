@@ -45,7 +45,7 @@ export default function CreateTemplate() {
   });
 
   interface CanvasOperation {
-    type: 'text';
+    type: 'text' | 'image';
     data: string; 
     position: { x: number; y: number };
   }
