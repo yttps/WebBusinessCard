@@ -6,6 +6,7 @@ import { GetAllHR } from '@/Model/GetAllHR';
 import { NavLink } from 'react-router-dom';
 import AddHr from './AddHr';
 import AddCompanyBranch from './AddCompanyBranch';
+import AddDepartment from './AddDepartment';
 
 export default function ListHr() {
 
@@ -50,6 +51,7 @@ export default function ListHr() {
                 </div>
                  <AddHr/>
                  <AddCompanyBranch />
+                 <AddDepartment />
                 <hr />
                 <div id='headerCon2'>
                     <InputGroup className="mb-3">

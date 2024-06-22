@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import '@/Components/Employees/CSS/createTemplate.css'
 import Header from "@/Components/Header/Header";
 
@@ -29,7 +29,6 @@ export default function CreateTemplate() {
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [fontSize, setFontSize] = useState('10');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  // const [PosTemValue, setPosTemValue] = useState('');
   const [canvasHistory, setCanvasHistory] = useState<(CanvasOperation | null)[]>([]);
 
   console.log(logo , GetDataUserLogin);
@@ -77,8 +76,8 @@ export default function CreateTemplate() {
     // const DataEmployeeById = await 
 
     if (dataUserLogin) {
+      setIsFetch(true);
       setGetDataUserLogin(dataUserLogin);
-
     }
     else {
       console.log('Not found user login');
@@ -86,17 +85,17 @@ export default function CreateTemplate() {
 
   }
 
-  async function getImageLogo() {
+  // async function getImageLogo() {
 
-    const storedData = localStorage.getItem('loggedin');
+  //   const storedData = localStorage.getItem('loggedin');
 
-    if (storedData) {
-      console.log('Not found user login');
-    }
-    else {
-      console.log('Not found user login');
-    }
-  }
+  //   if (storedData) {
+  //     console.log('Not found user login');
+  //   }
+  //   else {
+  //     console.log('Not found user login');
+  //   }
+  // }
 
   //STEP 1 WHEN CLICK AND DRAGGING
   const handleDragStart = (event: React.DragEvent, item: string) => {
@@ -268,30 +267,6 @@ export default function CreateTemplate() {
     }
   }
 
-  async function insertBackground() {
-
-    // try {
-
-    //   if (background) {
-
-    //     const folder = 'Background';
-    //     const res = await uploadBackground(background, dataByIdForEmployees.company, folder);
-
-    //     if (res == 200) {
-    //       console.log('finish');
-    //     }
-    //     else {
-    //       console.log('no upload');
-    //     }
-
-    //   } else {
-    //     alert('Selected image pls');
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    // }
-  }
-
   const handleImageLogoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
     const input = event.target as HTMLInputElement;
@@ -317,8 +292,6 @@ export default function CreateTemplate() {
     if (!IsFatched) {
       GetDetailEmployeeAndUserLogin();
     }
-
-    console.log("all position" , allPositions);
   }, [IsFatched , allPositions])
 
 

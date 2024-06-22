@@ -8,99 +8,10 @@ function AddCompanyBranch() {
 
   const [show, setShow] = useState(false);
 
-  const handleClose = () => {
-    setShow(false);
-    setSelectedDepartments([]);
-    setSelectedPositions({});  
-  }
-
+  const handleClose = () => setShow(false); 
   const handleShow = () => setShow(true);
   const companyapi = new CompanyApi();
-  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [selectedPositions, setSelectedPositions] = useState<{ [key: string]: string[] }>({});
   
-  const handleDepartmentChange = (departmentName: string) => {
-    setSelectedDepartments(prev => {
-      const newDepartments = prev.includes(departmentName)
-        ? prev.filter(name => name !== departmentName)
-        : [...prev, departmentName];
-  
-      // Remove positions associated with the unchecked department
-      if (!newDepartments.includes(departmentName)) {
-        setSelectedPositions(prevPositions => {
-          const { [departmentName]: _, ...rest } = prevPositions;
-          return rest;
-        });
-      }
-  
-      return newDepartments;
-    });
-  };
-  
-  
-  const handlePositionChange = (departmentName: string, positionName: string) => {
-    setSelectedPositions(prev => {
-      const updatedPositions = { ...prev };
-      if (!updatedPositions[departmentName]) {
-        updatedPositions[departmentName] = [];
-      }
-      updatedPositions[departmentName] = updatedPositions[departmentName].includes(positionName)
-        ? updatedPositions[departmentName].filter(pos => pos !== positionName)
-        : [...updatedPositions[departmentName], positionName];
-      
-      // Remove department if no positions are selected
-      if (updatedPositions[departmentName].length === 0) {
-        const { [departmentName]: _, ...rest } = updatedPositions;
-        return rest;
-      }
-  
-      return updatedPositions;
-    });
-  };
-
-  const getSelectedPositionsArray = () => {
-    return Object.values(selectedPositions).flat();
-  }
-  
-  
-
-  const departments = [
-    {
-      name: 'แผนกบริหาร (Management)',
-      positions: [
-        { en: 'Chairman', th: 'ประธาน' },
-        { en: 'Vice Chairman', th: 'รองประธาน' },
-        { en: 'President', th: 'ประธานกรรมการ' },
-        { en: 'Vice-President', th: 'รองประธานกรรมการ' },
-        { en: 'Senior Advisor', th: 'ที่ปรึกษาอาวุโส' },
-        { en: 'Managing Director', th: 'กรรมการผู้จัดการ' },
-        { en: 'Senior Executive Managing Director', th: 'ประธานกรรมการผู้บริหารระดับสูง' },
-        { en: 'Board of Directors', th: 'คณะกรรมการผู้บริหาร' },
-        { en: 'Directors', th: 'กรรมการ' },
-        { en: 'The Management team', th: 'คณะบริหาร' },
-        { en: 'Chief Executive Officer (C.E.O.)', th: 'หัวหน้าฝ่ายบริหารผู้มีอำนาจเต็ม' },
-      ]
-    },
-    {
-      name: 'แผนกทั่วไป (General)',
-      positions: [
-        { en: 'General Manager', th: 'ผู้จัดการทั่วไป' },
-        { en: 'Manager', th: 'ผู้จัดการ' },
-      ]
-    },
-    {
-      name: 'แผนกสาขา (Branch)',
-      positions: [
-        { en: 'Branch Manager', th: 'ผู้จัดการสาขา' },
-      ]
-    },
-    {
-      name: 'แผนกแผนก (Department)',
-      positions: [
-        { en: 'Head of Department (Division Chief)', th: 'หัวหน้าแผนก' },
-      ]
-    },
-  ];
 
   const getNameValue = (): string => {
     const emailElement = document.getElementById('name') as HTMLInputElement | null;
@@ -136,8 +47,8 @@ function AddCompanyBranch() {
     country: getCountryValue(),
   };
 
-  console.log("depart", selectedDepartments);
-  console.log("position", selectedPositions);
+
+
 
 
   const uploadData = async () => {
@@ -175,8 +86,6 @@ function AddCompanyBranch() {
       });
       return;
     }
-  
-    // console.log("Selected Departments:", selectedDepartments);
   };
   
 
@@ -187,7 +96,6 @@ function AddCompanyBranch() {
     const districtValue = getDistrictValue();
     const provinceValue = getProvinceValue();
     const countryValue = getCountryValue();
-    const selectedPositionsArray = getSelectedPositionsArray();
 
     if (nameValue &&
       subdistrictValue &&
@@ -196,14 +104,12 @@ function AddCompanyBranch() {
       countryValue) {
 
       const res = await companyapi.AddCompanyBranch(
-        // selectedPositions,
         nameValue,
         subdistrictValue,
         districtValue,
         provinceValue,
         countryValue);
 
-      console.log('selectedPositionsArray', selectedPositionsArray);
       return res;
 
     } else {
@@ -249,36 +155,6 @@ function AddCompanyBranch() {
             <br />
             <Form.Label htmlFor="inputPassword5">ประเทศ</Form.Label>
             <Form.Control type="text" id="country" required />
-            <br />
-            <p>แผนก</p>
-            <hr />
-            <br />
-            <div>
-              {departments.map((department, departmentIndex) => (
-                <div key={departmentIndex}>
-                  <h5>{department.name}</h5>
-                  <ul className="position-list">
-                    {department.positions.map((position, positionIndex) => (
-                      <li key={positionIndex}>
-                        <input
-                          type="checkbox"
-                          id={`${department.name}-${position.en}`}
-                          name={position.en}
-                          value={position.en}
-                          onChange={() => handlePositionChange(department.name, position.en)}
-                          checked={
-                            selectedPositions[department.name]
-                              ? selectedPositions[department.name].includes(position.en)
-                              : false
-                          }
-                        />
-                        <label htmlFor={`${department.name}-${position.en}`}>{position.th}</label>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
             <br />
           </form>
         </Modal.Body>

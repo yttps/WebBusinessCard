@@ -204,6 +204,52 @@ export class CompanyApi {
         }
     }
 
+    async AddDepartments(departments: { name: string; phone: string }[]): Promise<number[]> {
+        const loggedInData = localStorage.getItem("LoggedIn");
+        const statusCodes: number[] = [];
+      
+        if (loggedInData) {
+          const parsedData = JSON.parse(loggedInData);
+          const CompanyId = parsedData.id;
+          const endpoint = `${url}/departments`;
+      
+          if (CompanyId) {
+            try {
+              for (let i = 0; i < departments.length; i++) {
+                const dept = departments[i];
+                const dataDepartment = {
+                  name: dept.name,
+                  companyID: CompanyId,
+                  phone: dept.phone
+                };
+      
+                console.log(`Sending department ${i + 1}:`, dataDepartment);
+      
+                const res = await fetch(endpoint, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(dataDepartment)
+                });
+      
+                statusCodes.push(res.status);
+                console.log(`Response status for department ${i + 1}:`, res.status);
+              }
+      
+              return statusCodes;
+              
+            } catch (error) {
+              console.error('Error:', error);
+              throw error;
+            }
+          }
+        } else {
+          console.log("No logged in data found");
+        }
+      
+        return statusCodes;
+      }
+      
+
     setUrlLogo = (url: string) => {
         this.urlLogo = url;
         return this.urlLogo;
