@@ -145,7 +145,6 @@ export class CompanyApi {
     }
 
     async AddCompanyBranch(
-        // selectedPosition: {[key: string]: string[]}, 
         nameBranches : string , 
         subdistrict: string ,
         district : string ,
@@ -165,7 +164,6 @@ export class CompanyApi {
                 try {
 
                     const dataBranch = {
-                        // name: selectedPosition,
                         name : nameBranches,
                         companyID : CompanyId,
                         subdistrict: subdistrict, 
@@ -236,7 +234,7 @@ export class CompanyApi {
               }
       
               return statusCodes;
-              
+
             } catch (error) {
               console.error('Error:', error);
               throw error;
