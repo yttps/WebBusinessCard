@@ -13,8 +13,8 @@ function AddCompanyBranch() {
   
 
   const getNameValue = (): string => {
-    const provinceElement = document.getElementById('name') as HTMLInputElement | null;
-    return provinceElement ? provinceElement.value : '';
+    const nameElement = document.getElementById('name') as HTMLInputElement | null;
+    return nameElement ? nameElement.value : '';
   };
 
   const getSubdistrictValue = (): string => {
