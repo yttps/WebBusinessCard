@@ -126,7 +126,12 @@ export class HrApi {
         positionValue: string,
         startworkValue: string) {
 
-        const dataHr = {
+
+
+        try {        
+            
+            
+            const dataHr = {
             firstname: firstnameValue,
             lastname: lastnameValue,
             email: emailValue,
@@ -145,16 +150,16 @@ export class HrApi {
 
         console.log('data hr in context' , dataHr);
 
-        try {
+            // const res = await fetch(`${url}/users`, {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(dataHr)
+            // });
+            const endpoint = `${url}/users`;
+            const res = await axios.post(endpoint , dataHr);
 
-            const res = await fetch(`${url}/users`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataHr)
-            });
-
-            console.log('in context', res.status);
-            return res.status;
+            console.log('in context', res.data.id);
+            return res.data.id;
 
         } catch (error) {
             console.error(error);

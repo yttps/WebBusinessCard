@@ -11,6 +11,23 @@ interface AddHrProps {
   setIsFetch: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+interface FormData {
+  firstname: string,
+  lastname: string,
+  email: string,
+  password: string,
+  gender: string,
+  phone: string,
+  subdistrict: string,
+  district: string,
+  province: string,
+  country: string,
+  companybranch: string,
+  department: string,
+  position: string,
+  startwork: string
+}
+
 const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
   const [show, setShow] = useState(false);
@@ -23,6 +40,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([])
   const [branchValue, setBranchValue] = useState('');
   const [genderValue, setGenderValue] = useState('');
+
   const handleBranches = (e: ChangeEvent<HTMLSelectElement>) => {
 
     e.preventDefault();
@@ -119,8 +137,6 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
 
-
-
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
 
     event.preventDefault();
@@ -142,57 +158,61 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       startwork: getStartworkValue()
     };
 
-    console.log("form data", formData);
+    if (file && Object.values(formData).every(value => value !== '')) {
 
-    if (file && formData.firstname && formData.lastname && formData.email &&
-      formData.password && formData.gender && formData.phone && formData.subdistrict &&
-      formData.district && formData.province && formData.country && formData.companybranch &&
-      formData.department && formData.position && formData.startwork
-    ) {
+      try {
 
-      console.log("chkk", formData);
-      const resUploadData = await addData();
-      const resUploadLogo = await addLogo(file);
+        const resUploadData = await addData(formData);
 
-      if (resUploadData == 200 && resUploadLogo == 200) {
+        if (resUploadData) {
+          const resUploadLogo = await addLogo(file);
 
-        clearImageCache();
-        Swal.fire({
-          title: 'Success!',
-          text: 'เพิ่มข้อมูลสำเร็จ',
-          icon: 'success',
-        });
+          if (resUploadLogo === 200) {
+            clearImageCache();
+            Swal.fire({
+              title: 'Success!',
+              text: 'เพิ่มข้อมูลสำเร็จ',
+              icon: 'success',
+            });
 
-        await hrapi.GetAllHr();
-        handleClose();
-      }
-      if (resUploadData == 400) {
+            await hrapi.GetAllHr();
+            handleClose();
+
+          }
+          else {
+            Swal.fire({
+              title: 'Upload Error!',
+              text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+              icon: 'error',
+            });
+          }
+        }
+        if (resUploadData === undefined) {
+          Swal.fire({
+            title: 'Error!',
+            text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
+            icon: 'error',
+          });
+        }
+      } catch (error) {
 
         Swal.fire({
           title: 'Error!',
-          text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
+          text: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล',
           icon: 'error',
         });
-        return;
+
       }
-      if (resUploadLogo == 500) {
-        Swal.fire({
-          title: 'Upload Error!',
-          text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
-          icon: 'error',
-        });
-        return;
-      }
-    }
-    else {
+    } else {
+
       Swal.fire({
         title: 'Upload Error!',
         text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
         icon: 'error',
       });
-      return;
+
     }
-  }
+  };
 
   const addLogo = async (file: File): Promise<number | undefined> => {
 
@@ -208,24 +228,10 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     }
   };
 
-  const addData = async (): Promise<number | undefined> => {
+  const addData = async (formData: FormData): Promise<number | undefined> => {
 
-    const firstnameValue = getFirstnameValue();
-    const lastnameValue = getLastnameValue();
-    const emailValue = getEmailValue();
-    const passwordValue = getPasswordValue();
-    const genderValue = getGenderValue();
-    const phoneValue = getPhoneValue();
-    const subdistrictValue = getSubdistrictValue();
-    const districtValue = getDistrictValue();
-    const provinceValue = getProvinceValue();
-    const countryValue = getCountryValue();
-    const companyBranchValue = getCompanyBranchValue();
-    const departmentValue = getCompanyBranchValue();
-    const positionValue = getPositionValue();
-    const startworkValue = getStartworkValue();
 
-    const hasAySymbolEmail = emailValue.includes('@');
+    const hasAySymbolEmail = formData.email.includes('@');
     const phoneRegex = /^\d+$/;
 
     if (!hasAySymbolEmail) {
@@ -238,7 +244,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       return;
     }
 
-    if (!phoneRegex.test(phoneValue)) {
+    if (!phoneRegex.test(formData.phone)) {
       Swal.fire({
         title: 'Add Data Error!',
         text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
@@ -247,50 +253,26 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       return;
     }
 
-    if (
-      firstnameValue &&
-      lastnameValue &&
-      emailValue &&
-      passwordValue &&
-      genderValue &&
-      phoneValue &&
-      subdistrictValue &&
-      districtValue &&
-      provinceValue &&
-      countryValue &&
-      companyBranchValue &&
-      departmentValue &&
-      positionValue &&
-      startworkValue) {
-
-      const res = await hrapi.AddDataHr(
-        firstnameValue,
-        lastnameValue,
-        emailValue,
-        passwordValue,
-        genderValue,
-        phoneValue,
-        subdistrictValue,
-        districtValue,
-        provinceValue,
-        countryValue,
-        companyBranchValue,
-        departmentValue,
-        positionValue,
-        startworkValue);
+    const res = await hrapi.AddDataHr(
+      formData.firstname,
+      formData.lastname,
+      formData.email,
+      formData.password,
+      formData.gender,
+      formData.phone,
+      formData.subdistrict,
+      formData.district,
+      formData.province,
+      formData.country,
+      formData.companybranch,
+      formData.department,
+      formData.position,
+      formData.startwork
+    );
+    console.log('check res hr id', res);
+    return res;
 
 
-      console.log('chkkkkkk', res);
-      return res;
-
-    } else {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'กรอกข้อมูลให้ครบ',
-        icon: 'error',
-      });
-      return;
-    }
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -422,7 +404,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <Button variant="secondary" onClick={handleClose}>
               ยกเลิก
             </Button>
-            <Button variant="primary">
+            <Button variant="primary" type='submit'>
               ตกลง
             </Button>
           </form>
