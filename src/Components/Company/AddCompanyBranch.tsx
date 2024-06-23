@@ -47,10 +47,6 @@ function AddCompanyBranch() {
     return countryElement ? countryElement.value : '';
   };
 
-
-
-
-
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
 
     const formData = {

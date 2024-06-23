@@ -21,18 +21,27 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   // const [isFetch, setIsFetch] = useState(false);
   const companyapi = new CompanyApi();
   const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([])
-  // const [branchValue , setBranchValue] = useState('');
-
+  const [branchValue, setBranchValue] = useState('');
+  const [genderValue, setGenderValue] = useState('');
   const handleBranches = (e: ChangeEvent<HTMLSelectElement>) => {
 
     e.preventDefault();
     const selectedBranchIndex = e.target.value;
-    console.log('indexxxx', selectedBranchIndex);
+    if (selectedBranchIndex) {
+      setBranchValue(selectedBranchIndex);
+      console.log('indexxxx', branchValue);
+    }
+
   }
   const handleGender = (e: ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
     const selectedGender = e.target.value;
-    console.log('genderrrrr' , selectedGender);
+
+    if (selectedGender) {
+      setGenderValue(selectedGender);
+      console.log('genderrrrr', genderValue);
+    }
+
   }
 
   const [imageData] = useState({
@@ -110,29 +119,30 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
 
-  const formData = {
-    firstname: getFirstnameValue(),
-    lastname: getLastnameValue(),
-    email: getEmailValue(),
-    password: getPasswordValue(),
-    gender: getGenderValue(),
-    phone: getPhoneValue(),
-    subdistrict: getSubdistrictValue(),
-    district: getDistrictValue(),
-    province: getProvinceValue(),
-    country: getCountryValue(),
-    companybranch: getCompanyBranchValue(),
-    department: getDepartmentValue(),
-    position: getPositionValue(),
-    startwork: getStartworkValue()
-  };
+
 
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
 
-
     event.preventDefault();
 
-    console.log("form data" , formData);
+    const formData = {
+      firstname: getFirstnameValue(),
+      lastname: getLastnameValue(),
+      email: getEmailValue(),
+      password: getPasswordValue(),
+      gender: getGenderValue(),
+      phone: getPhoneValue(),
+      subdistrict: getSubdistrictValue(),
+      district: getDistrictValue(),
+      province: getProvinceValue(),
+      country: getCountryValue(),
+      companybranch: getCompanyBranchValue(),
+      department: getDepartmentValue(),
+      position: getPositionValue(),
+      startwork: getStartworkValue()
+    };
+
+    console.log("form data", formData);
 
     if (file && formData.firstname && formData.lastname && formData.email &&
       formData.password && formData.gender && formData.phone && formData.subdistrict &&
@@ -140,10 +150,9 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       formData.department && formData.position && formData.startwork
     ) {
 
+      console.log("chkk", formData);
       const resUploadData = await addData();
       const resUploadLogo = await addLogo(file);
-
-      console.log("chkk", formData);
 
       if (resUploadData == 200 && resUploadLogo == 200) {
 
@@ -379,7 +388,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             {dataBranchesById && (
               <Form.Select onChange={handleBranches}>
                 {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
-                  <option key={index} value={index}>
+                  <option key={index} value={item.name}>
                     {item.name}
                   </option>
                 ))}
