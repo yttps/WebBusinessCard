@@ -206,6 +206,7 @@ export class CompanyApi {
         const loggedInData = localStorage.getItem("LoggedIn");
         const statusCodes: number[] = [];
       
+        //เหลือเช็คว่าซ้ำหรือไม่
         if (loggedInData) {
           const parsedData = JSON.parse(loggedInData);
           const CompanyId = parsedData.id;
@@ -245,6 +246,20 @@ export class CompanyApi {
         }
       
         return statusCodes;
+      }
+
+      async getCompanyBranchById (companyId : string) {
+
+        try {
+            
+            const endpoint = `${url}/companybranches/by-company/${companyId}`;
+            const res = await axios.get(endpoint);
+            return res.data;
+
+        } catch (error) {
+            console.error(error);
+        }
+
       }
       
 

@@ -19,3 +19,5 @@ app.use(cors({ origin: '*' }));
 
 // หรือจำกัดเฉพาะบาง origin
 app.use(cors({ origin: 'https://webbusinesscard.onrender.com' }));
+
+//เลือก text ที่เหมือนกันทั้งหน้า ctrl+shift+L

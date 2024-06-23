@@ -14,20 +14,23 @@ export default function ListHr() {
     const [dataHr, setDataHr] = useState<GetAllHR[]>([]);
     const [dataFetched, setDataFetched] = useState(false);
     const [hasError, setHasError] = useState(false);
+    const [isFetch , setIsFetch] = useState(false);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const hrapi = new HrApi();
 
     const getHr = async () => {
         try {
-            const res = await hrapi.GetAllHr(); //get user from companyid and companybranch
-            setDataHr(res);
-            console.log('get all data hr by company id', dataHr);
-            setDataFetched(true);
-            setHasError(false); // Reset error state on successful fetch
+            const res = await hrapi.GetAllHr();
+            if (res == 200) {
+                setDataHr(res);
+                console.log('get all data hr by company id', dataHr);
+                setDataFetched(true);
+                setHasError(false);
+            }
         } catch (error) {
             console.error('Error fetching general users:', error);
-            setHasError(true); // Set error state on failure
+            setHasError(true);
         }
     }
 
@@ -49,9 +52,9 @@ export default function ListHr() {
                 <div id='headerCon1'>
                     <p>รายชื่อพนักงานฝ่ายบุคคล</p>
                 </div>
-                 <AddHr/>
-                 <AddCompanyBranch />
-                 <AddDepartment />
+                <AddHr isFetch={isFetch} setIsFetch={setIsFetch}/>
+                <AddCompanyBranch />
+                <AddDepartment />
                 <hr />
                 <div id='headerCon2'>
                     <InputGroup className="mb-3">

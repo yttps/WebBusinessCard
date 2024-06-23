@@ -65,7 +65,7 @@ function AddCompanyBranch() {
           icon: 'success',
         });
   
-        handleClose();
+        // handleClose();
       }
       if (resUploadData == 400) {
   
@@ -74,7 +74,7 @@ function AddCompanyBranch() {
           text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
           icon: 'error',
         });
-        return;
+      
       }
     }
     else {
@@ -83,7 +83,7 @@ function AddCompanyBranch() {
         text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
         icon: 'error',
       });
-      return;
+      
     }
   };
   

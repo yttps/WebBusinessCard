@@ -1,16 +1,33 @@
-import { useState, ChangeEvent } from 'react'
+import { useState, ChangeEvent, useEffect } from 'react'
 import '@/Components/Company/CSS/AddHr.css'
 import { HrApi } from '@/ApiEndpoints/HrApi';
 import Swal from 'sweetalert2';
 import { Button, Modal, Form } from "react-bootstrap";
+import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
+import { GetCompanyBranchesById } from '@/Model/GetCompanyBranchesById';
 
-function AddHr() {
+interface AddHrProps {
+  isFetch: boolean;
+  setIsFetch: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const hrapi = new HrApi();
   const [file, setFile] = useState<File | null>(null);
+  // const [isFetch, setIsFetch] = useState(false);
+  const companyapi = new CompanyApi();
+  const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([])
+  // const [branchValue , setBranchValue] = useState('');
+
+  const handleBranches = (e:ChangeEvent<HTMLSelectElement>)=> {
+
+    const selectedBranchIndex = e.target.value;
+    console.log('indexxxx' , selectedBranchIndex);
+  }
 
   const [imageData] = useState({
     base64textString: '',
@@ -104,7 +121,6 @@ function AddHr() {
     startwork: getStartworkValue()
   };
 
-  console.log("form", formData);
   const uploadData = async () => {
 
 
@@ -229,22 +245,22 @@ function AddHr() {
       startworkValue) {
 
       const res = await hrapi.AddDataHr(
-        firstnameValue ,
-        lastnameValue ,
-        emailValue ,
-        passwordValue ,
-        genderValue ,
-        phoneValue ,
-        subdistrictValue ,
-        districtValue ,
-        provinceValue ,
-        countryValue ,
-        companyBranchValue ,
-        departmentValue ,
-        positionValue ,
+        firstnameValue,
+        lastnameValue,
+        emailValue,
+        passwordValue,
+        genderValue,
+        phoneValue,
+        subdistrictValue,
+        districtValue,
+        provinceValue,
+        countryValue,
+        companyBranchValue,
+        departmentValue,
+        positionValue,
         startworkValue);
 
-        
+
       console.log('chkkkkkk', res);
       return res;
 
@@ -279,6 +295,34 @@ function AddHr() {
   };
 
 
+  async function getCompanyBranchById() {
+
+    const loggedInData = localStorage.getItem("LoggedIn");
+
+    if (loggedInData) {
+
+      const parsedData = JSON.parse(loggedInData);
+      const CompanyId = parsedData.id;
+
+      if (CompanyId) {
+        setIsFetch(true);
+        const res = await companyapi.getCompanyBranchById(CompanyId);
+        setDataBranchesById(res);
+        console.log("res", res);
+        console.log("branches by id", dataBranchesById);
+      }
+    }
+  }
+
+  useEffect(() => {
+
+    if (!isFetch) {
+      getCompanyBranchById();
+    }
+
+  }, [isFetch, dataBranchesById])
+
+
   return (
     <>
       <Button variant="success" onClick={handleShow}>
@@ -303,9 +347,7 @@ function AddHr() {
             <Form.Label htmlFor="inputPassword5">รหัสผ่าน</Form.Label>
             <Form.Control type="text" id="password" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">เพศ</Form.Label>
-            <Form.Control type="text" id="gender" required />
-            <br />
+            <p>เพศ</p>
             <Form.Select aria-label="เลือกเพศ">
               <option value="male">ชาย</option>
               <option value="famale">หญิง</option>
@@ -323,8 +365,16 @@ function AddHr() {
             <Form.Label htmlFor="inputPassword5">จังหวัด</Form.Label>
             <Form.Control type="text" id="province" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">สาขาบริษัท</Form.Label>
-            <Form.Control type="text" id="companybranch" required />
+            <p>สาขาบริษัท</p>
+            {dataBranchesById && (
+              <Form.Select onChange={handleBranches}>
+                {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
+                  <option key={index} value={index}>
+                    {item.name}
+                  </option>
+                ))}
+              </Form.Select>
+            )}
             <br />
             <Form.Label htmlFor="inputPassword5">แผนก</Form.Label>
             <Form.Control type="text" id="department" required />
@@ -364,5 +414,6 @@ function AddHr() {
     </>
   );
 }
+
 
 export default AddHr
