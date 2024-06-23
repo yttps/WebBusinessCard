@@ -4,13 +4,23 @@ import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import Swal from 'sweetalert2';
 import { Button, Modal, Form } from "react-bootstrap";
 
+
+interface FormData {
+  name: string;
+  subdistrict: string;
+  district: string;
+  province: string;
+  country: string;
+}
+
+
 function AddCompanyBranch() {
 
   const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false); 
+  const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const companyapi = new CompanyApi();
-  
+
 
   const getNameValue = (): string => {
     const nameElement = document.getElementById('name') as HTMLInputElement | null;
@@ -38,45 +48,46 @@ function AddCompanyBranch() {
   };
 
 
-  const formData = {
-    name: getNameValue(),
-    subdistrict: getSubdistrictValue(),
-    district: getDistrictValue(),
-    province: getProvinceValue(),
-    country: getCountryValue(),
-  };
+
 
 
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
 
-    console.log('check form data'  , formData);
+    const formData = {
+      name: getNameValue(),
+      subdistrict: getSubdistrictValue(),
+      district: getDistrictValue(),
+      province: getProvinceValue(),
+      country: getCountryValue(),
+    };
+    console.log('check form data', formData);
 
     event.preventDefault();
-    
-    if (formData.name && formData.subdistrict && 
+
+    if (formData.name && formData.subdistrict &&
       formData.district && formData.province && formData.country
     ) {
-  
-      const resUploadData = await addData();
-  
+
+      const resUploadData = await addData(formData);
+
       if (resUploadData == 200) {
-  
+
         Swal.fire({
           title: 'Success!',
           text: 'เพิ่มข้อมูลสำเร็จ',
           icon: 'success',
         });
-  
+
         handleClose();
       }
       if (resUploadData == 400) {
-  
+
         Swal.fire({
           title: 'Error!',
           text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
           icon: 'error',
         });
-      
+
       }
     }
     else {
@@ -85,14 +96,14 @@ function AddCompanyBranch() {
         text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
         icon: 'error',
       });
-      
+
     }
   };
-  
 
-  const addData = async (): Promise<number | undefined> => {
 
-    if (formData.name && formData.subdistrict && 
+  const addData = async (formData: FormData): Promise<number | undefined> => {
+
+    if (formData.name && formData.subdistrict &&
       formData.district && formData.province && formData.country) {
 
       const res = await companyapi.AddCompanyBranch(
@@ -102,7 +113,7 @@ function AddCompanyBranch() {
         formData.province,
         formData.country);
 
-      console.log('ssss' , res);
+      console.log('ssss', res);
       return res;
 
     } else {
@@ -121,7 +132,7 @@ function AddCompanyBranch() {
       <Button variant="success" onClick={handleShow}>
         เพิ่มสาขาบริษัท
       </Button>
-  
+
       <Modal show={show} onHide={handleClose} animation={false}>
         <Modal.Header closeButton>
           <Modal.Title>เพิ่มสาขาบริษัท</Modal.Title>
@@ -149,19 +160,19 @@ function AddCompanyBranch() {
             <Form.Label htmlFor="country">ประเทศ</Form.Label>
             <Form.Control type="text" id="country" required />
             <br />
-          <Button variant="secondary" onClick={handleClose}>
-            ยกเลิก
-          </Button>
-          <Button variant="primary" type="submit">
-            ตกลง
-          </Button>
-        </form>
+            <Button variant="secondary" onClick={handleClose}>
+              ยกเลิก
+            </Button>
+            <Button variant="primary" type="submit">
+              ตกลง
+            </Button>
+          </form>
         </Modal.Body>
       </Modal>
     </>
   );
-  
-  
+
+
 }
 
 export default AddCompanyBranch
