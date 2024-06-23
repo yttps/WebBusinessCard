@@ -143,6 +143,8 @@ export class HrApi {
             startwork: startworkValue
         }
 
+        console.log('data hr in context' , dataHr);
+
         try {
 
             const res = await fetch(`${url}/users`, {
