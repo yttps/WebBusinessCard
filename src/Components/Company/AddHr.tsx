@@ -23,10 +23,16 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([])
   // const [branchValue , setBranchValue] = useState('');
 
-  const handleBranches = (e:ChangeEvent<HTMLSelectElement>)=> {
+  const handleBranches = (e: ChangeEvent<HTMLSelectElement>) => {
 
+    e.preventDefault();
     const selectedBranchIndex = e.target.value;
-    console.log('indexxxx' , selectedBranchIndex);
+    console.log('indexxxx', selectedBranchIndex);
+  }
+  const handleGender = (e: ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault();
+    const selectedGender = e.target.value;
+    console.log('genderrrrr' , selectedGender);
   }
 
   const [imageData] = useState({
@@ -121,8 +127,12 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     startwork: getStartworkValue()
   };
 
-  const uploadData = async () => {
+  const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
 
+
+    event.preventDefault();
+
+    console.log("form data" , formData);
 
     if (file && formData.firstname && formData.lastname && formData.email &&
       formData.password && formData.gender && formData.phone && formData.subdistrict &&
@@ -348,7 +358,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <Form.Control type="text" id="password" required />
             <br />
             <p>เพศ</p>
-            <Form.Select aria-label="เลือกเพศ">
+            <Form.Select aria-label="เลือกเพศ" onChange={handleGender}>
               <option value="male">ชาย</option>
               <option value="famale">หญิง</option>
             </Form.Select>
@@ -385,31 +395,29 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <Form.Label htmlFor="inputPassword5">วันที่เริ่มงาน</Form.Label>
             <Form.Control type="datetime-local" id="startwork" required />
             <br />
+            <div className="container mt-1">
+              <h4>รูปประจำตัวพนักงาน</h4>
+              <label>
+                <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
+              </label>
+              {imageData.showImage && (
+                <div>
+                  <img
+                    src={imageData.base64textString}
+                    alt={imageData.imageName}
+                    style={{ maxWidth: '100%' }} />
+                </div>
+              )}
+              <br />
+            </div>
+            <Button variant="secondary" onClick={handleClose}>
+              ยกเลิก
+            </Button>
+            <Button variant="primary">
+              ตกลง
+            </Button>
           </form>
-          <div className="container mt-1">
-            <h4>รูปประจำตัวพนักงาน</h4>
-            <label>
-              <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
-            </label>
-            {imageData.showImage && (
-              <div>
-                <img
-                  src={imageData.base64textString}
-                  alt={imageData.imageName}
-                  style={{ maxWidth: '100%' }} />
-              </div>
-            )}
-            <br />
-          </div>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            ยกเลิก
-          </Button>
-          <Button variant="primary" onClick={uploadData}>
-            ตกลง
-          </Button>
-        </Modal.Footer>
       </Modal>
     </>
   );

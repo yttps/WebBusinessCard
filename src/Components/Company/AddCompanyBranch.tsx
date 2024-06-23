@@ -13,28 +13,28 @@ function AddCompanyBranch() {
   
 
   const getNameValue = (): string => {
-    const emailElement = document.getElementById('name') as HTMLInputElement | null;
-    return emailElement ? emailElement.value : '';
+    const provinceElement = document.getElementById('name') as HTMLInputElement | null;
+    return provinceElement ? provinceElement.value : '';
   };
 
   const getSubdistrictValue = (): string => {
-    const passwordElement = document.getElementById('subdistrict') as HTMLInputElement | null;
-    return passwordElement ? passwordElement.value : '';
+    const subdistrictElement = document.getElementById('subdistrict') as HTMLInputElement | null;
+    return subdistrictElement ? subdistrictElement.value : '';
   };
 
   const getDistrictValue = (): string => {
-    const businessTypeElement = document.getElementById('district') as HTMLInputElement | null;
-    return businessTypeElement ? businessTypeElement.value : '';
+    const districtElement = document.getElementById('district') as HTMLInputElement | null;
+    return districtElement ? districtElement.value : '';
   };
 
   const getProvinceValue = (): string => {
-    const nameElement = document.getElementById('province') as HTMLInputElement | null;
-    return nameElement ? nameElement.value : '';
+    const provinceElement = document.getElementById('province') as HTMLInputElement | null;
+    return provinceElement ? provinceElement.value : '';
   };
 
   const getCountryValue = (): string => {
-    const phoneNumberElement = document.getElementById('country') as HTMLInputElement | null;
-    return phoneNumberElement ? phoneNumberElement.value : '';
+    const countryElement = document.getElementById('country') as HTMLInputElement | null;
+    return countryElement ? countryElement.value : '';
   };
 
 
@@ -47,10 +47,12 @@ function AddCompanyBranch() {
   };
 
 
-  const uploadData = async () => {
+  const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
 
     console.log('check form data'  , formData);
 
+    event.preventDefault();
+    
     if (formData.name && formData.subdistrict && 
       formData.district && formData.province && formData.country
     ) {
@@ -65,7 +67,7 @@ function AddCompanyBranch() {
           icon: 'success',
         });
   
-        // handleClose();
+        handleClose();
       }
       if (resUploadData == 400) {
   
@@ -100,6 +102,7 @@ function AddCompanyBranch() {
         formData.province,
         formData.country);
 
+      console.log('ssss' , res);
       return res;
 
     } else {

@@ -12,6 +12,8 @@ import DetailCompany from '@/Components/Admin/DetailCompany';
 import CreateCard from './Components/Employees/CreateCard';
 import CreateTemplate from './Components/Employees/CreateTemplate';
 import AddDepartment from './Components/Company/AddDepartment';
+import AddCompanyBranch from './Components/Company/AddCompanyBranch';
+
 function App() {
 
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path="/CreateTemplate" element={<CreateTemplate />} />
         <Route path="/CreateCard/:id" element={<CreateCard />} />
         <Route path="/AddDepartment" element={<AddDepartment />} />
+        <Route path="/AddCompanyBranch" element={<AddCompanyBranch />} />
+
       </Routes>
     </>
   )

@@ -180,10 +180,6 @@ export class CompanyApi {
                         body: JSON.stringify(dataBranch)
                     });
 
-                    // const res = await axios.post(endpoint, {
-                    //     headers: axiosHeaders,
-                    // });
-
                     console.log('in context', res.status);
 
                     return res.status;
