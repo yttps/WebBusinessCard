@@ -9,7 +9,7 @@ export class HrApi {
 
     private urlLogo: string = '';
 
-    async GetAllHr() {
+    async GetAllHrByCompanyId() {
 
         const loggedInData = localStorage.getItem("LoggedIn");
 
@@ -17,7 +17,7 @@ export class HrApi {
 
             const parsedData = JSON.parse(loggedInData);
             const CompanyId = parsedData.id;
-            const endpoint = `https://business-api-638w.onrender.com/users/by-companyandposition/${CompanyId}/HR`;
+            const endpoint = `https://business-api-638w.onrender.com/users/by-company/${CompanyId}`;
 
             if (CompanyId) {
 
@@ -51,12 +51,13 @@ export class HrApi {
 
         try {
 
-            const res = await axios.get(`${url}/companies/${id}`, {
+            const res = await axios.get(`${url}/user/${id}`, {
                 headers: axiosHeaders,
             });
 
-            const companyDataById = res.data;
-            return companyDataById;
+            const HrDataById = res.data;
+            console.log("hr by id" , res.data);
+            return HrDataById;
 
         } catch (error) {
             console.error(error);
@@ -64,24 +65,20 @@ export class HrApi {
         }
     }
 
-    async UploadLogo(Logo: File) {
 
-        const companyIdString = localStorage.getItem('LoggedIn');
+    async UploadProfile(Image:File , uid : string ,folderName : string , collection : string) {
 
-        if (companyIdString !== null) {
-
-            const companyId = JSON.parse(companyIdString);
-            const folderName = 'logo';
+    
             const formData = new FormData();
 
-            formData.append('file', Logo);
+            formData.append('file', Image); 
             formData.append('folder', folderName);
-            formData.append('uid', companyId.id);
+            formData.append('collection', collection)
+            formData.append('uid', uid);
 
             try {
 
-
-                const res = await fetch(`${url}/upload`, {
+                const res = await fetch(`${url}/upload-image`, {
                     method: 'POST',
                     body: formData
                 });
@@ -103,11 +100,6 @@ export class HrApi {
                 console.error(error);
                 throw error;
             }
-
-
-        } else {
-            console.log('Company ID is not available');
-        }
     }
 
     async AddDataHr(
@@ -124,7 +116,9 @@ export class HrApi {
         companyBranchValue: string,
         departmentValue: string,
         positionValue: string,
-        startworkValue: string) {
+        startworkValue: string,
+        birthdateValue:string
+        ) {
 
 
 
@@ -142,24 +136,23 @@ export class HrApi {
             district: districtValue,
             province: provinceValue,
             country: countryValue,
-            companyBranch: companyBranchValue,
+            companybranch: companyBranchValue,
             department: departmentValue,
             position: positionValue,
-            startwork: startworkValue
-        }
-
-        console.log('data hr in context' , dataHr);
+            startwork: startworkValue,
+            birthdate: birthdateValue        }
 
             // const res = await fetch(`${url}/users`, {
             //     method: 'POST',
             //     headers: { 'Content-Type': 'application/json' },
             //     body: JSON.stringify(dataHr)
             // });
+
             const endpoint = `${url}/users`;
             const res = await axios.post(endpoint , dataHr);
 
-            console.log('in context', res.data.id);
-            return res.data.id;
+            console.log('res in context', res.data.userId);
+            return res.data.userId;
 
         } catch (error) {
             console.error(error);

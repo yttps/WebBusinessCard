@@ -16,7 +16,6 @@ export default function DetailHr() {
     const { id: HrId } = useParams();
     const hrapi = new HrApi();
     const [hrById, setHrById] = useState<GetDataHrById | null>(null);
-    // const [LogoCompany, setLogoCompany] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const nav = useNavigate();
 
@@ -30,10 +29,7 @@ export default function DetailHr() {
                 console.log('get by id', resGetdataDetail);
 
                 setHrById(resGetdataDetail);
-                // setLogoCompany(companyapi.setUrlLogo);
                 setIsLoading(true);
-                console.log("Fetched response:", resGetdataDetail);
-
             }
         } catch (error) {
             console.error('Error fetching company data:', error);
@@ -90,13 +86,17 @@ export default function DetailHr() {
         <div>
             <Header />
             <h1>Company Details</h1>
-            <p>Name: {hrById.name}</p>
+            <p>Name: {hrById.firstname}</p>
             <p>Email: {hrById.email}</p>
-            <p>Business Type: {hrById.businessType}</p>
-            <p>Website: {hrById.website}</p>
-            <p>Year Founded: {hrById.yearFounded}</p>
+            <p>Company branch: {hrById.companybranch.name}</p>
+            <p>Email: {hrById.email}</p>
+            <p>Department: {hrById.department.name}</p>
             <p>Address : {hrById.address}</p>
             <p>Password : {hrById.password}</p>
+            <p>Detail Company : {hrById.companybranch.company.name}</p>
+            <div>
+                <img src={hrById.Hr} alt="" />
+            </div>
             <div id="col2-2">
                 <Button id='delete-btn' variant="danger" onClick={DeleteHrData}>ลบข้อมูล</Button>
             </div>

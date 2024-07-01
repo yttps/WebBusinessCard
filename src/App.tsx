@@ -13,6 +13,7 @@ import CreateCard from './Components/Employees/CreateCard';
 import CreateTemplate from './Components/Employees/CreateTemplate';
 import AddDepartment from './Components/Company/AddDepartment';
 import AddCompanyBranch from './Components/Company/AddCompanyBranch';
+import DetailHr from './Components/Company/DetailHr';
 
 function App() {
 
@@ -30,7 +31,7 @@ function App() {
         <Route path="/CreateCard/:id" element={<CreateCard />} />
         <Route path="/AddDepartment" element={<AddDepartment />} />
         <Route path="/AddCompanyBranch" element={<AddCompanyBranch />} />
-
+        <Route path="/ListHr/:id" element={<DetailHr />} />
       </Routes>
     </>
   )

@@ -44,15 +44,13 @@ export class CompanyApi {
         }
     }
 
-    async UploadLogo(Logo: File, companyid: string) {
+    async UploadLogo(Logo: File, companyid: string, folderName:string, collection:string) {
 
-        const folderName = 'logo';
         const formData = new FormData();
-        console.log('id', companyid);
 
-        formData.append('file', Logo);
+        formData.append('file', Logo); 
         formData.append('folder', folderName);
-        formData.append('collection', 'companies')
+        formData.append('collection', collection)
         formData.append('uid', companyid);
 
         console.log('formdata', formData);
@@ -81,10 +79,6 @@ export class CompanyApi {
             console.error(error);
             throw error;
         }
-
-
-
-
 
     }
 
@@ -250,6 +244,22 @@ export class CompanyApi {
             
             const endpoint = `${url}/companybranches/by-company/${companyId}`;
             const res = await axios.get(endpoint);
+            console.log("getCompanyBranchById" , res.data);
+            return res.data;
+
+        } catch (error) {
+            console.error(error);
+        }
+
+      }
+      
+      async getDepartmentByCompanyId (companyId : string) {
+
+        try {
+            
+            const endpoint = `${url}/departments/by-company/${companyId}`;
+            const res = await axios.get(endpoint);
+            console.log("getDepartmentByCompanyId" , res.data);
             return res.data;
 
         } catch (error) {

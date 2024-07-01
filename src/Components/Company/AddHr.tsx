@@ -1,10 +1,11 @@
-import { useState, ChangeEvent, useEffect } from 'react'
-import '@/Components/Company/CSS/AddHr.css'
+import { useState, ChangeEvent, useEffect } from 'react';
+import '@/Components/Company/CSS/AddHr.css';
 import { HrApi } from '@/ApiEndpoints/HrApi';
 import Swal from 'sweetalert2';
 import { Button, Modal, Form } from "react-bootstrap";
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { GetCompanyBranchesById } from '@/Model/GetCompanyBranchesById';
+import { GetDepartmentByComId } from '@/Model/GetDepartmentByComId';
 
 interface AddHrProps {
   isFetch: boolean;
@@ -25,42 +26,34 @@ interface FormData {
   companybranch: string,
   department: string,
   position: string,
-  startwork: string
+  startwork: string,
+  birthdate: string
 }
 
 const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
-
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const hrapi = new HrApi();
   const [file, setFile] = useState<File | null>(null);
-  // const [isFetch, setIsFetch] = useState(false);
   const companyapi = new CompanyApi();
-  const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([])
-  const [branchValue, setBranchValue] = useState('');
+  const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
+  const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
   const [genderValue, setGenderValue] = useState('');
+  const [departmentValue, setDepartmentValue] = useState('');
+  const [branchValue, setBranchValue] = useState('');
+  
+  const handleDepartment = (e: ChangeEvent<HTMLSelectElement>) => {
+    setDepartmentValue(e.target.value);
+  };
 
   const handleBranches = (e: ChangeEvent<HTMLSelectElement>) => {
+    setBranchValue(e.target.value);
+  };
 
-    e.preventDefault();
-    const selectedBranchIndex = e.target.value;
-    if (selectedBranchIndex) {
-      setBranchValue(selectedBranchIndex);
-      console.log('indexxxx', branchValue);
-    }
-
-  }
   const handleGender = (e: ChangeEvent<HTMLSelectElement>) => {
-    e.preventDefault();
-    const selectedGender = e.target.value;
-
-    if (selectedGender) {
-      setGenderValue(selectedGender);
-      console.log('genderrrrr', genderValue);
-    }
-
-  }
+    setGenderValue(e.target.value);
+  };
 
   const [imageData] = useState({
     base64textString: '',
@@ -68,104 +61,44 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     showImage: false,
   });
 
-  const getFirstnameValue = (): string => {
-    const nameElement = document.getElementById('firstname') as HTMLInputElement | null;
-    return nameElement ? nameElement.value : '';
+  const getInputValue = (id: string): string => {
+    const inputElement = document.getElementById(id) as HTMLInputElement | null;
+    return inputElement ? inputElement.value : '';
   };
-
-  const getLastnameValue = (): string => {
-    const lastnameElement = document.getElementById('lastname') as HTMLInputElement | null;
-    return lastnameElement ? lastnameElement.value : '';
-  };
-
-  const getEmailValue = (): string => {
-    const emailTypeElement = document.getElementById('email') as HTMLInputElement | null;
-    return emailTypeElement ? emailTypeElement.value : '';
-  };
-
-  const getPasswordValue = (): string => {
-    const passwordElement = document.getElementById('password') as HTMLInputElement | null;
-    return passwordElement ? passwordElement.value : '';
-  };
-
-  const getGenderValue = (): string => {
-    const genderElement = document.getElementById('gender') as HTMLInputElement | null;
-    return genderElement ? genderElement.value : '';
-  };
-
-  const getPhoneValue = (): string => {
-    const phoneElement = document.getElementById('phone') as HTMLInputElement | null;
-    return phoneElement ? phoneElement.value : '';
-  };
-
-  const getSubdistrictValue = (): string => {
-    const subdistrictElement = document.getElementById('subdistrict') as HTMLInputElement | null;
-    return subdistrictElement ? subdistrictElement.value : '';
-  }
-
-  const getDistrictValue = (): string => {
-    const districtElement = document.getElementById('district') as HTMLInputElement | null;
-    return districtElement ? districtElement.value : '';
-  };
-
-  const getProvinceValue = (): string => {
-    const provinceElement = document.getElementById('province') as HTMLInputElement | null;
-    return provinceElement ? provinceElement.value : '';
-  };
-
-  const getCountryValue = (): string => {
-    const countryElement = document.getElementById('country') as HTMLInputElement | null;
-    return countryElement ? countryElement.value : '';
-  };
-
-  const getCompanyBranchValue = (): string => {
-    const companyBranchElement = document.getElementById('companybranch') as HTMLInputElement | null;
-    return companyBranchElement ? companyBranchElement.value : '';
-  };
-  const getDepartmentValue = (): string => {
-    const departmentElement = document.getElementById('department') as HTMLInputElement | null;
-    return departmentElement ? departmentElement.value : '';
-  };
-  const getPositionValue = (): string => {
-    const positionElement = document.getElementById('position') as HTMLInputElement | null;
-    return positionElement ? positionElement.value : '';
-  };
-
-  const getStartworkValue = (): string => {
-    const startworkElement = document.getElementById('startwork') as HTMLInputElement | null;
-    return startworkElement ? startworkElement.value : '';
-  };
-
 
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
-
     event.preventDefault();
 
-    const formData = {
-      firstname: getFirstnameValue(),
-      lastname: getLastnameValue(),
-      email: getEmailValue(),
-      password: getPasswordValue(),
-      gender: getGenderValue(),
-      phone: getPhoneValue(),
-      subdistrict: getSubdistrictValue(),
-      district: getDistrictValue(),
-      province: getProvinceValue(),
-      country: getCountryValue(),
-      companybranch: getCompanyBranchValue(),
-      department: getDepartmentValue(),
-      position: getPositionValue(),
-      startwork: getStartworkValue()
+    const formData: FormData = {
+      firstname: getInputValue('firstname'),
+      lastname: getInputValue('lastname'),
+      email: getInputValue('email'),
+      password: getInputValue('password'),
+      gender: genderValue,
+      phone: getInputValue('phone'),
+      subdistrict: getInputValue('subdistrict'),
+      district: getInputValue('district'),
+      province: getInputValue('province'),
+      country: getInputValue('country'),
+      companybranch: branchValue,
+      department: departmentValue,
+      position: getInputValue('position'),
+      startwork: getInputValue('startwork'),
+      birthdate: getInputValue('birthdate')
     };
 
+    console.log('form data', formData);
+
     if (file && Object.values(formData).every(value => value !== '')) {
-
       try {
-
         const resUploadData = await addData(formData);
 
         if (resUploadData) {
-          const resUploadLogo = await addLogo(file);
+          console.log('hr add id', resUploadData);
+
+          const folderName = 'Hr';
+          const collection = 'users';
+          const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
 
           if (resUploadLogo === 200) {
             clearImageCache();
@@ -174,12 +107,9 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
               text: 'เพิ่มข้อมูลสำเร็จ',
               icon: 'success',
             });
-
-            await hrapi.GetAllHr();
+            // await hrapi.GetAllHr();
             handleClose();
-
-          }
-          else {
+          } else {
             Swal.fire({
               title: 'Upload Error!',
               text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
@@ -195,47 +125,36 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
           });
         }
       } catch (error) {
-
         Swal.fire({
           title: 'Error!',
           text: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล',
           icon: 'error',
         });
-
       }
     } else {
-
       Swal.fire({
         title: 'Upload Error!',
         text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
         icon: 'error',
       });
-
     }
   };
 
-  const addLogo = async (file: File): Promise<number | undefined> => {
-
+  const addProfile = async (file: File, uid: string, folderName: string, collection: string): Promise<number | undefined> => {
     try {
-
-      const res = await hrapi.UploadLogo(file);
+      const res = await hrapi.UploadProfile(file, uid, folderName, collection);
       return res;
-
     } catch (error) {
-
       console.log('Error in addLogo method: ', error);
       return 500;
     }
   };
 
-  const addData = async (formData: FormData): Promise<number | undefined> => {
-
-
-    const hasAySymbolEmail = formData.email.includes('@');
+  const addData = async (formData: FormData): Promise<string | undefined> => {
+    const hasAtSymbolEmail = formData.email.includes('@');
     const phoneRegex = /^\d+$/;
 
-    if (!hasAySymbolEmail) {
-
+    if (!hasAtSymbolEmail) {
       Swal.fire({
         title: 'Add Data Error!',
         text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
@@ -267,12 +186,12 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       formData.companybranch,
       formData.department,
       formData.position,
-      formData.startwork
-    );
-    console.log('check res hr id', res);
+      formData.startwork,
+      formData.birthdate);
+
+    console.log("department", departmentValue);
+
     return res;
-
-
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -295,39 +214,36 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     }
   };
 
+  async function getCompanyBranchById(CompanyId: string) {
+    const res = await companyapi.getCompanyBranchById(CompanyId);
+    setDataBranchesById(res);
+    setIsFetch(true);
+  }
 
-  async function getCompanyBranchById() {
-
-    const loggedInData = localStorage.getItem("LoggedIn");
-
-    if (loggedInData) {
-
-      const parsedData = JSON.parse(loggedInData);
-      const CompanyId = parsedData.id;
-
-      if (CompanyId) {
-        setIsFetch(true);
-        const res = await companyapi.getCompanyBranchById(CompanyId);
-        setDataBranchesById(res);
-        console.log("res", res);
-        console.log("branches by id", dataBranchesById);
-      }
-    }
+  async function GetDepartmentByCompanyId(CompanyId: string) {
+    const res = await companyapi.getDepartmentByCompanyId(CompanyId);
+    setDataDepartmentById(res);
+    setIsFetch(true);
   }
 
   useEffect(() => {
-
     if (!isFetch) {
-      getCompanyBranchById();
+      const loggedInData = localStorage.getItem("LoggedIn");
+      if (loggedInData) {
+        const parsedData = JSON.parse(loggedInData);
+        const CompanyId = parsedData.id;
+        if (CompanyId) {
+          getCompanyBranchById(CompanyId);
+          GetDepartmentByCompanyId(CompanyId);
+        }
+      }
     }
-
-  }, [isFetch, dataBranchesById])
-
+  }, [isFetch]);
 
   return (
     <>
       <Button variant="success" onClick={handleShow}>
-        เพิ่มพนักงานฝ่ายบุคลล
+        เพิ่มพนักงานฝ่ายบุคคล
       </Button>
 
       <Modal show={show} onHide={handleClose} animation={false}>
@@ -336,54 +252,68 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         </Modal.Header>
         <Modal.Body>
           <form onSubmit={uploadData}>
-            <Form.Label htmlFor="inputPassword5">ชื่อ</Form.Label>
+            <Form.Label htmlFor="firstname">ชื่อ</Form.Label>
             <Form.Control type="text" id="firstname" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">นามสกุล</Form.Label>
+            <Form.Label htmlFor="lastname">นามสกุล</Form.Label>
             <Form.Control type="text" id="lastname" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">อีเมล</Form.Label>
+            <Form.Label htmlFor="email">อีเมล</Form.Label>
             <Form.Control type="text" id="email" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">รหัสผ่าน</Form.Label>
+            <Form.Label htmlFor="password">รหัสผ่าน</Form.Label>
             <Form.Control type="text" id="password" required />
             <br />
             <p>เพศ</p>
-            <Form.Select aria-label="เลือกเพศ" onChange={handleGender}>
+            <Form.Select aria-label="เลือกเพศ" onChange={handleGender} value={genderValue}>
               <option value="male">ชาย</option>
-              <option value="famale">หญิง</option>
+              <option value="female">หญิง</option>
             </Form.Select>
             <br />
-            <Form.Label htmlFor="inputPassword5">เบอร์โทร</Form.Label>
+            <Form.Label htmlFor="birthdate">วันเกิด</Form.Label>
+            <Form.Control type="datetime-local" id="birthdate" required />
+            <br />
+            <Form.Label htmlFor="phone">เบอร์โทร</Form.Label>
             <Form.Control type="text" id="phone" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">ตำบล</Form.Label>
+            <Form.Label htmlFor="subdistrict">ตำบล</Form.Label>
             <Form.Control type="text" id="subdistrict" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">อำเภอ</Form.Label>
+            <Form.Label htmlFor="district">อำเภอ</Form.Label>
             <Form.Control type="text" id="district" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">จังหวัด</Form.Label>
+            <Form.Label htmlFor="province">จังหวัด</Form.Label>
             <Form.Control type="text" id="province" required />
+            <br />
+            <Form.Label htmlFor="country">ประเทศ</Form.Label>
+            <Form.Control type="text" id="country" required />
             <br />
             <p>สาขาบริษัท</p>
             {dataBranchesById && (
               <Form.Select onChange={handleBranches}>
                 {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
-                  <option key={index} value={item.name}>
+                  <option key={index} value={item.id}>
                     {item.name}
                   </option>
                 ))}
               </Form.Select>
             )}
             <br />
-            <Form.Label htmlFor="inputPassword5">แผนก</Form.Label>
-            <Form.Control type="text" id="department" required />
+            <p>แผนกบริษัท</p>
+            {dataDepartmentById && (
+              <Form.Select onChange={handleDepartment}>
+                {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
+                  <option key={index} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </Form.Select>
+            )}
             <br />
-            <Form.Label htmlFor="inputPassword5">ตำแหน่ง</Form.Label>
+            <Form.Label htmlFor="position">ตำแหน่ง</Form.Label>
             <Form.Control type="text" id="position" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">วันที่เริ่มงาน</Form.Label>
+            <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
             <Form.Control type="datetime-local" id="startwork" required />
             <br />
             <div className="container mt-1">
@@ -414,5 +344,4 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   );
 }
 
-
-export default AddHr
+export default AddHr;

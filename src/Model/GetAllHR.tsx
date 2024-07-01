@@ -1,21 +1,19 @@
-export interface GetAllHR {
+export interface GetAllHrByCompanyId {
 
-    firstname: string;
-    birthdate: string;
-    address: string;
-    gender: string;
-    lastname: string;
-    password: string;
-    phone: string;
-    startwork: string | null;
-    positionTemplate: string;
-    position: string;
-    department: string | null;
-    email: string;
-    profile: string;
-    business_cards: string;
+    firstname:     string;
+    password:      string;
+    birthdate:     string;
+    address:       string;
+    gender:        string;
+    phone:         string;
+    startwork:     string;
     companybranch: string;
-    id: string;
-    age: number;
+    position:      string;
+    department:    string;
+    email:         string;
+    lastname:      string;
+    Hr:            string;
+    id:            string;
+    age:           number;
     
 }

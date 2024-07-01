@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Header from '@/Components/Header/Header';
 import { Button, Form, InputGroup, Table } from 'react-bootstrap';
 import { HrApi } from '@/ApiEndpoints/HrApi';
-import { GetAllHR } from '@/Model/GetAllHR';
+import { GetAllHrByCompanyId } from '@/Model/GetAllHR';
 import { NavLink } from 'react-router-dom';
 import AddHr from './AddHr';
 import AddCompanyBranch from './AddCompanyBranch';
@@ -11,7 +11,7 @@ import AddDepartment from './AddDepartment';
 export default function ListHr() {
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [dataHr, setDataHr] = useState<GetAllHR[]>([]);
+    const [dataHr, setDataHr] = useState<GetAllHrByCompanyId[]>([]);
     const [dataFetched, setDataFetched] = useState(false);
     const [hasError, setHasError] = useState(false);
     const [isFetch , setIsFetch] = useState(false);
@@ -21,8 +21,9 @@ export default function ListHr() {
 
     const getHr = async () => {
         try {
-            const res = await hrapi.GetAllHr();
-            if (res == 200) {
+            const res = await hrapi.GetAllHrByCompanyId();
+
+            if (res) {
                 setDataHr(res);
                 console.log('get all data hr by company id', dataHr);
                 setDataFetched(true);
@@ -84,7 +85,7 @@ export default function ListHr() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredData.map((item: GetAllHR, index: number) => (
+                                    {filteredData.map((item: GetAllHrByCompanyId, index: number) => (
                                         <tr key={index}>
                                             <td id={`idCompany${index}`}></td>
                                             <td id={`nameCompany${index}`}>{item.firstname}</td>
@@ -93,7 +94,7 @@ export default function ListHr() {
                                             <td id={`websiteCompany${index}`}>{item.email}</td>
                                             <td id={`btnEdit`}>
                                                 {typeof window !== 'undefined' && (
-                                                    <NavLink to={`/ListCompany/${item.id}`}>
+                                                    <NavLink to={`/ListHr/${item.id}`}>
                                                         <Button variant="warning">
                                                             แสดงข้อมูล
                                                         </Button>

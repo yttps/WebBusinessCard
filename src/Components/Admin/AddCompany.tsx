@@ -124,7 +124,9 @@ function AddCompany() {
 
       if (rescompanyId) {
 
-        const resUploadLogo = await addLogo(file, rescompanyId);
+        const folderName = 'logo';
+        const collection = 'companies';
+        const resUploadLogo = await addLogo(file, rescompanyId, folderName , collection);
 
         if (resUploadLogo == 200) {
 
@@ -169,11 +171,11 @@ function AddCompany() {
     }
   }
 
-  const addLogo = async (file: File, companyId: string): Promise<number | undefined> => {
+  const addLogo = async (file: File, companyId: string , folderName:string, collection:string): Promise<number | undefined> => {
 
     try {
 
-      const res = await companyapi.UploadLogo(file, companyId);
+      const res = await companyapi.UploadLogo(file, companyId,folderName,collection);
       return res;
 
     } catch (error) {
