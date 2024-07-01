@@ -94,9 +94,8 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         const resUploadData = await addData(formData);
 
         if (resUploadData) {
-          console.log('hr add id', resUploadData);
 
-          const folderName = 'Hr';
+          const folderName = '';
           const collection = 'users';
           const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
 
@@ -310,6 +309,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
               </Form.Select>
             )}
             <br />
+            <p><b>กรณีเป็นฝ่ายบุคคลให้พิมพ์ * HR *</b></p>
             <Form.Label htmlFor="position">ตำแหน่ง</Form.Label>
             <Form.Control type="text" id="position" required />
             <br />
