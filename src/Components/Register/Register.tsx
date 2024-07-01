@@ -173,7 +173,9 @@ export default function Register() {
 
     try {
 
-      const res = await companyapi.UploadLogo(file, companyId);
+      const folderName = 'logo';
+      const collection = 'companies';
+      const res = await companyapi.UploadLogo(file, companyId, folderName,collection);
       return res;
 
     } catch (error) {

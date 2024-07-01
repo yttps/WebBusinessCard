@@ -44,7 +44,7 @@ export class CompanyApi {
         }
     }
 
-    async UploadLogo(Logo: File, companyid: string, folderName:string, collection:string) {
+    async UploadLogo(Logo: File, companyid: string, folderName:string, collection:string): Promise<number | undefined> {
 
         const formData = new FormData();
 
