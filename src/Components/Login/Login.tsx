@@ -2,9 +2,10 @@ import '@/Components/Login/Login.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Navbar, Form, Button, } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
 import { LoginApi } from '@/ApiEndpoints/LoginApi';
+import { GetDetailHRLogin } from '@/Model/GetDetailHRLogin';
 
 export default function Login() {
 
@@ -13,6 +14,7 @@ export default function Login() {
 
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
+    const [detailHrLogin, setDetailHrLogin] = useState<GetDetailHRLogin[]>([]);
 
 
     async function loginUserData(e: React.MouseEvent<HTMLFormElement>) {
@@ -26,6 +28,7 @@ export default function Login() {
 
 
             const res = await loginapi.LoginUserData(email, password);
+
             console.log(email, password);
 
             if (res) {
@@ -42,10 +45,29 @@ export default function Login() {
                     navigate('ListHr');
                 }
 
-                if (res.role === "hr") {
+                if (res.role === "user") {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
-                    navigate('ListEmployees');
+
+                    const response = await loginapi.GetDetailHRlogin();
+
+                    if (response) {
+
+
+                        setDetailHrLogin(response);
+                        
+                        const dataLoginUser = {
+                            userLoginId: response.id,
+                            companyId: response.companybranch.companyID
+                        }
+
+                        if(dataLoginUser){
+                            localStorage.setItem("LoggedIn", JSON.stringify(dataLoginUser));
+                           navigate('ListEmployees'); 
+                        }
+
+                    }
+
                 }
             }
 
@@ -66,6 +88,10 @@ export default function Login() {
             });
         }
     }
+
+    useEffect(() => {
+        console.log("detailHrLogin updated", detailHrLogin); // Log when detailHrLogin updates
+    }, [detailHrLogin]);
 
     return (
         <>
@@ -96,7 +122,7 @@ export default function Login() {
                         </Form.Group>
                         <Form.Group className="mb-4" controlId="formBasicCheckbox">
                         </Form.Group>
-                        
+
                         <Button variant="primary" type="submit" className='submit-btn' >
                             Login
                         </Button>

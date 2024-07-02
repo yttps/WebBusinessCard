@@ -1,16 +1,63 @@
-import { useState, ChangeEvent } from 'react'
+import React, { useState, ChangeEvent, useEffect } from 'react'
 import { EmployeesApi } from '@/ApiEndpoints/EmployeesApi';
 import Swal from 'sweetalert2';
 import { Button, Modal, Form } from "react-bootstrap";
+import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
+import { GetCompanyBranchesById } from '@/Model/GetCompanyBranchesById';
+import { GetDepartmentByComId } from '@/Model/GetDepartmentByComId';
 
-function AddEmployees() {
+interface AddHrProps {
+  isFetch: boolean;
+  setIsFetch: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface FormData {
+  firstname: string,
+  lastname: string,
+  email: string,
+  password: string,
+  gender: string,
+  phone: string,
+  subdistrict: string,
+  district: string,
+  province: string,
+  country: string,
+  companybranch: string,
+  department: string,
+  position: string,
+  startwork: string,
+  birthdate: string
+}
+
+const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  
+  const companyapi = new CompanyApi();
   const employeesapi = new EmployeesApi();
   const [file, setFile] = useState<File | null>(null);
+  const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
+  const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
+  const [genderValue, setGenderValue] = useState('');
+  const [departmentValue, setDepartmentValue] = useState('');
+  const [branchValue, setBranchValue] = useState('');
+
+  const handleDepartment = (e: ChangeEvent<HTMLSelectElement>) => {
+    console.log(e.target.value);
+    setDepartmentValue(e.target.value);
+  };
+
+  const handleBranches = (e: ChangeEvent<HTMLSelectElement>) => {
+    console.log(e.target.value);
+    setBranchValue(e.target.value);
+  };
+
+  const handleGender = (e: ChangeEvent<HTMLSelectElement>) => {
+    console.log(e.target.value);
+    setGenderValue(e.target.value);
+  };
+
 
   const [imageData] = useState({
     base64textString: '',
@@ -18,152 +65,106 @@ function AddEmployees() {
     showImage: false,
   });
 
-  const getFirstnameValue = (): string => {
-    const nameElement = document.getElementById('firstname') as HTMLInputElement | null;
-    return nameElement ? nameElement.value : '';
+  const getInputValue = (id: string): string => {
+    const inputElement = document.getElementById(id) as HTMLInputElement | null;
+    return inputElement ? inputElement.value : '';
   };
 
-  const getLastnameValue = (): string => {
-    const lastnameElement = document.getElementById('lastname') as HTMLInputElement | null;
-    return lastnameElement ? lastnameElement.value : '';
-  };
+  const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
+    
+    event.preventDefault();
 
-  const getEmailValue = (): string => {
-    const emailTypeElement = document.getElementById('email') as HTMLInputElement | null;
-    return emailTypeElement ? emailTypeElement.value : '';
-  };
+    const formData: FormData = {
+      firstname: getInputValue('firstname'),
+      lastname: getInputValue('lastname'),
+      email: getInputValue('email'),
+      password: getInputValue('password'),
+      gender: genderValue,
+      phone: getInputValue('phone'),
+      subdistrict: getInputValue('subdistrict'),
+      district: getInputValue('district'),
+      province: getInputValue('province'),
+      country: getInputValue('country'),
+      companybranch: branchValue,
+      department: departmentValue,
+      position: getInputValue('position'),
+      startwork: getInputValue('startwork'),
+      birthdate: getInputValue('birthdate')
+    };
 
-  const getPasswordValue = (): string => {
-    const passwordElement = document.getElementById('password') as HTMLInputElement | null;
-    return passwordElement ? passwordElement.value : '';
-  };
+    console.log('form data', formData);
 
-  const getGenderValue = (): string => {
-    const genderElement = document.getElementById('gender') as HTMLInputElement | null;
-    return genderElement ? genderElement.value : '';
-  };
+    if (file && Object.values(formData).every(value => value !== '')) {
 
-  const getPhoneValue = (): string => {
-    const phoneElement = document.getElementById('phone') as HTMLInputElement | null;
-    return phoneElement ? phoneElement.value : '';
-  };
+      try {
 
-  const getSubdistrictValue = (): string => {
-    const subdistrictElement = document.getElementById('subdistrict') as HTMLInputElement | null;
-    return subdistrictElement ? subdistrictElement.value : '';
-  }
+        const resUploadData = await addData(formData);
 
-  const getDistrictValue = (): string => {
-    const districtElement = document.getElementById('district') as HTMLInputElement | null;
-    return districtElement ? districtElement.value : '';
-  };
+        if (resUploadData) {
 
-  const getProvinceValue = (): string => {
-    const provinceElement = document.getElementById('province') as HTMLInputElement | null;
-    return provinceElement ? provinceElement.value : '';
-  };
+          const folderName = '';
+          const collection = 'users';
+          const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
 
-  const getCountryValue = (): string => {
-    const countryElement = document.getElementById('country') as HTMLInputElement | null;
-    return countryElement ? countryElement.value : '';
-  };
-
-  const getCompanyBranchValue = (): string => {
-    const companyBranchElement = document.getElementById('companybranch') as HTMLInputElement | null;
-    return companyBranchElement ? companyBranchElement.value : '';
-  };
-  const getDepartmentValue = (): string => {
-    const departmentElement = document.getElementById('department') as HTMLInputElement | null;
-    return departmentElement ? departmentElement.value : '';
-  };
-  const getPositionValue = (): string => {
-    const positionElement = document.getElementById('position') as HTMLInputElement | null;
-    return positionElement ? positionElement.value : '';
-  };
-
-  const getStartworkValue = (): string => {
-    const startworkElement = document.getElementById('startwork') as HTMLInputElement | null;
-    return startworkElement ? startworkElement.value : '';
-  };
-
-
-  const formData = {
-    firstname: getFirstnameValue(),
-    lastname: getLastnameValue(),
-    email: getEmailValue(),
-    password: getPasswordValue(),
-    gender: getGenderValue(),
-    phone: getPhoneValue(),
-    subdistrict: getSubdistrictValue(),
-    district: getDistrictValue(),
-    province: getProvinceValue(),
-    country: getCountryValue(),
-    companybranch: getCompanyBranchValue(),
-    department: getDepartmentValue(),
-    position: getPositionValue(),
-    startwork: getStartworkValue()
-  };
-
-  console.log("form", formData);
-  const uploadData = async () => {
-
-
-    if (file && formData.firstname && formData.lastname && formData.email &&
-      formData.password && formData.gender && formData.phone && formData.subdistrict &&
-      formData.district && formData.province && formData.country && formData.companybranch &&
-      formData.department && formData.position && formData.startwork
-    ) {
-
-      const resUploadData = await addData();
-      const resUploadLogo = await addLogo(file);
-
-      console.log("chkk", formData);
-
-      if (resUploadData == 200 && resUploadLogo == 200) {
-
-        clearImageCache();
-        Swal.fire({
-          title: 'Success!',
-          text: 'เพิ่มข้อมูลสำเร็จ',
-          icon: 'success',
-        });
-
-        await employeesapi.GetAllEmployees();
-        handleClose();
-      }
-      if (resUploadData == 400) {
-
+          if (resUploadLogo === 200) {
+            clearImageCache();
+            Swal.fire({
+              title: 'Success!',
+              text: 'เพิ่มข้อมูลสำเร็จ',
+              icon: 'success',
+            });
+            // await hrapi.GetAllHr();
+            handleClose();
+          } else {
+            Swal.fire({
+              title: 'Upload Error!',
+              text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+              icon: 'error',
+            });
+          }
+        }
+        if (resUploadData === undefined) {
+          Swal.fire({
+            title: 'Error!',
+            text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
+            icon: 'error',
+          });
+        }
+        if (resUploadData == 'email') {
+          Swal.fire({
+            title: 'Add Data Error!',
+            text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
+            icon: 'error',
+          });
+        }
+        if (resUploadData == 'phonenumber') {
+          Swal.fire({
+            title: 'Add Data Error!',
+            text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+            icon: 'error',
+          });
+        }
+      } catch (error) {
         Swal.fire({
           title: 'Error!',
-          text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
+          text: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล',
           icon: 'error',
         });
-        return;
       }
-      if (resUploadLogo == 500) {
-        Swal.fire({
-          title: 'Upload Error!',
-          text: 'อัปโหลดรูปภาพไม่สำเร็จ!',
-          icon: 'error',
-        });
-        return;
-      }
-    }
-    else {
+    } else {
       Swal.fire({
         title: 'Upload Error!',
         text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
         icon: 'error',
       });
-      return;
     }
-  }
+  };
 
-  const addLogo = async (file: File): Promise<number | undefined> => {
+  const addProfile = async (file: File, uid: string, folderName: string, collection: string): Promise<number | undefined> => {
 
     try {
 
-      const res = await employeesapi.UploadProfile(file);
+      const res = await employeesapi.UploadProfile(file, uid, folderName, collection);
       return res;
 
     } catch (error) {
@@ -173,89 +174,37 @@ function AddEmployees() {
     }
   };
 
-  const addData = async (): Promise<number | undefined> => {
+  const addData = async (formData: FormData): Promise<string | undefined> => {
 
-    const firstnameValue = getFirstnameValue();
-    const lastnameValue = getLastnameValue();
-    const emailValue = getEmailValue();
-    const passwordValue = getPasswordValue();
-    const genderValue = getGenderValue();
-    const phoneValue = getPhoneValue();
-    const subdistrictValue = getSubdistrictValue();
-    const districtValue = getDistrictValue();
-    const provinceValue = getProvinceValue();
-    const countryValue = getCountryValue();
-    const companyBranchValue = getCompanyBranchValue();
-    const departmentValue = getCompanyBranchValue();
-    const positionValue = getPositionValue();
-    const startworkValue = getStartworkValue();
-
-    const hasAySymbolEmail = emailValue.includes('@');
+    const hasAtSymbolEmail = formData.email.includes('@');
     const phoneRegex = /^\d+$/;
 
-    if (!hasAySymbolEmail) {
-
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
-        icon: 'error',
-      });
-      return;
+    if (!hasAtSymbolEmail) {
+      return 'email';
     }
 
-    if (!phoneRegex.test(phoneValue)) {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-        icon: 'error',
-      });
-      return;
+    if (!phoneRegex.test(formData.phone)) {
+      return 'phonenumber';
     }
 
-    if (
-      firstnameValue &&
-      lastnameValue &&
-      emailValue &&
-      passwordValue &&
-      genderValue &&
-      phoneValue &&
-      subdistrictValue &&
-      districtValue &&
-      provinceValue &&
-      countryValue &&
-      companyBranchValue &&
-      departmentValue &&
-      positionValue &&
-      startworkValue) {
+    const res = await employeesapi.AddDataEmployee(
+      formData.firstname,
+      formData.lastname,
+      formData.email,
+      formData.password,
+      formData.gender,
+      formData.phone,
+      formData.subdistrict,
+      formData.district,
+      formData.province,
+      formData.country,
+      formData.companybranch,
+      formData.department,
+      formData.position,
+      formData.startwork,
+      formData.birthdate);
 
-      const res = await employeesapi.AddDataEmployee(
-        firstnameValue ,
-        lastnameValue ,
-        emailValue ,
-        passwordValue ,
-        genderValue ,
-        phoneValue ,
-        subdistrictValue ,
-        districtValue ,
-        provinceValue ,
-        countryValue ,
-        companyBranchValue ,
-        departmentValue ,
-        positionValue ,
-        startworkValue);
-
-        
-      console.log('chkkkkkk', res);
-      return res;
-
-    } else {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'กรอกข้อมูลให้ครบ',
-        icon: 'error',
-      });
-      return;
-    }
+    return res;
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -278,6 +227,37 @@ function AddEmployees() {
     }
   };
 
+  async function getCompanyBranchById(CompanyId: string) {
+    const res = await companyapi.getCompanyBranchById(CompanyId);
+    setDataBranchesById(res);
+    setIsFetch(true);
+  }
+
+  async function GetDepartmentByCompanyId(CompanyId: string) {
+    const res = await companyapi.getDepartmentByCompanyId(CompanyId);
+    setDataDepartmentById(res);
+    setIsFetch(true);
+  }
+
+  useEffect(() => {
+
+    if (!isFetch) {
+      const loggedInData = localStorage.getItem("LoggedIn");
+
+      if (loggedInData) {
+        const parsedData = JSON.parse(loggedInData);
+        const CompanyId = parsedData.companyId;
+  
+        if (CompanyId) {
+          getCompanyBranchById(CompanyId);
+          GetDepartmentByCompanyId(CompanyId);
+        }
+      }
+    }
+
+  }, [isFetch]);
+
+
 
   return (
     <>
@@ -287,80 +267,98 @@ function AddEmployees() {
 
       <Modal show={show} onHide={handleClose} animation={false}>
         <Modal.Header closeButton>
-          <Modal.Title>เพิ่มข้อมูลพนักงาน</Modal.Title>
+          <Modal.Title>เพิ่มพนักงานฝ่ายบุคคล</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form onSubmit={uploadData}>
-            <Form.Label htmlFor="inputPassword5">ชื่อ</Form.Label>
+            <Form.Label htmlFor="firstname">ชื่อ</Form.Label>
             <Form.Control type="text" id="firstname" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">นามสกุล</Form.Label>
+            <Form.Label htmlFor="lastname">นามสกุล</Form.Label>
             <Form.Control type="text" id="lastname" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">อีเมล</Form.Label>
+            <Form.Label htmlFor="email">อีเมล</Form.Label>
             <Form.Control type="text" id="email" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">รหัสผ่าน</Form.Label>
+            <Form.Label htmlFor="password">รหัสผ่าน</Form.Label>
             <Form.Control type="text" id="password" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">เพศ</Form.Label>
-            <Form.Control type="text" id="gender" required />
-            <br />
-            <Form.Select aria-label="เลือกเพศ">
-              <option>เพศ</option>
+            <p>เพศ</p>
+            <Form.Select aria-label="เลือกเพศ" onChange={handleGender} value={genderValue}>
               <option value="male">ชาย</option>
-              <option value="famale">หญิง</option>
+              <option value="female">หญิง</option>
             </Form.Select>
             <br />
-            <Form.Label htmlFor="inputPassword5">เบอร์โทร</Form.Label>
+            <Form.Label htmlFor="birthdate">วันเกิด</Form.Label>
+            <Form.Control type="datetime-local" id="birthdate" required />
+            <br />
+            <Form.Label htmlFor="phone">เบอร์โทร</Form.Label>
             <Form.Control type="text" id="phone" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">ตำบล</Form.Label>
+            <Form.Label htmlFor="subdistrict">ตำบล</Form.Label>
             <Form.Control type="text" id="subdistrict" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">อำเภอ</Form.Label>
+            <Form.Label htmlFor="district">อำเภอ</Form.Label>
             <Form.Control type="text" id="district" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">จังหวัด</Form.Label>
+            <Form.Label htmlFor="province">จังหวัด</Form.Label>
             <Form.Control type="text" id="province" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">สาขาบริษัท</Form.Label>
-            <Form.Control type="text" id="companybranch" required />
+            <Form.Label htmlFor="country">ประเทศ</Form.Label>
+            <Form.Control type="text" id="country" required />
             <br />
-            <Form.Label htmlFor="inputPassword5">แผนก</Form.Label>
-            <Form.Control type="text" id="department" required />
-            <br />
-            <Form.Label htmlFor="inputPassword5">ตำแหน่ง</Form.Label>
-            <Form.Control type="text" id="position" required />
-            <br />
-            <Form.Label htmlFor="inputPassword5">วันที่เริ่มงาน</Form.Label>
-            <Form.Control type="datetime-local" id="startwork" required />
-            <br />
-          </form>
-          <div className="container mt-1">
-            <h4>รูปประจำตัวพนักงาน</h4>
-            <label>
-              <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
-            </label>
-            {imageData.showImage && (
-              <div>
-                <img
-                  src={imageData.base64textString}
-                  alt={imageData.imageName}
-                  style={{ maxWidth: '100%' }} />
-              </div>
+            <p>สาขาบริษัท</p>
+            {dataBranchesById && (
+              <Form.Select onChange={handleBranches}>
+                {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
+                  <option key={index} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </Form.Select>
             )}
             <br />
-          </div>
+            <p>แผนกบริษัท</p>
+            {dataDepartmentById && (
+              <Form.Select onChange={handleDepartment}>
+                {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
+                  <option key={index} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </Form.Select>
+            )}
+            <br />
+            <p><b>ส่วนนี้จะไม่มีการเพิ่มแผนก * HR *</b></p>
+            <Form.Label htmlFor="position">ตำแหน่ง</Form.Label>
+            <Form.Control type="text" id="position" required />
+            <br />
+            <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
+            <Form.Control type="datetime-local" id="startwork" required />
+            <br />
+            <div className="container mt-1">
+              <h4>รูปประจำตัวพนักงาน</h4>
+              <label>
+                <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
+              </label>
+              {imageData.showImage && (
+                <div>
+                  <img
+                    src={imageData.base64textString}
+                    alt={imageData.imageName}
+                    style={{ maxWidth: '100%' }} />
+                </div>
+              )}
+              <br />
+            </div>
+            <Button variant="secondary" onClick={handleClose}>
+              ยกเลิก
+            </Button>
+            <Button variant="primary" type='submit'>
+              ตกลง
+            </Button>
+          </form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            ยกเลิก
-          </Button>
-          <Button variant="primary" onClick={uploadData}>
-            ตกลง
-          </Button>
-        </Modal.Footer>
       </Modal>
     </>
   );

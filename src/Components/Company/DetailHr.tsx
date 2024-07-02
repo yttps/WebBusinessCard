@@ -94,8 +94,9 @@ export default function DetailHr() {
             <p>Address : {hrById.address}</p>
             <p>Password : {hrById.password}</p>
             <p>Detail Company : {hrById.companybranch.company.name}</p>
+            <p>Position : {hrById.position}</p>
             <div>
-                <img src={hrById.Hr} alt="" />
+                <img src={hrById.profile} alt="" />
             </div>
             <div id="col2-2">
                 <Button id='delete-btn' variant="danger" onClick={DeleteHrData}>ลบข้อมูล</Button>

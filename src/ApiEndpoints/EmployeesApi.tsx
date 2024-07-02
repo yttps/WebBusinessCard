@@ -7,18 +7,35 @@ const axiosHeaders = {
 
 export class EmployeesApi {
 
-    private urlLogo: string = '';
-
     async GetAllEmployees() {
 
         try {
+            const loggedInData = localStorage.getItem("LoggedIn");
 
-            const res = await axios.get(url + '/users', {
-                headers: axiosHeaders,
-            });
-            const companyData = res.data;
-            console.log('in context', companyData);
-            return companyData;
+            if (loggedInData) {
+
+                const parsedData = JSON.parse(loggedInData);
+                const CompanyId = parsedData.companyId;
+
+                if (CompanyId) {
+
+                    const endpoint = url + '/users/by-companyandposition/';
+                    const res = await axios.get(endpoint + `${CompanyId}/user`, {
+                        headers: axiosHeaders,
+                    });
+                    const companyData = res.data;
+                    console.log('in context', companyData);
+                    return companyData;
+                }
+                else {
+                    return;
+                }
+            }
+            else {
+                return;
+            }
+
+
 
         } catch (error) {
             console.error(error);
@@ -26,11 +43,11 @@ export class EmployeesApi {
         }
     }
 
-    async GetDataEmployeesById(id: string) {
+    async GetDatadataemployeesById(id: string) {
 
         try {
 
-            const res = await axios.get(`${url}/users/${id}`, {
+            const res = await axios.get(`${url}/user/${id}`, {
                 headers: axiosHeaders,
             });
 
@@ -43,71 +60,67 @@ export class EmployeesApi {
         }
     }
 
-    async UploadProfile(Logo: File) {
+    async UploadProfile(Image:File , uid : string ,folderName : string , collection : string) {
 
-        const companyIdString = localStorage.getItem('LoggedIn');
+        
+        console.log("image" , Image);
+        console.log("uid" , uid);
+        console.log("collection" , collection);
+        console.log("foldername" , folderName);
 
-        if (companyIdString !== null) {
+        const formData = new FormData();
 
-            const companyId = JSON.parse(companyIdString);
-            const folderName = 'logo';
-            const formData = new FormData();
+        formData.append('file', Image); 
+        formData.append('folder', folderName);
+        formData.append('collection', collection)
+        formData.append('uid', uid);
 
-            formData.append('file', Logo);
-            formData.append('folder', folderName);
-            formData.append('uid', companyId.id);
+        try {
 
-            try {
+            const res = await fetch(`${url}/upload-image`, {
+                method: 'POST',
+                body: formData
+            });
 
+            if (res.ok) {
 
-                const res = await fetch(`${url}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (res.ok) {
-
-                    const data = await res.json();
-                    this.setUrlProfile(data.Url)
-                    console.log('Upload logo successful:', res.status);
-                    return res.status;
-                }
-                else {
-                    console.log('in context upload logo', res.status);
-                    return res.status;
-                }
-
-
-            } catch (error) {
-                console.error(error);
-                throw error;
+                const data = await res.json();
+                console.log(data);
+                console.log('Upload logo successful:', res.status);
+                return res.status;
+            }
+            else {
+                console.log('in context upload logo', res.status);
+                return res.status;
             }
 
 
-        } else {
-            console.log('Company ID is not available');
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-    }
+}
 
     async AddDataEmployee(
-        firstnameValue : string ,
-        lastnameValue  : string ,
-        emailValue : string ,
-        passwordValue : string ,
-        genderValue  : string ,
-        phoneValue  : string ,
-        subdistrictValue  : string ,
-        districtValue  : string ,
-        provinceValue  : string ,
-        countryValue  : string ,
-        companyBranchValue  : string ,
-        departmentValue  : string ,
-        positionValue  : string ,
-        startworkValue  : string) {
+        firstnameValue: string,
+        lastnameValue: string,
+        emailValue: string,
+        passwordValue: string,
+        genderValue: string,
+        phoneValue: string,
+        subdistrictValue: string,
+        districtValue: string,
+        provinceValue: string,
+        countryValue: string,
+        companyBranchValue: string,
+        departmentValue: string,
+        positionValue: string,
+        startworkValue: string,
+        birthdateValue:string) {
 
         const dataEmployee = {
-            firstname : firstnameValue , 
-            lastname : lastnameValue ,
+            firstname: firstnameValue,
+            lastname: lastnameValue,
             email: emailValue,
             password: passwordValue,
             gender: genderValue,
@@ -115,23 +128,29 @@ export class EmployeesApi {
             subdistrict: subdistrictValue,
             district: districtValue,
             province: provinceValue,
-            country: countryValue , 
-            companyBranch: companyBranchValue,
-            department:departmentValue,
+            country: countryValue,
+            companybranch: companyBranchValue,
+            department: departmentValue,
             position: positionValue,
-            startwork: startworkValue
+            startwork: startworkValue,
+            birthdate: birthdateValue 
         }
+
+        console.log("form in context" , dataEmployee);
 
         try {
 
-            const res = await fetch(`${url}/users`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataEmployee)
-            });
+            // const res = await fetch(`${url}/users`, {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(dataEmployee)
+            // });
 
-            console.log('in context', res.status);
-            return res.status;
+            const endpoint = `${url}/users`;
+            const res = await axios.post(endpoint , dataEmployee);
+
+            console.log('res in context', res.data.userId);
+            return res.data.userId;
 
         } catch (error) {
             console.error(error);
@@ -154,10 +173,5 @@ export class EmployeesApi {
             console.error(error);
             throw error;
         }
-    }
-
-    setUrlProfile = (url: string) => {
-        this.urlLogo = url;
-        return this.urlLogo;
     }
 }

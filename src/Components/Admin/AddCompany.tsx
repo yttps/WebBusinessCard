@@ -114,19 +114,16 @@ function AddCompany() {
 
     event.preventDefault();
 
-    if (file && formData.email && formData.password && formData.businessType && formData.name && formData.phoneNumber && formData.website
-      && formData.yearFounded && formData.subdistrict && formData.district && formData.province && formData.country
-    ) {
+    if (file) {
 
+      console.log(formData);
       const rescompanyId = await addData();
-      console.log('all form ' , formData);
-      console.log("company id" , rescompanyId);
 
       if (rescompanyId) {
 
         const folderName = 'logo';
         const collection = 'companies';
-        const resUploadLogo = await addLogo(file, rescompanyId, folderName , collection);
+        const resUploadLogo = await addLogo(file, rescompanyId, folderName, collection);
 
         if (resUploadLogo == 200) {
 
@@ -151,7 +148,7 @@ function AddCompany() {
         }
 
       }
-      if (rescompanyId == undefined) {
+      if (rescompanyId == '0') {
 
         Swal.fire({
           title: 'Error!',
@@ -159,6 +156,29 @@ function AddCompany() {
           icon: 'error',
         });
         return;
+      }
+      if (rescompanyId == 'email') {
+
+        Swal.fire({
+          title: 'Add Data Error!',
+          text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
+          icon: 'error',
+        });
+        return;
+      }
+      if (rescompanyId == 'web') {
+        Swal.fire({
+          title: 'Add Data Error!',
+          text: 'เว็บไซต์ต้องมี ".com" ',
+          icon: 'error',
+        });
+      }
+      if (rescompanyId == 'phonenumber') {
+        Swal.fire({
+          title: 'Add Data Error!',
+          text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+          icon: 'error',
+        });
       }
     }
     else {
@@ -171,11 +191,11 @@ function AddCompany() {
     }
   }
 
-  const addLogo = async (file: File, companyId: string , folderName:string, collection:string): Promise<number | undefined> => {
+  const addLogo = async (file: File, companyId: string, folderName: string, collection: string): Promise<number | undefined> => {
 
     try {
 
-      const res = await companyapi.UploadLogo(file, companyId,folderName,collection);
+      const res = await companyapi.UploadLogo(file, companyId, folderName, collection);
       return res;
 
     } catch (error) {
@@ -204,71 +224,34 @@ function AddCompany() {
     const phoneRegex = /^\d+$/;
 
     if (!hasAySymbolEmail) {
-
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
-        icon: 'error',
-      });
-      return;
+      return 'email';
     }
 
     if (!hasAySymbolWeb) {
-
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'เว็บไซต์ต้องมี ".com" ',
-        icon: 'error',
-      });
-      return;
+      return 'web';
     }
 
     if (!phoneRegex.test(phoneNumberValue)) {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-        icon: 'error',
-      });
-      return;
+      return 'phonenumber';
     }
 
-    if (emailValue &&
-      passwordValue &&
-      businessTypeValue &&
-      nameValue &&
-      phoneNumberValue &&
-      websiteValue &&
-      yearFoundedValue &&
-      subdistrictValue &&
-      districtValue &&
-      provinceValue &&
-      countryValue) {
+    const resCompanyId = await companyapi.AddDataCompany(
+      emailValue,
+      passwordValue,
+      businessTypeValue,
+      nameValue,
+      phoneNumberValue,
+      websiteValue,
+      yearFoundedValue,
+      subdistrictValue,
+      districtValue,
+      provinceValue,
+      countryValue);
 
-      const resCompanyId = await companyapi.AddDataCompany(
-        emailValue,
-        passwordValue,
-        businessTypeValue,
-        nameValue,
-        phoneNumberValue,
-        websiteValue,
-        yearFoundedValue,
-        subdistrictValue,
-        districtValue,
-        provinceValue,
-        countryValue);
-
-      if (resCompanyId) {
-        // setCompanyID(resCompanyId);
-        return resCompanyId;
-      }
-    } else {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'กรอกข้อมูลให้ครบ',
-        icon: 'error',
-      });
-      return;
+    if (resCompanyId) {
+      return resCompanyId;
     }
+
   };
 
   return (

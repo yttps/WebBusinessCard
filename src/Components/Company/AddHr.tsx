@@ -226,11 +226,14 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   }
 
   useEffect(() => {
+
     if (!isFetch) {
       const loggedInData = localStorage.getItem("LoggedIn");
       if (loggedInData) {
         const parsedData = JSON.parse(loggedInData);
+
         const CompanyId = parsedData.id;
+        
         if (CompanyId) {
           getCompanyBranchById(CompanyId);
           GetDepartmentByCompanyId(CompanyId);

@@ -1,4 +1,4 @@
-export interface GetDataHrById {
+export interface GetDetailHRLogin{
     firstname:     string;
     password:      string;
     birthdate:     string;
