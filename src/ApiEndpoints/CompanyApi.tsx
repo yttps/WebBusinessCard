@@ -44,11 +44,28 @@ export class CompanyApi {
         }
     }
 
-    async UploadLogo(Logo: File, companyid: string, folderName:string, collection:string): Promise<number | undefined> {
+    async GetLinkLogoCompanyById(id: string) {
+
+        try {
+
+            const res = await axios.get(`${url}/companies/${id}`, {
+                headers: axiosHeaders,
+            });
+
+            const urlLogo = res.data.logo;
+            return urlLogo;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async UploadLogo(Logo: File, companyid: string, folderName: string, collection: string): Promise<number | undefined> {
 
         const formData = new FormData();
 
-        formData.append('file', Logo); 
+        formData.append('file', Logo);
         formData.append('folder', folderName);
         formData.append('collection', collection)
         formData.append('uid', companyid);
@@ -88,40 +105,41 @@ export class CompanyApi {
         website: string, yearFounded: string, subdistrict: string,
         district: string, province: string, country: string) {
 
-        const dataCompany = {
-            email: email,
-            password: password,
-            businessType: businessType,
-            name: name,
-            phoneNumber: phoneNumber,
-            website: website,
-            yearFounded: yearFounded,
-            subdistrict: subdistrict,
-            district: district,
-            province: province,
-            country: country,
-            logo: 'logo'
-        }
-
-        console.log('data com in context' , dataCompany);
-
-
-
         try {
 
-            // const res = await fetch(`${url}/companies`, {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(dataCompany)
-            // });
+            const dataCompany = {
+                email: email,
+                password: password,
+                businessType: businessType,
+                name: name,
+                phoneNumber: phoneNumber,
+                website: website,
+                yearFounded: yearFounded,
+                subdistrict: subdistrict,
+                district: district,
+                province: province,
+                country: country,
+                logo: 'logo'
+            }
+
+            console.log('data com in context', dataCompany);
 
             const res = await axios.post(`${url}/companies`, dataCompany);
-            console.log("upload data in context", res.data);
+            console.log("upload data in context", res.data.companyId);
             return res.data.companyId;
 
-
         } catch (error) {
-            console.error(error);
+            if (axios.isAxiosError(error)) {
+                console.error('Axios error:', error.message);
+                if (error.response) {
+                    console.log('Response data:', error.response.data);
+                    console.log('Company ID:', error.response.data.companyId);
+                    return error.response.data.companyId;
+                }
+            } else {
+                console.error('Unexpected error:', error);
+            }
+            throw error;
         }
     }
 
@@ -140,12 +158,40 @@ export class CompanyApi {
         }
     }
 
+    async deleteBranch(branchId: string) {
+
+        try {
+
+            const urlWithId = `${url}/companybranches/${branchId}`;
+            const res = await axios.delete(urlWithId);
+            return res.status;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async deleteDepartment(departmentId: string) {
+
+        try {
+
+            const urlWithId = `${url}/departments/${departmentId}`;
+            const res = await axios.delete(urlWithId);
+            return res.status;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
     async AddCompanyBranch(
-        nameBranches : string , 
-        subdistrict: string ,
-        district : string ,
-        province : string , 
-        country : string ) {
+        nameBranches: string,
+        subdistrict: string,
+        district: string,
+        province: string,
+        country: string) {
 
         const loggedInData = localStorage.getItem("LoggedIn");
 
@@ -160,15 +206,15 @@ export class CompanyApi {
                 try {
 
                     const dataBranch = {
-                        name : nameBranches,
-                        companyID : CompanyId,
-                        subdistrict: subdistrict, 
-                        district: district, 
-                        province: province, 
+                        name: nameBranches,
+                        companyID: CompanyId,
+                        subdistrict: subdistrict,
+                        district: district,
+                        province: province,
                         country: country
                     }
 
-                    console.log('check' , dataBranch);
+                    console.log('check', dataBranch);
 
                     const res = await fetch(endpoint, {
                         method: 'POST',
@@ -197,79 +243,92 @@ export class CompanyApi {
     async AddDepartments(departments: { name: string; phone: string }[]): Promise<number[]> {
         const loggedInData = localStorage.getItem("LoggedIn");
         const statusCodes: number[] = [];
-      
+
         //เหลือเช็คว่าซ้ำหรือไม่
         if (loggedInData) {
-          const parsedData = JSON.parse(loggedInData);
-          const CompanyId = parsedData.id;
-          const endpoint = `${url}/departments`;
-      
-          if (CompanyId) {
-            try {
-              for (let i = 0; i < departments.length; i++) {
-                const dept = departments[i];
-                const dataDepartment = {
-                  name: dept.name,
-                  companyID: CompanyId,
-                  phone: dept.phone
-                };
-      
-                console.log(`Sending department ${i + 1}:`, dataDepartment);
-      
-                const res = await fetch(endpoint, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(dataDepartment)
-                });
-      
-                statusCodes.push(res.status);
-                console.log(`Response status for department ${i + 1}:`, res.status);
-              }
-      
-              return statusCodes;
+            const parsedData = JSON.parse(loggedInData);
+            const CompanyId = parsedData.id;
+            const endpoint = `${url}/departments`;
 
-            } catch (error) {
-              console.error('Error:', error);
-              throw error;
+            if (CompanyId) {
+                try {
+                    for (let i = 0; i < departments.length; i++) {
+                        const dept = departments[i];
+                        const dataDepartment = {
+                            name: dept.name,
+                            companyID: CompanyId,
+                            phone: dept.phone
+                        };
+
+                        console.log(`Sending department ${i + 1}:`, dataDepartment);
+
+                        const res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(dataDepartment)
+                        });
+
+                        statusCodes.push(res.status);
+                        console.log(`Response status for department ${i + 1}:`, res.status);
+                    }
+
+                    return statusCodes;
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    throw error;
+                }
             }
-          }
         } else {
-          console.log("No logged in data found");
+            console.log("No logged in data found");
         }
-      
-        return statusCodes;
-      }
 
-      async getCompanyBranchById (companyId : string) {
+        return statusCodes;
+    }
+
+    async getCompanyBranchById(companyId: string) {
 
         try {
-            
+
             const endpoint = `${url}/companybranches/by-company/${companyId}`;
             const res = await axios.get(endpoint);
-            console.log("getCompanyBranchById" , res.data);
+            console.log("getCompanyBranchById", res.data);
             return res.data;
 
         } catch (error) {
             console.error(error);
         }
 
-      }
-      
-      async getDepartmentByCompanyId (companyId : string) {
+    }
+
+    async getDepartmentByCompanyId(companyId: string) {
 
         try {
-            
+
             const endpoint = `${url}/departments/by-company/${companyId}`;
             const res = await axios.get(endpoint);
-            console.log("getDepartmentByCompanyId" , res.data);
+            console.log("getDepartmentByCompanyId", res.data);
             return res.data;
 
         } catch (error) {
             console.error(error);
         }
 
-      }
-      
+    }
+
+    async GetUsersByCompany(companyId: string){
+        try {
+
+            const endpoint = `${url}/user/by-company/${companyId}`;
+            const res = await axios.get(endpoint);
+            console.log("GetUsersByCompany", res.data);
+            return res.data;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
 
     setUrlLogo = (url: string) => {
         this.urlLogo = url;

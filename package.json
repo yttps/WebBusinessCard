@@ -7,11 +7,15 @@
     "start": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "proxy": "http://localhost:5173"
   },
   "dependencies": {
     "@coreui/icons": "^3.0.1",
     "@coreui/icons-react": "^2.2.1",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/material": "^5.16.0",
     "@react-icons/all-files": "^4.1.0",
     "@types/crypto-js": "^4.2.2",
     "axios": "^1.6.5",
@@ -20,6 +24,7 @@
     "crypto-js": "^4.2.0",
     "daterangepicker": "^3.1.0",
     "font-awesome": "^4.7.0",
+    "http-proxy-middleware": "^3.0.0",
     "konva": "^9.3.5",
     "material-design-iconic-font": "^2.2.0",
     "react": "^18.2.0",
@@ -37,6 +42,7 @@
     "use-history": "^1.4.1"
   },
   "devDependencies": {
+    "@types/http-proxy-middleware": "^1.0.0",
     "@types/node": "^20.14.2",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",

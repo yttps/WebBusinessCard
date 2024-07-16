@@ -3,7 +3,7 @@ import Header from '@/Components/Header/Header';
 import { Button, Form, InputGroup, Table } from 'react-bootstrap';
 import { HrApi } from '@/ApiEndpoints/HrApi';
 import { GetAllHrByCompanyId } from '@/Model/GetAllHR';
-import { NavLink } from 'react-router-dom';
+import { NavLink , useNavigate } from 'react-router-dom';
 import AddHr from './AddHr';
 import AddCompanyBranch from './AddCompanyBranch';
 import AddDepartment from './AddDepartment';
@@ -15,9 +15,14 @@ export default function ListHr() {
     const [dataFetched, setDataFetched] = useState(false);
     const [hasError, setHasError] = useState(false);
     const [isFetch , setIsFetch] = useState(false);
+    const nav = useNavigate();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const hrapi = new HrApi();
+
+    function handleToListBranchAndDepartment(){
+        nav('/ListDetailBranchAndDepartment');
+    }
 
     const getHr = async () => {
         try {
@@ -54,6 +59,7 @@ export default function ListHr() {
                     <p>รายชื่อพนักงานฝ่ายบุคคล</p>
                 </div>
                 <AddHr isFetch={isFetch} setIsFetch={setIsFetch}/>
+                <Button variant="success" onClick={handleToListBranchAndDepartment}>สาขาบริษัทและแผนก</Button>
                 <AddCompanyBranch />
                 <AddDepartment />
                 <hr />

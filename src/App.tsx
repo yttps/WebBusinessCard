@@ -15,6 +15,10 @@ import AddDepartment from './Components/Company/AddDepartment';
 import AddCompanyBranch from './Components/Company/AddCompanyBranch';
 import DetailHr from './Components/Company/DetailHr';
 import DetailEmployees from './Components/Employees/DetailEmployees';
+import DetailGeneralUser from './Components/Admin/DetailGeneralUser';
+import ListDetailBranchAndDepartment from './Components/Company/ListDetailBranchAndDepartment';
+import ApprovalCompany from './Components/Admin/ApprovalCompany';
+
 
 function App() {
 
@@ -29,11 +33,15 @@ function App() {
         <Route path="/ListEmployees" element={<ListEmployees />} />
         <Route path="/ListCompany/:id" element={<DetailCompany />} />
         <Route path="/CreateTemplate" element={<CreateTemplate />} />
-        <Route path="/CreateCard/:id" element={<CreateCard />} />
         <Route path="/AddDepartment" element={<AddDepartment />} />
         <Route path="/AddCompanyBranch" element={<AddCompanyBranch />} />
         <Route path="/ListHr/:id" element={<DetailHr />} />
         <Route path="/ListEmployees/:id" element={<DetailEmployees />} />
+        <Route path="/CreateCard" element={<CreateCard />} />
+        <Route path="/ListGeneralUser/:id" element={<DetailGeneralUser />} />
+        <Route path="/ListDetailBranchAndDepartment" element={<ListDetailBranchAndDepartment />} />
+        <Route path="/ApprovalCompany" element={<ApprovalCompany />} />
+
       </Routes>
     </>
   )

@@ -71,7 +71,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
-    
+
     event.preventDefault();
 
     const formData: FormData = {
@@ -94,7 +94,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
     console.log('form data', formData);
 
-    if (file && Object.values(formData).every(value => value !== '')) {
+    if (file) {
 
       try {
 
@@ -247,7 +247,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       if (loggedInData) {
         const parsedData = JSON.parse(loggedInData);
         const CompanyId = parsedData.companyId;
-  
+
         if (CompanyId) {
           getCompanyBranchById(CompanyId);
           GetDepartmentByCompanyId(CompanyId);
@@ -285,6 +285,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <br />
             <p>เพศ</p>
             <Form.Select aria-label="เลือกเพศ" onChange={handleGender} value={genderValue}>
+              <option value="">เลือกเพศ</option>
               <option value="male">ชาย</option>
               <option value="female">หญิง</option>
             </Form.Select>
@@ -310,6 +311,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <p>สาขาบริษัท</p>
             {dataBranchesById && (
               <Form.Select onChange={handleBranches}>
+                <option value="">เลือกสาขาบริษัท</option>
                 {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
                   <option key={index} value={item.id}>
                     {item.name}
@@ -321,6 +323,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <p>แผนกบริษัท</p>
             {dataDepartmentById && (
               <Form.Select onChange={handleDepartment}>
+                <option value="">เลือกแผนกบริษัท</option>
                 {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
                   <option key={index} value={item.id}>
                     {item.name}

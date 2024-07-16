@@ -7,8 +7,6 @@ const axiosHeaders = {
 
 export class HrApi {
 
-    private urlLogo: string = '';
-
     async GetAllHrByCompanyId() {
 
         const loggedInData = localStorage.getItem("LoggedIn");
@@ -17,7 +15,7 @@ export class HrApi {
 
             const parsedData = JSON.parse(loggedInData);
             const CompanyId = parsedData.id;
-            const endpoint = `https://business-api-638w.onrender.com/users/by-company/${CompanyId}`;
+            const endpoint = `https://business-api-638w.onrender.com/users/by-companyandposition/${CompanyId}/HR`;
 
             if (CompanyId) {
 
@@ -85,8 +83,6 @@ export class HrApi {
 
                 if (res.ok) {
 
-                    const data = await res.json();
-                    this.setUrlLogo(data.Url)
                     console.log('Upload logo successful:', res.status);
                     return res.status;
                 }
@@ -160,15 +156,16 @@ export class HrApi {
         }
     }
 
-    async DeleteHr(companyId: string) {
+    async DeleteHr(HrId: string) {
 
         try {
 
-            const res = await fetch(`${url}/companies/${companyId}`, {
+            const res = await fetch(`${url}/users/${HrId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: companyId
+                body: HrId
             });
+
             return res.status;
 
         } catch (error) {
@@ -177,8 +174,42 @@ export class HrApi {
         }
     }
 
-    setUrlLogo = (url: string) => {
-        this.urlLogo = url;
-        return this.urlLogo;
+    async updateDataHR (firstnameElement: string ,lastnameElement: string ,positionElement: string ,genderElement: string,
+        birthdayElement: string ,startworkElement: string ,subdistrictElement: string ,districtElement: string,
+        provinceElement: string ,countryElement: string ,telElement: string ,emailElement: string,
+        branchElement: string , departmentElement: string , passwordElement: string , HRId: string
+    ){
+
+        try {
+
+            const dataHr = {
+                firstname: firstnameElement,
+                lastname: lastnameElement,
+                email: emailElement,
+                password: passwordElement,
+                gender : genderElement,
+                birthdate : birthdayElement,
+                companybranch :branchElement,
+                department : departmentElement,
+                // positionTemplate : req.body.positionTemplate, 
+                phone : telElement,
+                position : positionElement,
+                startwork : startworkElement,
+                subdistrict: subdistrictElement,
+                district:districtElement,
+                province:provinceElement, 
+                country:countryElement,
+
+            }
+
+            const res = await axios.put(`${url}/users/${HRId}` , dataHr);
+            return res.status;
+            
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
+
+
 }

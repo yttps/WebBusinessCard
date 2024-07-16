@@ -42,7 +42,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   const [genderValue, setGenderValue] = useState('');
   const [departmentValue, setDepartmentValue] = useState('');
   const [branchValue, setBranchValue] = useState('');
-  
+
   const handleDepartment = (e: ChangeEvent<HTMLSelectElement>) => {
     setDepartmentValue(e.target.value);
   };
@@ -82,7 +82,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       country: getInputValue('country'),
       companybranch: branchValue,
       department: departmentValue,
-      position: getInputValue('position'),
+      position: 'HR',
       startwork: getInputValue('startwork'),
       birthdate: getInputValue('birthdate')
     };
@@ -150,18 +150,27 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
   const addData = async (formData: FormData): Promise<string | undefined> => {
-    const hasAtSymbolEmail = formData.email.includes('@');
-    const phoneRegex = /^\d+$/;
 
-    if (!hasAtSymbolEmail) {
+    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    const phoneRegex = /^\d+$/;
+    //แก้เป็น method เดียว
+
+    if (formData.phone.length < 6) {
       Swal.fire({
-        title: 'Add Data Error!',
-        text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
+        title: 'Error!',
+        text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
         icon: 'error',
       });
       return;
     }
-
+    if (!emailRegex.test(formData.email)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'อีเมลต้องมี "@" และ ".com"',
+        icon: 'error',
+      });
+      return;
+    }
     if (!phoneRegex.test(formData.phone)) {
       Swal.fire({
         title: 'Add Data Error!',
@@ -233,7 +242,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         const parsedData = JSON.parse(loggedInData);
 
         const CompanyId = parsedData.id;
-        
+
         if (CompanyId) {
           getCompanyBranchById(CompanyId);
           GetDepartmentByCompanyId(CompanyId);
@@ -268,6 +277,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <br />
             <p>เพศ</p>
             <Form.Select aria-label="เลือกเพศ" onChange={handleGender} value={genderValue}>
+              <option value="">เลือกเพศ</option>
               <option value="male">ชาย</option>
               <option value="female">หญิง</option>
             </Form.Select>
@@ -293,6 +303,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <p>สาขาบริษัท</p>
             {dataBranchesById && (
               <Form.Select onChange={handleBranches}>
+                <option value="">เลือกสาขาบริษัท</option>
                 {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
                   <option key={index} value={item.id}>
                     {item.name}
@@ -304,6 +315,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <p>แผนกบริษัท</p>
             {dataDepartmentById && (
               <Form.Select onChange={handleDepartment}>
+                <option value="">เลือกแผนกบริษัท</option>
                 {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
                   <option key={index} value={item.id}>
                     {item.name}
@@ -311,10 +323,6 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
                 ))}
               </Form.Select>
             )}
-            <br />
-            <p><b>กรณีเป็นฝ่ายบุคคลให้พิมพ์ * HR *</b></p>
-            <Form.Label htmlFor="position">ตำแหน่ง</Form.Label>
-            <Form.Control type="text" id="position" required />
             <br />
             <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
             <Form.Control type="datetime-local" id="startwork" required />

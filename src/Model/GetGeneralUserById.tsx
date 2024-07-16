@@ -1,11 +1,18 @@
 export interface GetDataGeneralUserById {
-    website:      string;
-    password:     string;
-    address:      string;
-    abbreviation: string;
-    businessType: string;
-    yearFounded:  string;
-    email:        string;
-    name:         string;
-    id:           string;
+    firstname: string;
+    password: string;
+    birthdate: string;
+    address: string;
+    gender: string;
+    phone: string;
+    startwork: string | null;
+    companybranch: string | null;
+    position: string;
+    department: string | null;
+    email: string;
+    lastname: string;
+    profile: string;
+    business_cards: string;
+    id: string;
+    age: number;
 }

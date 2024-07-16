@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import Header from '../Header/Header'
 import { GeneralUserApi } from '@/ApiEndpoints/GeneralUserApi';
-import { InputGroup, Form, Table , Button} from 'react-bootstrap';
+import { InputGroup, Form, Table, Button } from 'react-bootstrap';
 import { GetAllGeneralUser } from '@/Model/GetAllGeneralUser';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 function ListGeneralUser() {
 
@@ -15,7 +15,7 @@ function ListGeneralUser() {
 
     const fetchData = async () => {
         try {
-            const response = await generalUserApi.GetAllGeneralUsers(); //get by users not form company
+            const response = await generalUserApi.GetAllGeneralUsers(); //get by generalusers not form company
             setDataGeneralUsers(response);
             setDataFetched(true);
 
@@ -25,6 +25,11 @@ function ListGeneralUser() {
             console.error('Error fetching general users:', error);
         }
     };
+
+    const filteredData = dataGeneralUsers.filter((generalUsers) =>
+        generalUsers?.firstname.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     useEffect(() => {
         if (!dataFetched) {
             fetchData();
@@ -40,7 +45,6 @@ function ListGeneralUser() {
                     <p>
                         รายการบุคคลทั่วไป
                     </p>
-                    {/* <Button variant="success">Success</Button> */}
                 </div>
                 <hr />
                 <div id='headerCon2'>
@@ -58,32 +62,35 @@ function ListGeneralUser() {
                 </Link>
                 <br />
                 <div id='tableCon2'>
-                    <Table striped bordered hover variant="write">
-                        <thead>
-                            <tr>
-                                <th>ชื่อผู้ใช้</th>
-                                <th>Email</th>
-                                <th>เบอร์โทรศัพท์</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {/* {filteredData && filteredData.map((item: Detail_GeneralUser, index: number) => {
-                                const { id } = item;
-                                return (
+                    {filteredData.length > 0 ? (
+                        <Table striped bordered hover variant="write">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อผู้ใช้</th>
+                                    <th>Email</th>
+                                    <th>เบอร์โทรศัพท์</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredData && filteredData.map((item: GetAllGeneralUser, index: number) => (
                                     <tr key={index}>
                                         <td>{item.firstname}</td>
                                         <td>{item.email}</td>
                                         <td>{item.phone}</td>
                                         <td>
-                                            <NavLink to={`/ListGeneralUser/${item.firstname}`}>
-                                                <Button variant="warning" onClick={() => viewDetailGeneralUser(id)}>ดูรายละเอียด</Button>
-                                            </NavLink>
+                                            {typeof window !== 'undefined' && (
+                                                <NavLink to={`/ListGeneralUser/${item.id}`}>
+                                                    <Button variant="warning">แสดงข้อมูล</Button>
+                                                </NavLink>
+                                            )}
                                         </td>
                                     </tr>
-                                )
-                            })} */}
-                        </tbody>
-                    </Table>
+                                ))}
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <p>Not found data General user</p>
+                    )}
                 </div>
             </div>
 

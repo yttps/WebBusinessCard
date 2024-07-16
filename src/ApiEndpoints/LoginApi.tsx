@@ -29,8 +29,6 @@ export class LoginApi {
 
     async GetDetailHRlogin() {
 
-
-
         try {
 
             const loggedInData = localStorage.getItem("LoggedIn");

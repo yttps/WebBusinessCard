@@ -1,24 +1,18 @@
 import axios from 'axios';
 const url = "https://business-api-638w.onrender.com";
 // const url = "http://localhost:8080";   
-const axiosHeaders = {
-    "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
-}
+
 
 export class GeneralUserApi {
 
-    private urlLogo: string = '';
 
     async GetAllGeneralUsers() {
 
         try {
 
-            const res = await axios.get(url + '/users', {
-                headers: axiosHeaders,
-            });
-            const companyData = res.data;
-            console.log('in context', companyData);
-            return companyData;
+            const res = await axios.get(url + '/generalusers');
+            console.log('get all generalusers : ', res);
+            return res.data;
 
         } catch (error) {
             console.error(error);
@@ -30,9 +24,7 @@ export class GeneralUserApi {
 
         try {
 
-            const res = await axios.get(`${url}/users/${id}`, {
-                headers: axiosHeaders,
-            });
+            const res = await axios.get(`${url}/users/${id}`);
 
             const companyDataById = res.data;
             return companyDataById;
@@ -60,8 +52,4 @@ export class GeneralUserApi {
         }
     }
 
-    setUrlLogo = (url: string) => {
-        this.urlLogo = url;
-        return this.urlLogo;
-    }
 }

@@ -1,12 +1,13 @@
 export interface GetDataCompanyById {
-    website:      string;
-    password:     string;
-    address:      string;
-    abbreviation: string;
+
+    website: string;
+    password: string;
+    name: string;
     businessType: string;
-    yearFounded:  string;
-    email:        string;
-    name:         string;
-    id:           string;
-    logo:         string;
+    yearFounded: string;
+    email: string;
+    logo: string;
+    id: string;
+
+    
 }

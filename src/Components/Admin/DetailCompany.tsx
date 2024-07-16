@@ -4,7 +4,7 @@ import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
 import Header from '../Header/Header';
 // import { Row, Col, Button } from 'react-bootstrap';
-import  { Button }  from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -45,34 +45,38 @@ export default function DetailCompany() {
 
         if (!companyById) return;
 
-        const chk = confirm("ยืนยันเพื่อทำการลบข้อมูล!");
+        try {
 
-        if (chk) {
+            const result = await Swal.fire({
+                title: 'ลบข้อมูล?',
+                text: 'ยืนยันเพื่อทำการลบข้อมูล!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            });
 
-            try {
-
-                console.log("com id", companyById?.id);
+            if (result.isConfirmed) {
                 
-                const response = await companyapi.DeleteCompany(companyById.id);
+                const response = await companyapi.DeleteCompany(companyById.id); 
 
                 if (response == 200) {
-                    Swal.fire({
+                    await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
                         icon: 'success',
                     });
-                    
-                    await companyapi.GetAllCompany();
-                    nav('/ListCompany', { replace: true });
+                    nav('/ListHr', { replace: true });
                 }
-            } catch (error) {
-                console.error('Error deleting company:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'เกิดข้อผิดพลาดในการลบข้อมูล!',
-                    icon: 'error',
-                });
             }
+        } catch (error) {
+            console.error('Error deleting general user:', error);
+            await Swal.fire({
+                title: 'Error!',
+                text: 'เกิดข้อผิดพลาดในการลบข้อมูล!',
+                icon: 'error',
+            });
         }
     }
 
@@ -98,7 +102,6 @@ export default function DetailCompany() {
             <p>Business Type: {companyById.businessType}</p>
             <p>Website: {companyById.website}</p>
             <p>Year Founded: {companyById.yearFounded}</p>
-            <p>Address : {companyById.address}</p>
             <p>Password : {companyById.password}</p>
             <div id="col2-2">
                 <Button id='delete-btn' variant="danger" onClick={DeleteCompanyData}>ลบข้อมูล</Button>

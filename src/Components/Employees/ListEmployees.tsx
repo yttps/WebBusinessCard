@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import Header from '@/Components/Header/Header';
-import { Form, InputGroup, Table , Button } from 'react-bootstrap';
+import { Form, InputGroup, Table, Button } from 'react-bootstrap';
 import { EmployeesApi } from '@/ApiEndpoints/EmployeesApi';
 import { GetAllEmployees } from '@/Model/GetAllEmployees';
-import { NavLink } from 'react-router-dom';
+import { NavLink , useNavigate } from 'react-router-dom';
 import AddEmployees from './AddEmployees';
 
 export default function ListEmployees() {
@@ -12,7 +12,8 @@ export default function ListEmployees() {
     const [dataEmployees, setDataEmployees] = useState<GetAllEmployees[]>([]);
     const [dataFetched, setDataFetched] = useState(false);
     const [hasError, setHasError] = useState(false);
-    const [isFetch , setIsFetch] = useState(false);
+    const [isFetch, setIsFetch] = useState(false);
+    const nav = useNavigate();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const employeesapi = new EmployeesApi();
@@ -31,18 +32,26 @@ export default function ListEmployees() {
     }
 
     const filteredData = dataEmployees.filter((dataEmployees) =>
-      dataEmployees.firstname.toLowerCase().includes(searchQuery.toLowerCase())
+        dataEmployees.firstname.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    function toCreateCardPage () {
+        nav('/CreateCard');
+    }
+
+    function toCreateTemplate () {
+        nav('/CreateTemplate');
+    }
 
     useEffect(() => {
         if (!dataFetched) {
-          getEmployees();
+            getEmployees();
         }
     }, [dataFetched]);
 
-    useEffect(()=>{
+    useEffect(() => {
 
-    },[dataEmployees]);
+    }, [dataEmployees]);
 
     return (
         <>
@@ -52,7 +61,13 @@ export default function ListEmployees() {
                 <div id='headerCon1'>
                     <p>รายชื่อพนักงาน</p>
                 </div>
-                <AddEmployees isFetch={isFetch} setIsFetch={setIsFetch}/>
+                <AddEmployees isFetch={isFetch} setIsFetch={setIsFetch} />
+                <Button variant="success" onClick={toCreateCardPage}>
+                    สร้างนามบัตรให้พนักงาน
+                </Button>
+                <Button variant="success" onClick={toCreateTemplate}>
+                    สร้างเทมเพลตให้บริษัท
+                </Button>
                 <hr />
                 <div id='headerCon2'>
                     <InputGroup className="mb-3">

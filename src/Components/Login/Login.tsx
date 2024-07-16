@@ -48,7 +48,7 @@ export default function Login() {
                 if (res.role === "user") {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
-
+                    console.log("first set" , res);
                     const response = await loginapi.GetDetailHRlogin();
 
                     if (response) {
@@ -111,7 +111,7 @@ export default function Login() {
                 <div className='formname'>
                     <Form onSubmit={loginUserData}>
                         <Form.Group className="mb-4" controlId="formBasicEmail">
-                            <Form.Label>Username</Form.Label>
+                            <Form.Label>Email</Form.Label>
                             <Form.Control className='custom-width' type="email" placeholder="Email"
                                 ref={emailRef} required />
                         </Form.Group>

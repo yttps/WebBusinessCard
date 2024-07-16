@@ -48,6 +48,10 @@ export default function ListCompany() {
                     <Link to="/ListGeneralUser">
                         <Button variant="primary">บุคคลทั่วไป</Button>
                     </Link>
+                    <br />
+                    <Link to="/ApprovalCompany">
+                        <Button variant="primary">รายการรออนุมัติบริษัท</Button>
+                    </Link>
                 </div>
                 <hr />
                 <div id='headerCon2'>
@@ -78,7 +82,6 @@ export default function ListCompany() {
                             <tbody>
                                 {filteredData.map((item: GetAllCompany, index: number) => (
                                     <tr key={index}>
-                                        <td>{index + 1}</td>
                                         <td>{item.name}</td>
                                         <td>{item.abbreviation}</td>
                                         <td>{item.businessType}</td>

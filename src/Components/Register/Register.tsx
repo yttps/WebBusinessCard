@@ -109,63 +109,104 @@ export default function Register() {
     district: getDistrictValue(),
     province: getProvinceValue(),
     country: getCountryValue(),
+    file: file
   };
 
   const uploadData = async (event: React.FormEvent) => {
 
     event.preventDefault();
+    const emailValue = getEmailValue();
+    const passwordValue = getPasswordValue();
+    const phoneNumberValue = getPhoneNumberValue();
+    const websiteValue = getWebsiteValue();
 
-    if (file && formData.email && formData.password && formData.businessType && formData.name && formData.phoneNumber && formData.website
-      && formData.yearFounded && formData.subdistrict && formData.district && formData.province && formData.country
-    ) {
 
-      const rescompanyId = await addData();
+    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    const phoneRegex = /^\d+$/;
+    const allValuesNotNull = Object.values(formData).every(value => value !== null && value !== '');
+    const websiteRegex = new RegExp(/^www\.[a-zA-Z0-9-]+\.[a-z]{2,}$/);
 
-      console.log('company id', rescompanyId);
 
-      if (rescompanyId) {
-
-        const resUploadLogo = await addLogo(file, rescompanyId);
-
-        if (resUploadLogo == 200) {
-
-          clearImageCache();
-          Swal.fire({
-            title: 'Success!',
-            text: 'เพิ่มข้อมูลสำเร็จ',
-            icon: 'success',
-          });
-
-          nav('/', { replace: true });
-
-        }
-        else if (resUploadLogo == 500) {
-          Swal.fire({
-            title: 'Upload Error!',
-            text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
-            icon: 'error',
-          });
-          return;
-        }
-
-      }
-      // if (resUploadData == 400) {
-
-      //   Swal.fire({
-      //     title: 'Error!',
-      //     text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
-      //     icon: 'error',
-      //   });
-      //   return;
-      // }
-    }
-    else {
+    if (!allValuesNotNull) {
       Swal.fire({
-        title: 'Upload Error!',
-        text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
+        title: 'Error!',
+        text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
         icon: 'error',
       });
       return;
+    }
+
+    if (!websiteRegex.test(websiteValue)) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'กรอกข้อมูลเว็บไซต์ให้ถูกต้อง!',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (passwordValue.length < 6) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (!emailRegex.test(emailValue)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'อีเมลต้องมี "@" และ ".com"',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (!phoneRegex.test(phoneNumberValue)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+        icon: 'error',
+      });
+      return;
+    }
+
+    const rescompanyId = await addData();
+
+    if (rescompanyId == '0') {
+      Swal.fire({
+        title: 'เพิ่มข้อมูลล้มเหลว!',
+        text: 'อีเมลซ้ำกับ User อื่น!',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (rescompanyId && file) {
+
+      const resUploadLogo = await addLogo(file, rescompanyId);
+
+      if (resUploadLogo == 200) {
+
+        clearImageCache();
+        Swal.fire({
+          title: 'Success!',
+          text: 'เพิ่มข้อมูลสำเร็จ',
+          icon: 'success',
+        });
+
+        nav('/', { replace: true });
+
+      }
+      if (resUploadLogo == 500) {
+        Swal.fire({
+          title: 'Upload Error!',
+          text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+          icon: 'error',
+        });
+        return;
+      }
     }
   }
 
@@ -175,7 +216,7 @@ export default function Register() {
 
       const folderName = 'logo';
       const collection = 'companies';
-      const res = await companyapi.UploadLogo(file, companyId, folderName,collection);
+      const res = await companyapi.UploadLogo(file, companyId, folderName, collection);
       return res;
 
     } catch (error) {
@@ -199,68 +240,27 @@ export default function Register() {
     const provinceValue = getProvinceValue();
     const countryValue = getCountryValue();
 
-    const hasAySymbolEmail = emailValue.includes('@');
-    const hasAySymbolWeb = websiteValue.includes('.com');
-    const phoneRegex = /^\d+$/;
+    const resCompanyId = await companyapi.AddDataCompany(
+      emailValue,
+      passwordValue,
+      businessTypeValue,
+      nameValue,
+      phoneNumberValue,
+      websiteValue,
+      yearFoundedValue,
+      subdistrictValue,
+      districtValue,
+      provinceValue,
+      countryValue);
 
-    if (!hasAySymbolEmail || !hasAySymbolWeb) {
-
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
-        icon: 'error',
-      });
-      return;
-    }
-
-    if (!phoneRegex.test(phoneNumberValue)) {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-        icon: 'error',
-      });
-      return;
-    }
-
-    if (emailValue &&
-      passwordValue &&
-      businessTypeValue &&
-      nameValue &&
-      phoneNumberValue &&
-      websiteValue &&
-      yearFoundedValue &&
-      subdistrictValue &&
-      districtValue &&
-      provinceValue &&
-      countryValue) {
-
-      const resCompanyId = await companyapi.AddDataCompany(
-        emailValue,
-        passwordValue,
-        businessTypeValue,
-        nameValue,
-        phoneNumberValue,
-        websiteValue,
-        yearFoundedValue,
-        subdistrictValue,
-        districtValue,
-        provinceValue,
-        countryValue);
-
-      if (resCompanyId) {
-        setCompanyID(resCompanyId);
-        console.log("com", resCompanyId);
-        return resCompanyId;
-      }
-    } else {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'กรอกข้อมูลให้ครบ',
-        icon: 'error',
-      });
-      return;
+    //add status
+    if (resCompanyId) {
+      console.log(resCompanyId);
+      setCompanyID(resCompanyId);
+      return resCompanyId;
     }
   };
+
   return (
     <>
       <Navbar className="bg-body-alert-dark">

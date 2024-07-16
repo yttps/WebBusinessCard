@@ -158,17 +158,54 @@ export class EmployeesApi {
         }
     }
 
-    async DeleteEmployee(companyId: string) {
+    async DeleteEmployee(EmployeeId: string) {
 
         try {
 
-            const res = await fetch(`${url}/companies/${companyId}`, {
+            const res = await fetch(`${url}/users/${EmployeeId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: companyId
+                body: EmployeeId
             });
             return res.status;
 
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async updateDataEmployee (firstnameElement: string ,lastnameElement: string ,positionElement: string ,genderElement: string,
+        birthdayElement: string ,startworkElement: string ,subdistrictElement: string ,districtElement: string,
+        provinceElement: string ,countryElement: string ,telElement: string ,emailElement: string,
+        branchElement: string , departmentElement: string , passwordElement: string , HRId: string
+    ){
+
+        try {
+
+            const dataHr = {
+                firstname: firstnameElement,
+                lastname: lastnameElement,
+                email: emailElement,
+                password: passwordElement,
+                gender : genderElement,
+                birthdate : birthdayElement,
+                companybranch :branchElement,
+                department : departmentElement,
+                // positionTemplate : req.body.positionTemplate, 
+                phone : telElement,
+                position : positionElement,
+                startwork : startworkElement,
+                subdistrict: subdistrictElement,
+                district:districtElement,
+                province:provinceElement, 
+                country:countryElement,
+
+            }
+
+            const res = await axios.put(`${url}/users/${HRId}` , dataHr);
+            return res.status;
+            
         } catch (error) {
             console.error(error);
             throw error;
