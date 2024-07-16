@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../Header/Header';
-import { Row, Col, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { GeneralUserApi } from '@/ApiEndpoints/GeneralUserApi';
 import { GetDataGeneralUserById } from '@/Model/GetGeneralUserById';
