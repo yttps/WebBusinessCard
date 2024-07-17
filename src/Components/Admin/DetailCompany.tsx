@@ -67,7 +67,7 @@ export default function DetailCompany() {
                         text: 'ลบข้อมูลสำเร็จ!',
                         icon: 'success',
                     });
-                    nav('/ListHr', { replace: true });
+                    nav('/ListCompany', { replace: true });
                 }
             }
         } catch (error) {

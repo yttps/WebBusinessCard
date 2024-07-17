@@ -7,6 +7,8 @@ import { CompanyApi } from "@/ApiEndpoints/CompanyApi";
 import { Button } from "react-bootstrap";
 import { GetUsersByCompany } from "@/Model/GetUsersByCompany";
 import CanvasTemplate from "./CanvasTemplate";
+import Swal from 'sweetalert2';
+import { useNavigate } from "react-router-dom";
 
 export default function CreateCard() {
   const templateapi = new TemplateApi();
@@ -17,10 +19,8 @@ export default function CreateCard() {
   const [positions, setPositions] = useState<{ [key: string]: { x: number; y: number } }[]>([]);
   const [index, setIndex] = useState(0);
   const [getUserByCompanies, setGetUserByCompanies] = useState<GetUsersByCompany[] | null>(null);
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const nav = useNavigate();
 
-
-  console.log('img' , generatedImages);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -39,57 +39,88 @@ export default function CreateCard() {
     setIndex(selectedIndex);
   };
 
-  const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number } }, logo: string) => {
-    return new Promise<string>((resolve) => {
 
-     
+  const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number } }, logo: string) => {
+    return new Promise<string>((resolve, reject) => {
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext('2d');
-      console.log('check' , canvas);
-
 
       if (canvas && ctx) {
+        console.log('Canvas and context are ready');
+        canvas.width = 900;
+        canvas.height = 550;
         const img = new Image();
-        img.crossOrigin = "anonymous"; // Set the crossOrigin attribute
-        img.src = background;
+        img.crossOrigin = 'anonymous';
+        img.src = `${background}`;
+
+
 
         img.onload = () => {
+          console.log('Background image loaded');
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
           Object.keys(textMappings).forEach((key) => {
             if (positions[key]) {
+              console.log(`Drawing text for key: ${key}`);
               const { x, y } = positions[key];
               ctx.font = '30px Bold';
               ctx.fillStyle = 'black';
               ctx.fillText(textMappings[key], x, y);
+              console.log(`Text drawn at (${x}, ${y})`);
+            } else {
+              console.log(`Position for key ${key} not found`);
             }
           });
 
           const logoImg = new Image();
-          logoImg.crossOrigin = "anonymous"; // Set the crossOrigin attribute
-          logoImg.src = logo;
+          logoImg.crossOrigin = 'anonymous';
+          logoImg.src = `${logo}`;
+
           logoImg.onload = () => {
+            console.log('Logo image loaded');
             if (positions.logo) {
               const { x, y } = positions.logo;
               ctx.drawImage(logoImg, x, y, 100, 70);
+              console.log(`Logo drawn at (${x}, ${y})`);
 
               canvas.toBlob((blob) => {
                 if (blob) {
                   const url = URL.createObjectURL(blob);
                   resolve(url);
+                } else {
+                  console.error('Failed to create blob from canvas');
+                  reject('Failed to create blob from canvas');
                 }
               }, 'image/png');
+            } else {
+              console.error('Logo position not found');
+              reject('Logo position not found');
             }
           };
+
+          logoImg.onerror = () => {
+            console.error('Failed to load logo image');
+            reject('Failed to load logo image');
+          };
         };
+
+        img.onerror = () => {
+          console.error('Failed to load background image');
+          reject('Failed to load background image');
+        };
+      } else {
+        console.error('Canvas or context not found');
+        reject('Canvas or context not found');
       }
     });
   };
 
+
   const handleSelectedTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, template: GetTemplateCompanyId) => {
+
     e.preventDefault();
-    
+
     const position = {
       companyAddress: { x: template.companyAddress.x, y: template.companyAddress.y },
       companyName: { x: template.companyName.x, y: template.companyName.y },
@@ -103,9 +134,14 @@ export default function CreateCard() {
     };
 
     if (getUserByCompanies) {
-      const newGeneratedImages: string[] = [];
+
+      const newGeneratedFiles: { file: File; uid: string }[] = [];
 
       for (const user of getUserByCompanies) {
+
+        console.log('Drawing with background:', template.background);
+        console.log('Drawing with logo:', UrlLogocompany);
+
         const textMappings = {
           "fullname": `${user.firstname} ${user.lastname}`,
           "companyName": `${user.companybranch.company.name}`,
@@ -117,15 +153,55 @@ export default function CreateCard() {
           "departmentName": `${user.department.name}`,
         };
 
-        
+        try {
+          const imageUrl = await drawImage(template.background, textMappings, position, UrlLogocompany);
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+          const file = new File([blob], `${user.id}.png`, { type: 'image/png' });
 
-        const imageUrl = await drawImage(template.background, textMappings, position, UrlLogocompany);
-        newGeneratedImages.push(imageUrl);
-        setGeneratedImages([...newGeneratedImages]);
-        console.log('Generated Image:', imageUrl);
+          const data = {
+            file: file,
+            uid: user.id
+          };
+
+          newGeneratedFiles.push(data);
+
+        } catch (error) {
+          console.error('Error generating image:', error);
+        }
+      }
+
+      if (newGeneratedFiles.length > 0) {
+
+        await uploadSelectedTemplate(newGeneratedFiles);
+
       }
     }
   };
+
+  async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[]) {
+    console.log('check', cardUsers);
+    const resUpload = await templateapi.uploadSelectedTemplate(cardUsers);
+    console.log(resUpload);
+    const allSuccess = resUpload.every((status: number) => status === 200);
+
+    if (allSuccess) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'เลือกเทมเพลตสำเร็จ',
+        icon: 'success',
+      });
+
+      nav('/ListEmployees', { replace: true });
+    
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: 'บางไฟล์อัพโหลดไม่สำเร็จ',
+        icon: 'error',
+      });
+    }
+  }
 
   const getTemplateByCompanyId = async (companyId: string) => {
     const resTemplateByid = await templateapi.getTemplateByCompanyId(companyId);
@@ -201,6 +277,7 @@ export default function CreateCard() {
       </Carousel>
       <br />
       <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <br />
     </div>
   );
 }

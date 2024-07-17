@@ -144,4 +144,32 @@ export class TemplateApi {
         }
     }
 
+    async uploadSelectedTemplate(cardUsers :{file:File, uid: string}[]){
+
+        console.log('in context test' , cardUsers);
+        const statusCodes:number[] = [];
+        const folderName = 'business_card';
+
+        const uploadPromises = cardUsers.map(async (cardUser) => {
+            const formData = new FormData();
+            formData.append('file', cardUser.file);
+            formData.append('folder', folderName);
+            formData.append('uid', cardUser.uid);
+    
+            try {
+
+                const res = await axios.post(`${url}/upload-image`, formData);
+                statusCodes.push(res.status);
+    
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        });
+    
+        const statuses = await Promise.all(uploadPromises);
+        console.log('Upload statuses:', statuses);
+        return statusCodes;
+
+    }
+
 }
