@@ -119,7 +119,7 @@ function AddCompany() {
       console.log(formData);
       const rescompanyId = await addData();
 
-      if (rescompanyId) {
+      if (rescompanyId !== '0' && rescompanyId !== undefined) {
 
         const folderName = 'logo';
         const collection = 'companies';
@@ -148,6 +148,7 @@ function AddCompany() {
         }
 
       }
+
       if (rescompanyId == '0') {
 
         Swal.fire({
@@ -157,6 +158,15 @@ function AddCompany() {
         });
         return;
       }
+
+      if(rescompanyId == 'password'){
+        Swal.fire({
+          title: 'Error!',
+          text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
+          icon: 'error',
+        });
+      }
+
       if (rescompanyId == 'email') {
 
         Swal.fire({
@@ -219,11 +229,16 @@ function AddCompany() {
     const provinceValue = getProvinceValue();
     const countryValue = getCountryValue();
 
-    const hasAySymbolEmail = emailValue.includes('@');
-    const hasAySymbolWeb = websiteValue.includes('.com');
+    const hasAySymbolWeb = websiteValue.endsWith('.com');
+    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+
     const phoneRegex = /^\d+$/;
 
-    if (!hasAySymbolEmail) {
+    if (passwordValue.length < 6) {
+
+      return 'password';
+    }
+    if (!emailRegex.test(emailValue)) {
       return 'email';
     }
 

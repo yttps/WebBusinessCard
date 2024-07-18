@@ -119,7 +119,8 @@ export class CompanyApi {
                 district: district,
                 province: province,
                 country: country,
-                logo: 'logo'
+                logo: 'logo',
+                status:'0'
             }
 
             console.log('data com in context', dataCompany);
