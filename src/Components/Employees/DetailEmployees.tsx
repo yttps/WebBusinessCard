@@ -17,6 +17,7 @@ import { GetDataCompanyById } from '@/Model/GetCompanyById';
 
 export default function DetailEmployees() {
 
+    //non test update card
     const { id: employeesId } = useParams();
     const employeesapi = new EmployeesApi();
     const [dataemployeesById, setDataEmployeesById] = useState<GetEmployeeById | null>(null);
