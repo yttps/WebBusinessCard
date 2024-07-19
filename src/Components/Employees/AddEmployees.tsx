@@ -386,8 +386,6 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       const resUpload = await templateapi.uploadSelectedTemplate(cardUsers);
       const allSuccess = resUpload.every((status: number) => status === 200);
 
-      // all undifined
-
       if (allSuccess) {
 
         const resUpdateStatus = await templateapi.updateStatus(temId, status, getDataCompanyById?.id);
