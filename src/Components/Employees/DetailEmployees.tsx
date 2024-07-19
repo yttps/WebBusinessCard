@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent } from 'react'
+import { useEffect, useState, ChangeEvent, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { GetEmployeeById } from '@/Model/GetEmployeeById';
 import Header from '../Header/Header';
@@ -12,6 +12,7 @@ import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { EmployeesApi } from '@/ApiEndpoints/EmployeesApi';
 import { GetTemplateCompanyId } from '@/Model/GetTemplateCompanyId';
 import { TemplateApi } from '@/ApiEndpoints/TemplateApi';
+import { GetDataCompanyById } from '@/Model/GetCompanyById';
 
 
 export default function DetailEmployees() {
@@ -22,21 +23,28 @@ export default function DetailEmployees() {
     const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
     const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
     const [TemplateBycompanyId, setTemplateBycompanyId] = useState<GetTemplateCompanyId[]>([]);
+    const [statusEditCard, setStatusEditCard] = useState(0);
+    const [getDataCompanyById, setGetDataCompanyById] = useState<GetDataCompanyById | null>(null);
 
-    console.log('tem' , TemplateBycompanyId);
 
     const [isLoading, setIsLoading] = useState(false);
     const templateapi = new TemplateApi();
     const nav = useNavigate();
     const [update, setUpdate] = useState(false);
-    const [genderValue, setGenderValue] = useState('');
-    const [departmentValue, setDepartmentValue] = useState('');
     const [branchValue, setBranchValue] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const hrapi = new HrApi();
     const [isFetch, setIsFetch] = useState(false);
     const companyapi = new CompanyApi();
     const employeeapi = new EmployeesApi();
+    const [genderValue, setGenderValue] = useState('');
+    const [departmentValue, setDepartmentValue] = useState('');
+    const [addressBranch, setAddressBranch] = useState('');
+    const [telDepartment, setTelDepartment] = useState('');
+    const [departName, setDepartmentName] = useState('');
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+
 
     async function getCompanyBranchById(CompanyId: string) {
         const res = await companyapi.getCompanyBranchById(CompanyId);
@@ -53,6 +61,12 @@ export default function DetailEmployees() {
     async function getTemplateByCompanyId(CompanyId: string) {
         const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
         setTemplateBycompanyId(res);
+        setIsFetch(true);
+    }
+
+    async function getUrlLogoCompany(CompanyId: string) {
+        const resGetdataDetail = await companyapi.GetDataCompanyById(CompanyId);
+        setGetDataCompanyById(resGetdataDetail);
         setIsFetch(true);
     }
 
@@ -79,13 +93,31 @@ export default function DetailEmployees() {
     };
 
     const handleDepartment = (e: ChangeEvent<HTMLSelectElement>) => {
+        const selectedValue = e.target.value;
         console.log(e.target.value);
         setDepartmentValue(e.target.value);
+
+        const selectedDepartment = dataDepartmentById.find(department => department.id === selectedValue);
+        if (selectedDepartment) {
+            setDepartmentName(selectedDepartment.name);
+            setTelDepartment(selectedDepartment.phone);
+        } else {
+            setDepartmentName('');
+        }
     };
 
     const handleBranches = (e: ChangeEvent<HTMLSelectElement>) => {
+        const selectedValue = e.target.value;
+
         console.log(e.target.value);
-        setBranchValue(e.target.value);
+        setBranchValue(selectedValue);
+
+        const selectedBranch = dataBranchesById.find(branch => branch.id === selectedValue);
+        if (selectedBranch) {
+            setAddressBranch(selectedBranch.address)
+        } else {
+            setAddressBranch('');
+        }
     };
 
     const handleGender = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -233,8 +265,10 @@ export default function DetailEmployees() {
                 const folderName = '';
                 const collection = 'users';
                 const resUploadLogo = await hrapi.UploadProfile(file, EMId, folderName, collection);
+                //update card
+                await updateDetailCard();
 
-                if (resUploadLogo == 200) {
+                if (resUploadLogo == 200 && statusEditCard == 200) {
                     Swal.fire({
                         title: 'Success!',
                         text: 'อัปเดทข้อมูลสำเร็จ!',
@@ -260,6 +294,201 @@ export default function DetailEmployees() {
         }
     }
 
+    const updateDetailCard = async () => {
+
+        if (TemplateBycompanyId[0]?.status?.toString() !== '1') {
+            return;
+        }
+
+        if (!TemplateBycompanyId || !getDataCompanyById) {
+            console.error('TemplateBycompanyId or getDataCompanyById is not available');
+            return;
+        }
+
+        const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
+        const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
+        const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
+        const birthdayElement = document.getElementById('birthdayEdit') as HTMLInputElement;
+        const startworkElement = document.getElementById('startworkEdit') as HTMLInputElement;
+        const subdistrictElement = document.getElementById('subdistrictEdit') as HTMLInputElement;
+        const districtElement = document.getElementById('districtEdit') as HTMLInputElement;
+        const provinceElement = document.getElementById('provinceEdit') as HTMLInputElement;
+        const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
+        const telElement = document.getElementById('telEdit') as HTMLInputElement;
+        const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
+        const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
+
+        const formEdit = {
+            firstname: firstnameElement.value,
+            lastname: lastnameElement.value,
+            position: positionElement.value,
+            gender: genderValue,
+            birthdate: birthdayElement.value,
+            startwork: startworkElement.value,
+            subdistrict: subdistrictElement.value,
+            district: districtElement.value,
+            province: provinceElement.value,
+            country: countryElement.value,
+            phone: telElement.value,
+            email: emailElement.value,
+            password: passwordElement.value,
+            branch: branchValue,
+            department: departmentValue
+        }
+
+        const newGeneratedFiles: { file: File; uid: string }[] = [];
+        const temId = TemplateBycompanyId[0].id;
+        const positions = {
+            companyAddress: { x: TemplateBycompanyId[0].companyAddress.x, y: TemplateBycompanyId[0].companyAddress.y },
+            companyName: { x: TemplateBycompanyId[0].companyName.x, y: TemplateBycompanyId[0].companyName.y },
+            departmentName: { x: TemplateBycompanyId[0].departmentName.x, y: TemplateBycompanyId[0].departmentName.y },
+            email: { x: TemplateBycompanyId[0].email.x, y: TemplateBycompanyId[0].email.y },
+            fullname: { x: TemplateBycompanyId[0].fullname.x, y: TemplateBycompanyId[0].fullname.y },
+            logo: { x: TemplateBycompanyId[0].logo.x, y: TemplateBycompanyId[0].logo.y },
+            phone: { x: TemplateBycompanyId[0].phone.x, y: TemplateBycompanyId[0].phone.y },
+            phoneDepartment: { x: TemplateBycompanyId[0].phoneDepartment.x, y: TemplateBycompanyId[0].phoneDepartment.y },
+            position: { x: TemplateBycompanyId[0].position.x, y: TemplateBycompanyId[0].position.y }
+        };
+
+        console.log('positions', positions);
+
+        if (dataemployeesById) {
+
+            const textMappingsArray = {
+                "fullname": `${formEdit.firstname} ${formEdit.lastname}`,
+                "companyName": `${dataemployeesById.companybranch.company.name}`,
+                "companyAddress": `${addressBranch}`,
+                "position": `${departName}`,
+                "email": `${formEdit.email}`,
+                "phoneDepartment": `${telDepartment}`,
+                "phone": `${formEdit.phone}`,
+                "departmentName": `${departName}`,
+            };
+
+            console.log('textMappings', textMappingsArray);
+
+            try {
+                const imageUrl = await drawImage(TemplateBycompanyId[0].background, textMappingsArray, positions, getDataCompanyById.logo);
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const file = new File([blob], `${dataemployeesById.id}.png`, { type: 'image/png' });
+
+                const data = {
+                    file: file,
+                    uid: dataemployeesById.id,
+                };
+
+                newGeneratedFiles.push(data);
+
+            } catch (error) {
+                console.error('Error generating image:', error);
+            }
+        }
+
+        if (newGeneratedFiles.length > 0) {
+
+            await uploadSelectedTemplate(newGeneratedFiles, temId);
+
+        }
+
+    }
+
+    const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number } }, logo: string) => {
+        return new Promise<string>((resolve, reject) => {
+            const canvas = canvasRef.current;
+            const ctx = canvas?.getContext('2d');
+
+            if (canvas && ctx) {
+                canvas.width = 900;
+                canvas.height = 600;
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = `${background}`;
+
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    Object.keys(textMappings).forEach((key) => {
+                        if (positions[key]) {
+                            const { x, y } = positions[key];
+                            ctx.font = '30px Bold';
+                            ctx.fillStyle = 'black';
+                            ctx.fillText(textMappings[key], x, y);
+                        } else {
+                            console.log(`Position for key ${key} not found`);
+                        }
+                    });
+
+                    const logoImg = new Image();
+                    logoImg.crossOrigin = 'anonymous';
+                    logoImg.src = `${logo}`;
+
+                    logoImg.onload = () => {
+                        if (positions.logo) {
+                            const { x, y } = positions.logo;
+                            ctx.drawImage(logoImg, x, y, 100, 70);
+
+                            canvas.toBlob((blob) => {
+                                if (blob) {
+                                    const url = URL.createObjectURL(blob);
+                                    resolve(url);
+                                } else {
+                                    reject('Failed to create blob from canvas');
+                                }
+                            }, 'image/png');
+                        } else {
+                            reject('Logo position not found');
+                        }
+                    };
+
+                    logoImg.onerror = () => {
+                        reject('Failed to load logo image');
+                    };
+                };
+                img.onerror = () => {
+                    reject('Failed to load background image');
+                };
+            } else {
+                reject('Canvas or context not found');
+            }
+        });
+    };
+
+    async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
+
+        if (TemplateBycompanyId[0]?.status?.toString() === '1' && getDataCompanyById) {
+
+            const status = '1';
+            const resUpload = await templateapi.uploadSelectedTemplate(cardUsers);
+            const allSuccess = resUpload.every((status: number) => status === 200);
+
+            // all undifined
+
+            if (allSuccess) {
+
+                const resUpdateStatus = await templateapi.updateStatus(temId, status, getDataCompanyById?.id);
+
+                if (resUpdateStatus == 200) {
+
+                    setStatusEditCard(resUpdateStatus);
+                }
+
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'บางไฟล์อัพโหลดไม่สำเร็จ',
+                    icon: 'error',
+                });
+            }
+        }
+        else {
+            console.log('Non selected template');
+            return;
+        }
+
+    }
+
     useEffect(() => {
 
         if (!isLoading) {
@@ -281,6 +510,7 @@ export default function DetailEmployees() {
                     getCompanyBranchById(CompanyId);
                     GetDepartmentByCompanyId(CompanyId);
                     getTemplateByCompanyId(CompanyId);
+                    getUrlLogoCompany(CompanyId);
                 }
             }
         }
