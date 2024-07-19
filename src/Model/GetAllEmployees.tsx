@@ -15,4 +15,5 @@ export interface GetAllEmployees {
     profile:       string;
     id:            string;
     age:           number;
+    business_card: string;
 }

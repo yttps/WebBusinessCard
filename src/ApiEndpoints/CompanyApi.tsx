@@ -2,24 +2,53 @@ import axios from 'axios';
 
 const url = "https://business-api-638w.onrender.com";
 // const url = "http://localhost:3000";   
-const axiosHeaders = {
-    "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
-}
+
 
 export class CompanyApi {
 
     private urlLogo: string = '';
 
-    async GetAllCompany() {
+    async GetAllCompanyAccept() {
 
         try {
 
-            const res = await axios.get(url + '/companies', {
-                headers: axiosHeaders,
-            });
+            const res = await axios.get(url + '/companies');
             const companyData = res.data;
-            console.log('in context', companyData);
-            return companyData;
+
+            const filteredData = companyData.filter((company: {status: string}) => company.status !== '0');
+            console.log('in context', filteredData);
+            return filteredData;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async AcceptCompanyData (companyid: string){
+
+        try {
+            
+            const status = { status: '1' };
+            const res = await axios.put(`${url}/companies/status/${companyid}` , status);
+            return res.status;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async GetAllCompanyNoAccept() {
+
+        try {
+
+            const res = await axios.get(url + '/companies');
+            const companyData = res.data;
+
+            const filteredData = companyData.filter((company: {status: string}) => company.status === '0');
+            console.log('in context', filteredData);
+            return filteredData;
 
         } catch (error) {
             console.error(error);
@@ -31,9 +60,7 @@ export class CompanyApi {
 
         try {
 
-            const res = await axios.get(`${url}/companies/${id}`, {
-                headers: axiosHeaders,
-            });
+            const res = await axios.get(`${url}/companies/${id}`);
 
             const companyDataById = res.data;
             return companyDataById;
@@ -48,9 +75,7 @@ export class CompanyApi {
 
         try {
 
-            const res = await axios.get(`${url}/companies/${id}`, {
-                headers: axiosHeaders,
-            });
+            const res = await axios.get(`${url}/companies/${id}`);
 
             const urlLogo = res.data.logo;
             return urlLogo;
@@ -148,9 +173,8 @@ export class CompanyApi {
 
         try {
 
-            const urlWithId = `${url}/companies/${companyId}`;
-            const res = await axios.delete(urlWithId);
-            console.log('delete company status', res.status);
+            console.log('DeleteCompany' , companyId);
+            const res = await axios.delete(`${url}/companies/${companyId}`);
             return res.status;
 
         } catch (error) {

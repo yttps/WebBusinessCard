@@ -67,6 +67,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
+
     event.preventDefault();
 
     const formData: FormData = {
@@ -89,54 +90,86 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
     console.log('form data', formData);
 
-    if (file && Object.values(formData).every(value => value !== '')) {
-      try {
-        const resUploadData = await addData(formData);
+    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    const phoneRegex = /^\d+$/;
+    const allValuesNotNull = Object.values(formData).every(value => value !== null && value !== '');
 
-        if (resUploadData) {
-
-          const folderName = '';
-          const collection = 'users';
-          const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
-
-          if (resUploadLogo === 200) {
-            clearImageCache();
-            Swal.fire({
-              title: 'Success!',
-              text: 'เพิ่มข้อมูลสำเร็จ',
-              icon: 'success',
-            });
-            // await hrapi.GetAllHr();
-            handleClose();
-          } else {
-            Swal.fire({
-              title: 'Upload Error!',
-              text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
-              icon: 'error',
-            });
-          }
-        }
-        if (resUploadData === undefined) {
-          Swal.fire({
-            title: 'Error!',
-            text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
-            icon: 'error',
-          });
-        }
-      } catch (error) {
-        Swal.fire({
-          title: 'Error!',
-          text: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล',
-          icon: 'error',
-        });
-      }
-    } else {
+    if (!allValuesNotNull || !file) {
       Swal.fire({
-        title: 'Upload Error!',
-        text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
+        title: 'Error!',
+        text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
         icon: 'error',
       });
+      return;
     }
+
+    if (formData.password.length < 6) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (!emailRegex.test(formData.email)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'อีเมลต้องมี "@" และ ".com"',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (!phoneRegex.test(formData.phone)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+        icon: 'error',
+      });
+      return;
+    }
+
+    const resUploadData = await addData(formData);
+
+    if (resUploadData === undefined)  // add check 0 in node js
+    {
+      Swal.fire({
+        title: 'Error!',
+        text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
+        icon: 'error',
+      });
+
+      return;
+    }
+
+    if (resUploadData && resUploadData !== '0' && file) {
+
+      const folderName = '';
+      const collection = 'users';
+      const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
+
+      if (resUploadLogo === 200) {
+        clearImageCache();
+        Swal.fire({
+          title: 'Success!',
+          text: 'เพิ่มข้อมูลสำเร็จ',
+          icon: 'success',
+        });
+        handleClose();
+
+      } else {
+
+        Swal.fire({
+          title: 'Upload Error!',
+          text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+          icon: 'error',
+        });
+
+        return;
+      }
+    }
+
   };
 
   const addProfile = async (file: File, uid: string, folderName: string, collection: string): Promise<number | undefined> => {
@@ -150,35 +183,6 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
   const addData = async (formData: FormData): Promise<string | undefined> => {
-
-    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
-    const phoneRegex = /^\d+$/;
-    //แก้เป็น method เดียว
-
-    if (formData.phone.length < 6) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
-        icon: 'error',
-      });
-      return;
-    }
-    if (!emailRegex.test(formData.email)) {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'อีเมลต้องมี "@" และ ".com"',
-        icon: 'error',
-      });
-      return;
-    }
-    if (!phoneRegex.test(formData.phone)) {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-        icon: 'error',
-      });
-      return;
-    }
 
     const res = await hrapi.AddDataHr(
       formData.firstname,
@@ -197,7 +201,6 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       formData.startwork,
       formData.birthdate);
 
-    console.log("department", departmentValue);
 
     return res;
   };

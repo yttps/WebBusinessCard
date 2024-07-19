@@ -140,12 +140,6 @@ export class EmployeesApi {
 
         try {
 
-            // const res = await fetch(`${url}/users`, {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(dataEmployee)
-            // });
-
             const endpoint = `${url}/users`;
             const res = await axios.post(endpoint , dataEmployee);
 
@@ -162,11 +156,7 @@ export class EmployeesApi {
 
         try {
 
-            const res = await fetch(`${url}/users/${EmployeeId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: EmployeeId
-            });
+            const res = await axios.delete(`${url}/users/${EmployeeId}`);
             return res.status;
 
         } catch (error) {

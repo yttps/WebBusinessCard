@@ -92,72 +92,83 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       birthdate: getInputValue('birthdate')
     };
 
-    console.log('form data', formData);
+    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    const phoneRegex = /^\d+$/;
+    const allValuesNotNull = Object.values(formData).every(value => value !== null && value !== '');
 
-    if (file) {
-
-      try {
-
-        const resUploadData = await addData(formData);
-
-        if (resUploadData) {
-
-          const folderName = '';
-          const collection = 'users';
-          const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
-
-          if (resUploadLogo === 200) {
-            clearImageCache();
-            Swal.fire({
-              title: 'Success!',
-              text: 'เพิ่มข้อมูลสำเร็จ',
-              icon: 'success',
-            });
-            // await hrapi.GetAllHr();
-            handleClose();
-          } else {
-            Swal.fire({
-              title: 'Upload Error!',
-              text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
-              icon: 'error',
-            });
-          }
-        }
-        if (resUploadData === undefined) {
-          Swal.fire({
-            title: 'Error!',
-            text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
-            icon: 'error',
-          });
-        }
-        if (resUploadData == 'email') {
-          Swal.fire({
-            title: 'Add Data Error!',
-            text: 'อีเมลหรือเว็บไซต์ต้องมี "@" ',
-            icon: 'error',
-          });
-        }
-        if (resUploadData == 'phonenumber') {
-          Swal.fire({
-            title: 'Add Data Error!',
-            text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-            icon: 'error',
-          });
-        }
-      } catch (error) {
-        Swal.fire({
-          title: 'Error!',
-          text: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล',
-          icon: 'error',
-        });
-      }
-    } else {
+    if (!allValuesNotNull || !file) {
       Swal.fire({
-        title: 'Upload Error!',
-        text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
+        title: 'Error!',
+        text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (!emailRegex.test(formData.email)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'อีเมลต้องมี "@" และ ".com"',
+        icon: 'error',
+      });
+      return;
+    }
+
+    if (!phoneRegex.test(formData.phone)) {
+      Swal.fire({
+        title: 'Add Data Error!',
+        text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+        icon: 'error',
+      });
+      return;
+    }
+
+    const resUploadData = await addData(formData);
+
+    if (resUploadData === undefined)  //add return 0 in node js
+    {
+      Swal.fire({
+        title: 'Error!',
+        text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
         icon: 'error',
       });
     }
+
+    console.log(resUploadData , file);
+
+    if (resUploadData && resUploadData !== '0' && file) {
+
+      const folderName = '';
+      const collection = 'users';
+      const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
+
+      if (resUploadLogo === 200) {
+        clearImageCache();
+        Swal.fire({
+          title: 'Success!',
+          text: 'เพิ่มข้อมูลสำเร็จ',
+          icon: 'success',
+        });
+
+        handleClose();
+      } else {
+        Swal.fire({
+          title: 'Upload Error!',
+          text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+          icon: 'error',
+        });
+      }
+    }
+
   };
 
   const addProfile = async (file: File, uid: string, folderName: string, collection: string): Promise<number | undefined> => {
@@ -175,17 +186,6 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
   const addData = async (formData: FormData): Promise<string | undefined> => {
-
-    const hasAtSymbolEmail = formData.email.includes('@');
-    const phoneRegex = /^\d+$/;
-
-    if (!hasAtSymbolEmail) {
-      return 'email';
-    }
-
-    if (!phoneRegex.test(formData.phone)) {
-      return 'phonenumber';
-    }
 
     const res = await employeesapi.AddDataEmployee(
       formData.firstname,

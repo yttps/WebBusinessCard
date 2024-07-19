@@ -138,11 +138,6 @@ export class HrApi {
             startwork: startworkValue,
             birthdate: birthdateValue        }
 
-            // const res = await fetch(`${url}/users`, {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(dataHr)
-            // });
 
             const endpoint = `${url}/users`;
             const res = await axios.post(endpoint , dataHr);
@@ -160,11 +155,7 @@ export class HrApi {
 
         try {
 
-            const res = await fetch(`${url}/users/${HrId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: HrId
-            });
+            const res = await axios.delete(`${url}/users/${HrId}`);
 
             return res.status;
 

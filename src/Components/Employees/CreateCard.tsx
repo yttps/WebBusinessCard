@@ -19,6 +19,7 @@ export default function CreateCard() {
   const [positions, setPositions] = useState<{ [key: string]: { x: number; y: number } }[]>([]);
   const [index, setIndex] = useState(0);
   const [getUserByCompanies, setGetUserByCompanies] = useState<GetUsersByCompany[] | null>(null);
+  const [companyId , setCompanyId] = useState('');
   const nav = useNavigate();
 
 
@@ -46,7 +47,6 @@ export default function CreateCard() {
       const ctx = canvas?.getContext('2d');
 
       if (canvas && ctx) {
-        console.log('Canvas and context are ready');
         canvas.width = 900;
         canvas.height = 550;
         const img = new Image();
@@ -56,18 +56,15 @@ export default function CreateCard() {
 
 
         img.onload = () => {
-          console.log('Background image loaded');
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
           Object.keys(textMappings).forEach((key) => {
             if (positions[key]) {
-              console.log(`Drawing text for key: ${key}`);
               const { x, y } = positions[key];
               ctx.font = '30px Bold';
               ctx.fillStyle = 'black';
               ctx.fillText(textMappings[key], x, y);
-              console.log(`Text drawn at (${x}, ${y})`);
             } else {
               console.log(`Position for key ${key} not found`);
             }
@@ -78,48 +75,73 @@ export default function CreateCard() {
           logoImg.src = `${logo}`;
 
           logoImg.onload = () => {
-            console.log('Logo image loaded');
             if (positions.logo) {
               const { x, y } = positions.logo;
               ctx.drawImage(logoImg, x, y, 100, 70);
-              console.log(`Logo drawn at (${x}, ${y})`);
 
               canvas.toBlob((blob) => {
                 if (blob) {
                   const url = URL.createObjectURL(blob);
                   resolve(url);
                 } else {
-                  console.error('Failed to create blob from canvas');
                   reject('Failed to create blob from canvas');
                 }
               }, 'image/png');
             } else {
-              console.error('Logo position not found');
               reject('Logo position not found');
             }
           };
 
           logoImg.onerror = () => {
-            console.error('Failed to load logo image');
             reject('Failed to load logo image');
           };
         };
 
         img.onerror = () => {
-          console.error('Failed to load background image');
           reject('Failed to load background image');
         };
       } else {
-        console.error('Canvas or context not found');
         reject('Canvas or context not found');
       }
     });
   };
 
+  const handleDeleteTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, templateId: string) => {
+
+    e.preventDefault();
+
+
+    const result = await Swal.fire({
+      title: 'ลบข้อมูล?',
+      text: 'ยืนยันเพื่อทำการลบข้อมูล!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+
+      const res = await templateapi.deleteTemplate(templateId);
+
+      if (res == 200) {
+        await Swal.fire({
+          title: 'Success!',
+          text: 'ลบข้อมูลสำเร็จ!',
+          icon: 'success',
+        });
+        nav('/ListEmployees', { replace: true });
+      }
+    }
+
+  }
+
 
   const handleSelectedTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, template: GetTemplateCompanyId) => {
 
     e.preventDefault();
+    const temId = template.id;
 
     const position = {
       companyAddress: { x: template.companyAddress.x, y: template.companyAddress.y },
@@ -136,6 +158,7 @@ export default function CreateCard() {
     if (getUserByCompanies) {
 
       const newGeneratedFiles: { file: File; uid: string }[] = [];
+      
 
       for (const user of getUserByCompanies) {
 
@@ -161,7 +184,7 @@ export default function CreateCard() {
 
           const data = {
             file: file,
-            uid: user.id
+            uid: user.id,
           };
 
           newGeneratedFiles.push(data);
@@ -173,27 +196,33 @@ export default function CreateCard() {
 
       if (newGeneratedFiles.length > 0) {
 
-        await uploadSelectedTemplate(newGeneratedFiles);
+        await uploadSelectedTemplate(newGeneratedFiles,temId);
 
       }
     }
   };
 
-  async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[]) {
-    console.log('check', cardUsers);
+  async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
+
+    const status = '1';
     const resUpload = await templateapi.uploadSelectedTemplate(cardUsers);
-    console.log(resUpload);
     const allSuccess = resUpload.every((status: number) => status === 200);
 
     if (allSuccess) {
-      Swal.fire({
-        title: 'Success!',
-        text: 'เลือกเทมเพลตสำเร็จ',
-        icon: 'success',
-      });
 
-      nav('/ListEmployees', { replace: true });
-    
+      const resUpdateStatus = await templateapi.updateStatus(temId,status,companyId);
+
+      if (resUpdateStatus) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'เลือกเทมเพลตสำเร็จ',
+          icon: 'success',
+        });
+
+        nav('/ListEmployees', { replace: true });
+      }
+
+
     } else {
       Swal.fire({
         title: 'Error!',
@@ -205,6 +234,7 @@ export default function CreateCard() {
 
   const getTemplateByCompanyId = async (companyId: string) => {
     const resTemplateByid = await templateapi.getTemplateByCompanyId(companyId);
+    console.log("chk", resTemplateByid);
     setTemplateBycompanyId(resTemplateByid);
 
     if (resTemplateByid) {
@@ -229,15 +259,16 @@ export default function CreateCard() {
         const companyId = parsedData.companyId;
 
         if (companyId) {
+          setCompanyId(companyId)
           getTemplateByCompanyId(companyId);
           getEmployeesByCompany(companyId);
         }
       }
     }
-  }, [isFetch, TemplateBycompanyId]);
+  }, [isFetch]);
 
   useEffect(() => {
-    if (TemplateBycompanyId.length > 0) {
+    if (TemplateBycompanyId?.length > 0) {
       const newPositions = TemplateBycompanyId.map((template) => ({
         fullname: template.fullname,
         companyName: template.companyName,
@@ -253,28 +284,34 @@ export default function CreateCard() {
     }
   }, [TemplateBycompanyId]);
 
+
   if (!isFetch) {
     return <div>Loading...</div>;
   }
 
-  if (TemplateBycompanyId.length === 0) {
+  if (TemplateBycompanyId?.length === 0) {
     return <div>Not found Template Company</div>;
   }
 
   return (
     <div>
       <Header />
-      <Carousel activeIndex={index} onSelect={handleSelect}>
-        {TemplateBycompanyId.map((template, idx) => (
-          <Carousel.Item key={idx}>
-            <CanvasTemplate background={template.background} textMappings={textMappings} positions={positions[idx]} logo={UrlLogocompany} />
-            <Carousel.Caption>
-              <h3>{template.name}</h3>
-              <Button onClick={(e) => handleSelectedTemplate(e, template)}>เลือกเทมเพลต</Button>
-            </Carousel.Caption>
-          </Carousel.Item>
-        ))}
-      </Carousel>
+      {TemplateBycompanyId?.length > 0 ? (
+        <Carousel activeIndex={index} onSelect={handleSelect}>
+          {TemplateBycompanyId.map((template, idx) => (
+            <Carousel.Item key={idx}>
+              <CanvasTemplate background={template.background} textMappings={textMappings} positions={positions[idx]} logo={UrlLogocompany} />
+              <Carousel.Caption>
+                <h3>{template.name}</h3>
+                <Button onClick={(e) => handleSelectedTemplate(e, template)}>เลือกเทมเพลต</Button>
+                <Button onClick={(e) => handleDeleteTemplate(e, template.id)}>ลบเทมเพลต</Button>
+              </Carousel.Caption>
+            </Carousel.Item>
+          ))}
+        </Carousel>
+      ) : (
+        <p>Not Found Template</p>
+      )}
       <br />
       <canvas ref={canvasRef} style={{ display: 'none' }} />
       <br />

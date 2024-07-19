@@ -39,11 +39,13 @@ export class GeneralUserApi {
 
         try {
 
-            const res = await fetch(`${url}/users/${UserId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: UserId
-            });
+            // const res = await fetch(`${url}/users/${UserId}`, {
+            //     method: 'DELETE',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: UserId
+            // });
+
+            const res = await axios.delete(`${url}/users/${UserId}`);
             return res.status;
 
         } catch (error) {

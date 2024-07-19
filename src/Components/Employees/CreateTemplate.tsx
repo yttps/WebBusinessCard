@@ -8,6 +8,7 @@ import * as icon from '@coreui/icons';
 import { TemplateApi } from "@/ApiEndpoints/TemplateApi";
 import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
+import { CompanyApi } from "@/ApiEndpoints/CompanyApi";
 
 
 
@@ -16,13 +17,14 @@ const CreateTemplate: React.FC = () => {
   const templateapi = new TemplateApi();
 
   const nav = useNavigate();
+  const companyapi = new CompanyApi();
+  const [getLogoCompany, setGetLogoCompany] = useState('');
   const [getCompanyId, setGetcompanyId] = useState<string | ''>('');
   const [logo, setLogo] = useState<File | null>(null);
   const [background, setBackground] = useState<File | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | ''>('');
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [fontSize, setFontSize] = useState('30');
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [canvasHistory, setCanvasHistory] = useState<(CanvasOperation | null)[]>([]);
   const [dragText, setDragText] = useState<string>('');
   const [nameTemplate, setNameTemplate] = useState<string>('');
@@ -159,7 +161,6 @@ const CreateTemplate: React.FC = () => {
   //STEP 3 WHEN DROP OBJECT
   const handleDrop = (event: React.DragEvent) => {
     console.log('USE DRAG DROP');
-    console.log('dragged item', draggedItem);
 
     event.preventDefault();
     setDragText('');
@@ -195,12 +196,12 @@ const CreateTemplate: React.FC = () => {
           [draggedItem]: { x: scaledX, y: scaledY + 40 },
         }));
 
-      } else if (draggedItem == 'image' && logoPreview) {
+      } else if (draggedItem == 'image' && getLogoCompany) {
 
         console.log('Image loaded, drawing at:', x, y);
 
         const image = new Image();
-        image.src = logoPreview;
+        image.src = getLogoCompany;
 
         const width = 220;
         const height = 120;
@@ -215,7 +216,7 @@ const CreateTemplate: React.FC = () => {
 
           addToCanvasHistory({
             type: 'image',
-            data: logoPreview,
+            data: getLogoCompany,
             position: { x: scaledX - 110, y: scaledY - 50 },
           });
         };
@@ -235,7 +236,7 @@ const CreateTemplate: React.FC = () => {
 
     setLogo(null);
     setBackground(null);
-    setLogoPreview(null);
+
     setAllPositions({
       "fullname": { x: 0, y: 0 },
       "companyName": { x: 0, y: 0 },
@@ -331,25 +332,6 @@ const CreateTemplate: React.FC = () => {
     setBackground(file);
   }
 
-  const handleImageLogoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-
-    if (file) {
-
-      setLogo(file);
-
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-
-      reader.readAsDataURL(file);
-    }
-  }
 
   const handleDragEnd = () => {
     setDragText('');
@@ -359,14 +341,13 @@ const CreateTemplate: React.FC = () => {
 
     e.preventDefault();
 
-    if (background && logo) {
+    if (background && getLogoCompany) {
 
       const allPositionsNotNull = Object.values(allPositions).every(
         position => position.x !== 0 && position.y !== 0
       );
 
-      if (!allPositionsNotNull) {
-        console.log("Some positions in allPositions are null or undefined");
+      if (!allPositionsNotNull || nameTemplate == '') {
         Swal.fire({
           title: 'Error!',
           text: 'กรุณากำหนดค่าให้ครบ!',
@@ -377,8 +358,6 @@ const CreateTemplate: React.FC = () => {
 
       const status = '0';
       const uidTemplate = await uploadTemplateCompany(nameTemplate , getCompanyId , allPositions , status)
-
-      console.log("uidTemplate" , uidTemplate);
       
       if (uidTemplate) {
 
@@ -410,7 +389,7 @@ const CreateTemplate: React.FC = () => {
     else {
       Swal.fire({
         title: 'Error!',
-        text: 'โปรดเลือกพื้นหลังหรือโลโก้!',
+        text: 'โปรดเลือกพื้นหลัง!',
         icon: 'error',
       });
       return;
@@ -445,6 +424,17 @@ const CreateTemplate: React.FC = () => {
     }
   }
 
+  const getDataCompanyById = async (companyId: string) => {
+
+    const res = await companyapi.GetDataCompanyById(companyId);
+    console.log('get com' , res.logo);
+
+    if(res){
+      setGetLogoCompany(res.logo);
+    }
+
+  } 
+
   useEffect(() => {
 
     const loggedInData = localStorage.getItem("LoggedIn");
@@ -456,11 +446,12 @@ const CreateTemplate: React.FC = () => {
 
       if (CompanyId) {
         setGetcompanyId(CompanyId);
+        getDataCompanyById(CompanyId);
       }
     }
   }, [allPositions])
 
-  console.log("position", allPositions);
+  console.log(allPositions);
 
 
   return (
@@ -492,7 +483,7 @@ const CreateTemplate: React.FC = () => {
               <Form onChange={setNameTem}>
                 <Form.Group className="mb-3">
                   <Form.Label>Name Template</Form.Label>
-                  <Form.Control type="text" />
+                  <Form.Control type="text" required/>
                 </Form.Group>
               </Form>
               {Object.keys(textMappings).map((item, index) => (
@@ -560,24 +551,6 @@ const CreateTemplate: React.FC = () => {
                 </Card>
               </div>
               <br />
-              <div>
-                <Card style={{ width: '15rem', textAlign: 'center' }}>
-                  <Card.Body>
-                    <Card.Title style={{ fontSize: '15px' }}>Upload Logo</Card.Title>
-                    <hr />
-                    <form>
-                      <input
-                        type="file"
-                        id="img"
-                        ref={logoInputRef}
-                        className="Logo"
-                        accept="image/*"
-                        onChange={handleImageLogoChange} />
-                    </form>
-                  </Card.Body>
-                </Card>
-              </div>
-              <br />
               <div draggable
                 onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
                 <Card style={{ width: '15rem', textAlign: 'center' }}>
@@ -585,8 +558,8 @@ const CreateTemplate: React.FC = () => {
                     <Card.Title style={{ fontSize: '15px' }}>Preview Logo</Card.Title>
                     <hr />
                     <div id="preview-logo">
-                      {logoPreview &&
-                        <img src={logoPreview} alt="Logo Preview" style={{ maxWidth: '100%' }} />
+                      {getLogoCompany &&
+                        <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />
                       }
                     </div>
                   </Card.Body>

@@ -26,9 +26,7 @@ export default function Login() {
 
         try {
 
-
             const res = await loginapi.LoginUserData(email, password);
-
             console.log(email, password);
 
             if (res) {
@@ -42,28 +40,40 @@ export default function Login() {
                 if (res.role === "company") {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
-                    navigate('ListHr');
+                    const response = await loginapi.GetDetailCompanylogin();
+
+                    if (response.status != '0') {
+                        navigate('ListHr');
+                    }
+                    else {
+                        Swal.fire({
+                            title: 'Login Error!',
+                            text: 'รออนุมติจากระบบ',
+                            icon: 'error',
+                        });
+                        return;
+                    }
+
                 }
 
                 if (res.role === "user") {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
-                    console.log("first set" , res);
                     const response = await loginapi.GetDetailHRlogin();
 
                     if (response) {
 
 
                         setDetailHrLogin(response);
-                        
+
                         const dataLoginUser = {
                             userLoginId: response.id,
                             companyId: response.companybranch.companyID
                         }
 
-                        if(dataLoginUser){
+                        if (dataLoginUser) {
                             localStorage.setItem("LoggedIn", JSON.stringify(dataLoginUser));
-                           navigate('ListEmployees'); 
+                            navigate('ListEmployees');
                         }
 
                     }
@@ -133,24 +143,6 @@ export default function Login() {
                     </Form>
                 </div>
             </div>
-            <Link to="/SelectedTem">Selectedtem</Link>
-            <br />
-            <Link to="/CreateCard">CreateCard</Link>
-            <br />
-            <Link to="ListEmployees">List Employees</Link>
-            <br />
-            <Link to="ListHr">ListHR</Link>
-            <br />
-            <Link to="ListGeneralUser">List General user</Link>
-            <br />
-            <Link to="ListCompany">List Company</Link>
-            <br />
-            <Link to="DetiailCompany">Detail Company</Link>
-            <br />
-            <Link to="CreateTem">Create Template</Link>
-            <br />
-            <Link to="SelectedPosTem">Selected Pos template</Link>
-
         </>
     );
 }

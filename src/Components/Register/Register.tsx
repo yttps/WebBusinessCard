@@ -127,7 +127,7 @@ export default function Register() {
     const websiteRegex = new RegExp(/^www\.[a-zA-Z0-9-]+\.[a-z]{2,}$/);
 
 
-    if (!allValuesNotNull) {
+    if (!allValuesNotNull || !file) {
       Swal.fire({
         title: 'Error!',
         text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',

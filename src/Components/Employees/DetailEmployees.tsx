@@ -10,6 +10,8 @@ import { GetDepartmentByComId } from '@/Model/GetDepartmentByComId';
 import { HrApi } from '@/ApiEndpoints/HrApi';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { EmployeesApi } from '@/ApiEndpoints/EmployeesApi';
+import { GetTemplateCompanyId } from '@/Model/GetTemplateCompanyId';
+import { TemplateApi } from '@/ApiEndpoints/TemplateApi';
 
 
 export default function DetailEmployees() {
@@ -19,7 +21,12 @@ export default function DetailEmployees() {
     const [dataemployeesById, setDataEmployeesById] = useState<GetEmployeeById | null>(null);
     const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
     const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
+    const [TemplateBycompanyId, setTemplateBycompanyId] = useState<GetTemplateCompanyId[]>([]);
+
+    console.log('tem' , TemplateBycompanyId);
+
     const [isLoading, setIsLoading] = useState(false);
+    const templateapi = new TemplateApi();
     const nav = useNavigate();
     const [update, setUpdate] = useState(false);
     const [genderValue, setGenderValue] = useState('');
@@ -40,6 +47,12 @@ export default function DetailEmployees() {
     async function GetDepartmentByCompanyId(CompanyId: string) {
         const res = await companyapi.getDepartmentByCompanyId(CompanyId);
         setDataDepartmentById(res);
+        setIsFetch(true);
+    }
+
+    async function getTemplateByCompanyId(CompanyId: string) {
+        const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
+        setTemplateBycompanyId(res);
         setIsFetch(true);
     }
 
@@ -112,7 +125,7 @@ export default function DetailEmployees() {
             });
 
             if (result.isConfirmed) {
-                const response = await employeesapi.DeleteEmployee(dataemployeesById.id); //bug origin
+                const response = await employeesapi.DeleteEmployee(dataemployeesById.id); 
 
                 if (response == 200) {
                     await Swal.fire({
@@ -267,6 +280,7 @@ export default function DetailEmployees() {
                 if (CompanyId) {
                     getCompanyBranchById(CompanyId);
                     GetDepartmentByCompanyId(CompanyId);
+                    getTemplateByCompanyId(CompanyId);
                 }
             }
         }
@@ -417,6 +431,8 @@ export default function DetailEmployees() {
             <p>Position : {dataemployeesById.position}</p>
             <div>
                 <img src={dataemployeesById.profile} alt="" />
+                <br />
+                <img src={dataemployeesById.business_card} alt="" />
             </div>
             <div id="col2-2">
                 <Button variant="danger" onClick={DeleteEmployeeData}>ลบข้อมูล</Button>

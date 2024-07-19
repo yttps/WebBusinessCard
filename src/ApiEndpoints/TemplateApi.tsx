@@ -15,6 +15,20 @@ export class TemplateApi {
 
 
 
+    async deleteTemplate(templateId: string) {
+
+        try {
+
+            const res = await axios.delete(`${url}/templates/${templateId}`);
+            return res.status;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+
+    }
+
     async uploadBgTemplate(background: File, TemIDcompany: string, folderName: string, collection: string): Promise<string | undefined> {
 
         try {
@@ -26,26 +40,11 @@ export class TemplateApi {
             formData.append('uid', TemIDcompany);
             formData.append('file', background);
 
+            const res = await axios.post(`${url}/upload-image`, formData);
 
-            // const res = await fetch(`${url}/upload-image`, {
-            //     method: 'POST',
-            //     body: formData
-            // });
-
-            const res = await axios.post(`${url}/upload-image` , formData);
-
-            console.log('detail', TemIDcompany, folderName, collection , background);
+            console.log('detail', TemIDcompany, folderName, collection, background);
             console.log('res ponse url', res.data.imageUrl);
             return res.data.imageUrl;
-
-
-            // if (res.ok) {
-            //     console.log('Upload successful:', res.status);
-            //     return data;
-            // } else {
-            //     console.log('Upload failed with status:', res.status);
-            //     return data;
-            // }
 
         } catch (error) {
             console.error(error);
@@ -53,43 +52,21 @@ export class TemplateApi {
         }
     }
 
-    // async createCardsForUsers(userData[]: string[], TemIDcompany: string, folderName: string, collection: string): Promise<string | undefined> {
-
-    //     try {
-
-    //         const formData = new FormData();
-
-    //         formData.append('folder', folderName);
-    //         formData.append('collection', collection);
-    //         formData.append('uid', TemIDcompany);
-    //         // formData.append('file', background);
+    async updateStatus (temId: string,status:string ,companyId: string) {
 
 
-    //         // const res = await fetch(`${url}/upload-image`, {
-    //         //     method: 'POST',
-    //         //     body: formData
-    //         // });
-
-    //         const res = await axios.post(`${url}/upload-image` , formData);
-
-    //         console.log('detail', TemIDcompany, folderName, collection , background);
-    //         console.log('res ponse url', res.data.imageUrl);
-    //         return res.data.imageUrl;
-
-
-    //         // if (res.ok) {
-    //         //     console.log('Upload successful:', res.status);
-    //         //     return data;
-    //         // } else {
-    //         //     console.log('Upload failed with status:', res.status);
-    //         //     return data;
-    //         // }
-
-    //     } catch (error) {
-    //         console.error(error);
-    //         throw error;
-    //     }
-    // }
+        try {
+            
+            const data = { status : status };
+            const res = await axios.put(`${url}/templates/status/${temId}/${companyId}`, data);
+            console.log('updateStatus' , res.status);
+            return res.status;
+        
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
 
     async uploadTemplateCompany(nameTemplate: string, getCompanyId: string, allPositions: AllPosition, status: string): Promise<string | undefined> {
 
@@ -113,12 +90,12 @@ export class TemplateApi {
 
             console.log(data);
 
-            const res = await axios.post(`${url}/templates`, data);           
-            console.log('check' , res.data.templateId);
+            const res = await axios.post(`${url}/templates`, data);
+            console.log('check', res.data.templateId);
             return res.data.templateId;
 
         } catch (error) {
-            console.error("check" , error);
+            console.error("check", error);
             throw error;
         }
     }
@@ -144,30 +121,54 @@ export class TemplateApi {
         }
     }
 
-    async uploadSelectedTemplate(cardUsers :{file:File, uid: string}[]){
+    async getTemplateUsedByCompanyId(companyId: string) {
 
-        console.log('in context test' , cardUsers);
-        const statusCodes:number[] = [];
+        try {
+
+            if (companyId) {
+
+                const res = await axios.get(`${url}/templates/by-company/${companyId}`);
+                const templateData = res.data;
+                const filteredTemplateData = templateData.filter((template: { status: string }) => template.status == '1');
+                console.log('getTemplateUsedByCompanyId' , filteredTemplateData);
+                return filteredTemplateData;
+            }
+            else {
+                console.log("company id not found");
+                return;
+            }
+
+
+        } catch (error) {
+            console.error();
+        }
+    }
+
+    async uploadSelectedTemplate(cardUsers: { file: File, uid: string }[]) {
+
+        console.log('in context test', cardUsers);
+        const statusCodes: number[] = [];
         const folderName = 'business_card';
 
-        const uploadPromises = cardUsers.map(async (cardUser) => {
+        cardUsers.map(async (cardUser) => {
             const formData = new FormData();
             formData.append('file', cardUser.file);
             formData.append('folder', folderName);
             formData.append('uid', cardUser.uid);
-    
+            //add used status
+
             try {
 
                 const res = await axios.post(`${url}/upload-image`, formData);
                 statusCodes.push(res.status);
-    
+                console.log('status' , res.status);
+
             } catch (error) {
                 console.error('Error uploading file:', error);
             }
         });
-    
-        const statuses = await Promise.all(uploadPromises);
-        console.log('Upload statuses:', statuses);
+
+        console.log('Upload statuses:', statusCodes);
         return statusCodes;
 
     }

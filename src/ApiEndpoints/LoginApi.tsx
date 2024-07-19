@@ -18,6 +18,7 @@ export class LoginApi {
                 email: email,
                 password: password
             }
+
             const resLogin = await axios.post(url + '/login', datalogin);
             return resLogin.data;
 
@@ -47,6 +48,35 @@ export class LoginApi {
                     const HrDataById = res.data;
                     console.log("login employee by id", res.data);
                     return HrDataById;
+                }
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async GetDetailCompanylogin () {
+
+        try {
+
+            const loggedInData = localStorage.getItem("LoggedIn");
+
+            if (loggedInData) {
+
+                const parsedData = JSON.parse(loggedInData);
+                const userId = parsedData.id;
+
+                if (userId) {
+
+                    const res = await axios.get(`${url}/companies/${userId}`, {
+                        headers: axiosHeaders,
+                    });
+
+                    const CompanyDataById = res.data;
+                    console.log("CompanyDataById", res.data);
+                    return CompanyDataById;
                 }
             }
 

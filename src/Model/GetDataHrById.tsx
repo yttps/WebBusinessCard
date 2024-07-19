@@ -15,6 +15,7 @@ export interface GetDataHrById {
     id:            string;
     age:           number;
     profile:       string;
+    business_card: string;
 }
 
 export interface Companybranch {

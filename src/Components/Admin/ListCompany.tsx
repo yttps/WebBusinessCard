@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import AddCompany from '@/Components/Admin/AddCompany';
 import Header from '@/Components/Header/Header';
 import { Button, Form, InputGroup, Table } from 'react-bootstrap';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
@@ -17,7 +16,7 @@ export default function ListCompany() {
 
     const getCompany = async () => {
         try {
-            const res = await companyApi.GetAllCompany();
+            const res = await companyApi.GetAllCompanyAccept();
             setDataCompany(res);
             setDataFetched(true);
 
@@ -33,7 +32,6 @@ export default function ListCompany() {
     useEffect(() => {
         if (!dataFetched) {
             getCompany();
-            console.log('get data com', dataCompany);
         }
     }, [dataFetched]);
 
@@ -44,7 +42,7 @@ export default function ListCompany() {
             <div id='con1' className="container">
                 <div id='headerCon1'>
                     <p>รายชื่อบริษัท</p>
-                    <AddCompany />
+
                     <Link to="/ListGeneralUser">
                         <Button variant="primary">บุคคลทั่วไป</Button>
                     </Link>
