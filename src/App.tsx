@@ -19,7 +19,6 @@ import DetailGeneralUser from './Components/Admin/DetailGeneralUser';
 import ListDetailBranchAndDepartment from './Components/Company/ListDetailBranchAndDepartment';
 import ApprovalCompany from './Components/Admin/ApprovalCompany';
 import DetailCompanyAppproval from './Components/Admin/DetailCompanyAppproval';
-import Test from './Components/Header/test';
 
 function App() {
 
@@ -43,7 +42,6 @@ function App() {
         <Route path="/ListDetailBranchAndDepartment" element={<ListDetailBranchAndDepartment />} />
         <Route path="/ApprovalCompany" element={<ApprovalCompany />} />
         <Route path="/ApprovalCompany/:id" element={<DetailCompanyAppproval />} />
-        <Route path="/test" element={<Test />} />
 
       </Routes>
     </>
