@@ -34,6 +34,9 @@ interface FormData {
 }
 
 const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
+  
+  //non test
+  
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -164,7 +167,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
     const resUploadData = await addData(formData);
     setEmployeeId(resUploadData);
-    
+
     if (resUploadData === '0')  
     {
       Swal.fire({
