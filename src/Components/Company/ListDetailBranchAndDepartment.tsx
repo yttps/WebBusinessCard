@@ -31,35 +31,71 @@ export default function ListDetailBranchAndDepartment() {
     e.preventDefault();
     console.log('departmentId', departmentId);
 
-    const res = await companyapi.deleteDepartment(departmentId);
+    const result = await Swal.fire({
+      title: 'ลบข้อมูล?',
+      text: 'ยืนยันเพื่อทำการลบข้อมูล!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
 
-    if (res == 200) {
-      Swal.fire({
-        title: 'Success!',
-        text: 'ลบสาขาบริษัทสำเร็จ!',
-        icon: 'success'
-      });
+    if (result.isConfirmed) {
 
-      nav('/ListHr', { replace: true });
+      const res = await companyapi.deleteDepartment(departmentId);
+
+      if (res == 200) {
+        await Swal.fire({
+          title: 'Success!',
+          text: 'ลบแผนกสำเร็จ!',
+          icon: 'success'
+        });
+        nav('/ListHr', { replace: true });
+      }
     }
+
 
   }
 
   async function handleDeleteBranch(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, branchId: string) {
     e.preventDefault();
+
     console.log('branchId', branchId);
+    console.log('len', dataBranchesById.length);
 
-    const res = await companyapi.deleteBranch(branchId);
-
-    if (res == 200) {
+    if (dataBranchesById.length <= 1) {
 
       Swal.fire({
-        title: 'Success!',
-        text: 'ลบสาขาบริษัทสำเร็จ!',
-        icon: 'success',
+        title: 'Error!',
+        text: 'ต้องมีสาขาบริษัทอย่างน้อย 1 สาขา!',
+        icon: 'error',
       });
+      return;
+    }
 
-      nav('/ListHr', { replace: true });
+    const result = await Swal.fire({
+      title: 'ลบข้อมูล?',
+      text: 'ยืนยันเพื่อทำการลบข้อมูล!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+
+      const res = await companyapi.deleteBranch(branchId);
+
+      if (res == 200) {
+        await Swal.fire({
+          title: 'Success!',
+          text: 'ลบสาขาบริษัทสำเร็จ!',
+          icon: 'success',
+        });
+        nav('/ListHr', { replace: true });
+      }
     }
   }
 
@@ -108,7 +144,9 @@ export default function ListDetailBranchAndDepartment() {
                 </tr>
               ))
             ) : (
-              <p>No departments found.</p>
+              <tr>
+                <td colSpan={2}>Not Found Departments.</td>
+              </tr>
             )}
           </tbody>
         </Table>
@@ -136,7 +174,9 @@ export default function ListDetailBranchAndDepartment() {
                 </tr>
               ))
             ) : (
-              <p>No branches found.</p>
+              <tr>
+                <td colSpan={3}>Not found Company Branches.</td>
+              </tr>
             )}
           </tbody>
         </Table>

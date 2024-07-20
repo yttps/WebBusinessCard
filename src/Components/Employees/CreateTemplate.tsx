@@ -118,6 +118,20 @@ const CreateTemplate: React.FC = () => {
   //STEP 1 WHEN CLICK AND DRAGGING
   const handleDragStart = (event: React.DragEvent, item: string) => {
 
+    //add check positions alls value 
+    const allPositionsNotNull = Object.values(allPositions).every(
+      position => position.x !== 0 && position.y !== 0
+    );
+
+    if(allPositionsNotNull){
+      Swal.fire({
+        title: 'Error!',
+        text: 'กำหนดค่าครบแล้ว!',
+        icon: 'error',
+      });
+      return;
+    }
+
     console.log('USE START');
     event.dataTransfer.setData("text", item);
     setDraggedItem(item);
@@ -139,6 +153,19 @@ const CreateTemplate: React.FC = () => {
 
 
   const handleDragStartLogo = (event: React.DragEvent, item: string) => {
+
+    const allPositionsNotNull = Object.values(allPositions).every(
+      position => position.x !== 0 && position.y !== 0
+    );
+
+    if(allPositionsNotNull){
+      Swal.fire({
+        title: 'Error!',
+        text: 'กำหนดค่าครบแล้ว!',
+        icon: 'error',
+      });
+      return;
+    }
 
     console.log('USE DRAG');
     event.dataTransfer.setData("image", item);
@@ -312,6 +339,8 @@ const CreateTemplate: React.FC = () => {
     }
   };
 
+  console.log(handleUndo);
+
   const handleSizeFonstChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFontSize(event.target.value);
     console.log('size', fontSize);
@@ -427,7 +456,6 @@ const CreateTemplate: React.FC = () => {
   const getDataCompanyById = async (companyId: string) => {
 
     const res = await companyapi.GetDataCompanyById(companyId);
-    console.log('get com' , res.logo);
 
     if(res){
       setGetLogoCompany(res.logo);
@@ -567,7 +595,7 @@ const CreateTemplate: React.FC = () => {
               </div>
               <Button variant="warning" onClick={(e) => handleReset(e)}>Reset</Button>
               <br />
-              <Button variant="secondary" onClick={handleUndo}>Undo</Button>
+              {/* <Button variant="secondary" onClick={handleUndo}>Undo</Button> */}
               <br />
               <Button variant="success" onClick={(e) => handleUploadTemplate(e)}>Upload Template</Button>
             </div>

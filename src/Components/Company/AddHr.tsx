@@ -561,7 +561,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <Form.Control type="text" id="country" required />
             <br />
             <p>สาขาบริษัท</p>
-            {dataBranchesById && (
+            {dataBranchesById ? (
               <Form.Select onChange={handleBranches}>
                 <option value="">เลือกสาขาบริษัท</option>
                 {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
@@ -570,10 +570,12 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
                   </option>
                 ))}
               </Form.Select>
+            ) : (
+              <p><b>**ไม่มีสาขาบริษัท</b></p>
             )}
             <br />
             <p>แผนกบริษัท</p>
-            {dataDepartmentById && (
+            {dataDepartmentById ? (
               <Form.Select onChange={handleDepartment}>
                 <option value="">เลือกแผนกบริษัท</option>
                 {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
@@ -582,6 +584,8 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
                   </option>
                 ))}
               </Form.Select>
+            ) : (
+              <p><b>**ไม่มีแผนก</b></p>
             )}
             <br />
             <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>

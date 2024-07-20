@@ -574,6 +574,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             )}
             <br />
             <p>แผนกบริษัท</p>
+            //add text when department not found
             {dataDepartmentById && (
               <Form.Select onChange={handleDepartment}>
                 <option value="">เลือกแผนกบริษัท</option>
