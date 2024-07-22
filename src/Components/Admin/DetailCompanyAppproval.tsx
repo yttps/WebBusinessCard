@@ -3,9 +3,6 @@ import { useParams } from 'react-router-dom'
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
 import Header from '../Header/Header';
-// import { Row, Col, Button } from 'react-bootstrap';
-import { Button } from 'react-bootstrap';
-
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -15,7 +12,6 @@ export default function DetailCompanyAppproval() {
     const { id: companyId } = useParams();
     const companyapi = new CompanyApi();
     const [companyById, setCompanyById] = useState<GetDataCompanyById | null>(null);
-    // const [LogoCompany, setLogoCompany] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const nav = useNavigate();
 
@@ -29,7 +25,6 @@ export default function DetailCompanyAppproval() {
                 console.log('get by id', resGetdataDetail);
 
                 setCompanyById(resGetdataDetail);
-                // setLogoCompany(companyapi.setUrlLogo);
                 setIsLoading(true);
                 console.log("Fetched response:", resGetdataDetail);
 
@@ -57,24 +52,24 @@ export default function DetailCompanyAppproval() {
 
             const res = await companyapi.AcceptCompanyData(companyid);
 
-            if(res == 200){
+            if (res == 200) {
                 Swal.fire({
                     title: 'Success!',
                     text: 'อนุมัติข้อมูลสำเร็จ!',
                     icon: 'success',
                 });
                 nav('/ApprovalCompany', { replace: true });
-    
+
             }
-            else{
+            else {
                 Swal.fire({
                     title: 'Error!',
                     text: 'เกิดข้อผิดพลาดในการอนุมัติข้อมูล!',
                     icon: 'error',
                 });
                 return;
-            }      
-        }  
+            }
+        }
     }
 
     const DeleteCompanyData = async () => {
@@ -130,24 +125,53 @@ export default function DetailCompanyAppproval() {
     }
 
     return (
-        <div>
-            <Header />
-            <h1>Company Details</h1>
-            <p>Name: {companyById.name}</p>
-            <p>Email: {companyById.email}</p>
-            <p>Business Type: {companyById.businessType}</p>
-            <p>Website: {companyById.website}</p>
-            <p>Year Founded: {companyById.yearFounded}</p>
-            <p>Password : {companyById.password}</p>
-            <div id="col2-2">
-                <Button variant="danger" onClick={DeleteCompanyData}>ลบข้อมูลการอนุมัติ</Button>
-                <Button variant="success" onClick={() => AcceptCompanyData(companyById.id)}>อนุมัติบริษัท</Button>
-            </div>
+        <>
             <div>
-                <img src={companyById.logo} alt="" />
-            </div>
+                <Header />
+                <br />
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex flex-col items-center">
+                                <img src={companyById.logo} alt="Profile Picture" className="w-70 h-24 object-cover rounded-lg mb-5" />
+                                <h2 className="text-lg font-semibold mb-2">Profile</h2>
+                                <br />
+                                <div className="text-center">
+                                    <p className="text-muted-foreground">ชื่อบริษัท:</p>
+                                    <p>{companyById.name}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">ประเภทธุรกิจ:</p>
+                                    <p>{companyById.businessType}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">เว็บไซต์:</p>
+                                    <p>{companyById.website}</p>
+                                </div>
+                            </div>
+                        </div>
 
-        </div>
+                        <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <h2 className="text-lg font-semibold mb-4">รายละเอียดบริษัท</h2>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-muted-foreground">ปีที่ก่อตั้ง:</p>
+                                    <p>{companyById.yearFounded}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">อีเมล:</p>
+                                    <p>{companyById.email}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">รหัสผ่าน:</p>
+                                    <p>{companyById.password}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                        <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteCompanyData}>ลบข้อมูล</button>
+                        <button className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" onClick={() => AcceptCompanyData(companyById.id)}>อนุมัติบริษัท</button>
+                    </div>
+                </div>
+            </div>
+        </>
     );
 
 

@@ -1,9 +1,6 @@
 import axios from 'axios';
 const url = "https://business-api-638w.onrender.com";
-// const url = "http://localhost:8080";   
-const axiosHeaders = {
-    "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
-}
+// const url = "http://localhost:8080";
 
 export class HrApi {
 
@@ -15,29 +12,32 @@ export class HrApi {
 
             const parsedData = JSON.parse(loggedInData);
             const CompanyId = parsedData.id;
-            const endpoint = `https://business-api-638w.onrender.com/users/by-companyandposition/${CompanyId}/HR`;
+
+            //1 get department by comopany id
+            const endpointGetDepartmentByCom = `https://business-api-638w.onrender.com/departments/by-company/${CompanyId}`;
+
 
             if (CompanyId) {
 
                 try {
 
-                    const res = await axios.get(endpoint, {
-                        headers: axiosHeaders,
-                    });
-                    console.log('in context', res);
-                    const companyData = res.data;
+                    const res = await axios.get(endpointGetDepartmentByCom);
+                    const DepartmentData = res.data;
+                    const DepartmentId = DepartmentData.filter((DepartmentData: { name: string }) => DepartmentData.name === 'HR');
+                    //filter hr 
 
-                    return companyData;
+                    if (DepartmentId[0]) {
+                        const endpointGetUserDepartHRById = `https://business-api-638w.onrender.com/users/by-department/${DepartmentId[0].id}`;
+                        const res = await axios.get(endpointGetUserDepartHRById);
+                        const userDepartHR = res.data;
+                        return userDepartHR;
+                    }
 
                 } catch (error) {
                     console.error(error);
                     throw error;
                 }
-
             }
-
-
-
         } else {
             console.log("No logged in data found");
         }
@@ -49,12 +49,10 @@ export class HrApi {
 
         try {
 
-            const res = await axios.get(`${url}/user/${id}`, {
-                headers: axiosHeaders,
-            });
+            const res = await axios.get(`${url}/user/${id}`);
 
             const HrDataById = res.data;
-            console.log("hr by id" , res.data);
+            console.log("hr by id", res.data);
             return HrDataById;
 
         } catch (error) {
@@ -64,38 +62,38 @@ export class HrApi {
     }
 
 
-    async UploadProfile(Image:File , uid : string ,folderName : string , collection : string) {
-
-    
-            const formData = new FormData();
-
-            formData.append('file', Image); 
-            formData.append('folder', folderName);
-            formData.append('collection', collection)
-            formData.append('uid', uid);
-
-            try {
-
-                const res = await fetch(`${url}/upload-image`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (res.ok) {
-
-                    console.log('Upload logo successful:', res.status);
-                    return res.status;
-                }
-                else {
-                    console.log('in context upload logo', res.status);
-                    return res.status;
-                }
+    async UploadProfile(Image: File, uid: string, folderName: string, collection: string) {
 
 
-            } catch (error) {
-                console.error(error);
-                throw error;
+        const formData = new FormData();
+
+        formData.append('file', Image);
+        formData.append('folder', folderName);
+        formData.append('collection', collection)
+        formData.append('uid', uid);
+
+        try {
+
+            const res = await fetch(`${url}/upload-image`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (res.ok) {
+
+                console.log('Upload logo successful:', res.status);
+                return res.status;
             }
+            else {
+                console.log('in context upload logo', res.status);
+                return res.status;
+            }
+
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 
     async AddDataHr(
@@ -113,34 +111,35 @@ export class HrApi {
         departmentValue: string,
         positionValue: string,
         startworkValue: string,
-        birthdateValue:string
-        ) {
+        birthdateValue: string
+    ) {
 
 
 
-        try {        
-            
-            
+        try {
+
+
             const dataHr = {
-            firstname: firstnameValue,
-            lastname: lastnameValue,
-            email: emailValue,
-            password: passwordValue,
-            gender: genderValue,
-            phone: phoneValue,
-            subdistrict: subdistrictValue,
-            district: districtValue,
-            province: provinceValue,
-            country: countryValue,
-            companybranch: companyBranchValue,
-            department: departmentValue,
-            position: positionValue,
-            startwork: startworkValue,
-            birthdate: birthdateValue        }
+                firstname: firstnameValue,
+                lastname: lastnameValue,
+                email: emailValue,
+                password: passwordValue,
+                gender: genderValue,
+                phone: phoneValue,
+                subdistrict: subdistrictValue,
+                district: districtValue,
+                province: provinceValue,
+                country: countryValue,
+                companybranch: companyBranchValue,
+                department: departmentValue,
+                position: positionValue,
+                startwork: startworkValue,
+                birthdate: birthdateValue
+            }
 
 
             const endpoint = `${url}/users`;
-            const res = await axios.post(endpoint , dataHr);
+            const res = await axios.post(endpoint, dataHr);
 
             console.log('res in context', res.data.userId);
             return res.data.userId;
@@ -165,11 +164,11 @@ export class HrApi {
         }
     }
 
-    async updateDataHR (firstnameElement: string ,lastnameElement: string ,positionElement: string ,genderElement: string,
-        birthdayElement: string ,startworkElement: string ,subdistrictElement: string ,districtElement: string,
-        provinceElement: string ,countryElement: string ,telElement: string ,emailElement: string,
-        branchElement: string , departmentElement: string , passwordElement: string , HRId: string
-    ){
+    async updateDataHR(firstnameElement: string, lastnameElement: string, positionElement: string, genderElement: string,
+        birthdayElement: string, startworkElement: string, subdistrictElement: string, districtElement: string,
+        provinceElement: string, countryElement: string, telElement: string, emailElement: string,
+        branchElement: string, departmentElement: string, passwordElement: string, HRId: string
+    ) {
 
         try {
 
@@ -178,24 +177,24 @@ export class HrApi {
                 lastname: lastnameElement,
                 email: emailElement,
                 password: passwordElement,
-                gender : genderElement,
-                birthdate : birthdayElement,
-                companybranch :branchElement,
-                department : departmentElement,
+                gender: genderElement,
+                birthdate: birthdayElement,
+                companybranch: branchElement,
+                department: departmentElement,
                 // positionTemplate : req.body.positionTemplate, 
-                phone : telElement,
-                position : positionElement,
-                startwork : startworkElement,
+                phone: telElement,
+                position: positionElement,
+                startwork: startworkElement,
                 subdistrict: subdistrictElement,
-                district:districtElement,
-                province:provinceElement, 
-                country:countryElement,
+                district: districtElement,
+                province: provinceElement,
+                country: countryElement,
 
             }
 
-            const res = await axios.put(`${url}/users/${HRId}` , dataHr);
+            const res = await axios.put(`${url}/users/${HRId}`, dataHr);
             return res.status;
-            
+
         } catch (error) {
             console.error(error);
             throw error;

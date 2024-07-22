@@ -34,9 +34,9 @@ interface FormData {
 }
 
 const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
-  
+
   //non test
-  
+
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -118,7 +118,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       country: getInputValue('country'),
       companybranch: branchValue,
       department: departmentValue,
-      position: 'HR',
+      position: getInputValue('position'),
       startwork: getInputValue('startwork'),
       birthdate: getInputValue('birthdate')
     };
@@ -168,8 +168,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     const resUploadData = await addData(formData);
     setEmployeeId(resUploadData);
 
-    if (resUploadData === '0')  
-    {
+    if (resUploadData === '0') {
       Swal.fire({
         title: 'Error!',
         text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
@@ -187,16 +186,21 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       //update card
       await updateDetailCard();
 
-      if (resUploadLogo === 200 && statusEditCard == 200) {
+      if (resUploadLogo === 200) {
+
+        console.log(statusEditCard);
         clearImageCache();
+
         Swal.fire({
           title: 'Success!',
           text: 'เพิ่มข้อมูลสำเร็จ',
           icon: 'success',
         });
+
         handleClose();
 
-      } else {
+      }
+      else {
 
         Swal.fire({
           title: 'Upload Error!',
@@ -212,6 +216,26 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
   const updateDetailCard = async () => {
 
+    const formData: FormData = {
+      firstname: getInputValue('firstname'),
+      lastname: getInputValue('lastname'),
+      email: getInputValue('email'),
+      password: getInputValue('password'),
+      gender: genderValue,
+      phone: getInputValue('phone'),
+      subdistrict: getInputValue('subdistrict'),
+      district: getInputValue('district'),
+      province: getInputValue('province'),
+      country: getInputValue('country'),
+      companybranch: branchValue,
+      department: departmentValue,
+      position: 'HR',
+      startwork: getInputValue('startwork'),
+      birthdate: getInputValue('birthdate')
+    };
+
+    console.log('form edit', formData); // Handle form submission logic here
+
     if (TemplateBycompanyId[0]?.status?.toString() !== '1') {
       return;
     }
@@ -221,38 +245,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       return;
     }
 
-    const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
-    const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
-    const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
-    const birthdayElement = document.getElementById('birthdayEdit') as HTMLInputElement;
-    const startworkElement = document.getElementById('startworkEdit') as HTMLInputElement;
-    const subdistrictElement = document.getElementById('subdistrictEdit') as HTMLInputElement;
-    const districtElement = document.getElementById('districtEdit') as HTMLInputElement;
-    const provinceElement = document.getElementById('provinceEdit') as HTMLInputElement;
-    const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
-    const telElement = document.getElementById('telEdit') as HTMLInputElement;
-    const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
-    const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
-
-    const formEdit = {
-      firstname: firstnameElement.value,
-      lastname: lastnameElement.value,
-      position: positionElement.value,
-      gender: genderValue,
-      birthdate: birthdayElement.value,
-      startwork: startworkElement.value,
-      subdistrict: subdistrictElement.value,
-      district: districtElement.value,
-      province: provinceElement.value,
-      country: countryElement.value,
-      phone: telElement.value,
-      email: emailElement.value,
-      password: passwordElement.value,
-      branch: branchValue,
-      department: departmentValue
-    }
-
-    const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
+    const allValuesNotNull = Object.values(formData).every(value => value !== null && value !== '');
     const newGeneratedFiles: { file: File; uid: string }[] = [];
     const temId = TemplateBycompanyId[0].id;
     const positions = {
@@ -273,13 +266,13 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     {
 
       const textMappingsArray = {
-        "fullname": `${formEdit.firstname} ${formEdit.lastname}`,
+        "fullname": `${formData.firstname} ${formData.lastname}`,
         "companyName": `${getDataCompanyById.name}`,
         "companyAddress": `${addressBranch}`,
         "position": `${departName}`,
-        "email": `${formEdit.email}`,
+        "email": `${formData.email}`,
         "phoneDepartment": `${telDepartment}`,
-        "phone": `${formEdit.phone}`,
+        "phone": `${formData.phone}`,
         "departmentName": `${departName}`,
       };
 
@@ -444,7 +437,6 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       formData.startwork,
       formData.birthdate);
 
-
     return res;
   };
 
@@ -475,7 +467,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   }
 
   async function GetDepartmentByCompanyId(CompanyId: string) {
-    const res = await companyapi.getDepartmentByCompanyId(CompanyId);
+    const res = await companyapi.getDepartmentHRByCompanyId(CompanyId);
     setDataDepartmentById(res);
     setIsFetch(true);
   }
@@ -513,9 +505,16 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
   return (
     <>
-      <Button variant="success" onClick={handleShow}>
+      {/* <Button variant="success" onClick={handleShow}>
         เพิ่มพนักงานฝ่ายบุคคล
-      </Button>
+      </Button> */}
+
+      <div onClick={handleShow} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+        <svg className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+          <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
+        </svg>
+        <span className="flex-1 ms-3 whitespace-nowrap group-hover:text-gray-900 dark:group-hover:text-white">เพิ่มพนักงานฝ่ายบุคคล</span>
+      </div>
 
       <Modal show={show} onHide={handleClose} animation={false}>
         <Modal.Header closeButton>
@@ -587,6 +586,9 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             ) : (
               <p><b>**ไม่มีแผนก</b></p>
             )}
+            <br />
+            <Form.Label htmlFor="position">ตำแหน่งงาน</Form.Label>
+            <Form.Control type="text" id="position" required />
             <br />
             <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
             <Form.Control type="datetime-local" id="startwork" required />

@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../Header/Header';
-import { Button } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { GeneralUserApi } from '@/ApiEndpoints/GeneralUserApi';
 import { GetDataGeneralUserById } from '@/Model/GetGeneralUserById';
 import { useNavigate } from 'react-router-dom';
 
-export default function DetailGeneralUser() { 
+export default function DetailGeneralUser() {
 
     const { id: generalUserId } = useParams();
     const generaluserapi = new GeneralUserApi();
@@ -80,15 +79,59 @@ export default function DetailGeneralUser() {
     return (
         <>
             <Header />
-            <div>DetailGeneralUser</div>
-            <p>name : {GeneralUserById?.firstname}</p>
-            <p>lastname : {GeneralUserById?.lastname}</p>
-            <p>email : {GeneralUserById?.email}</p>
-            <p>gender : {GeneralUserById?.gender}</p>
-            <p>password : {GeneralUserById?.password}</p>
-            <p>phone : {GeneralUserById?.phone}</p>
-            <img src={GeneralUserById?.profile} alt="Profile" />
-            <Button variant="danger" onClick={DeleteGeneralUserData}>delete</Button>
+            <br />
+            <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                <div className="flex">
+                    <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                        <div className="flex flex-col items-center">
+                            <img src={GeneralUserById?.profile} alt="Profile Picture" className="w-70 h-24 object-cover rounded-lg mb-5" />
+                            <h2 className="text-lg font-semibold mb-2">Profile</h2>
+                            <br />
+                            <div className="text-center">
+                                <p className="text-muted-foreground">ชื่อ:</p>
+                                <p>{GeneralUserById?.firstname}</p>
+                                <br />
+                                <p className="text-muted-foreground">นามสกุล:</p>
+                                <p>{GeneralUserById?.lastname}</p>
+                                <br />
+                                <p className="text-muted-foreground">อีเมล:</p>
+                                <p>{GeneralUserById?.email}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                        <h2 className="text-lg font-semibold mb-4">รายละเอียดบุคคลทั่วไป</h2>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-muted-foreground">ที่อยู่:</p>
+                                <p>{GeneralUserById?.address}</p>
+                                <br />
+                                <p className="text-muted-foreground">วันเกิด:</p>
+                                <p>{GeneralUserById?.birthdate}</p>
+                                <br />
+                                <p className="text-muted-foreground">อายุ:</p>
+                                <p>{GeneralUserById?.age} ปี</p>
+                                <br />
+                                <p className="text-muted-foreground">เพศ:</p>
+                                <p>{GeneralUserById?.gender}</p>
+                                <br />
+                                <p className="text-muted-foreground">เบอร์โทร:</p>
+                                <p>{GeneralUserById?.phone}</p>
+                                <br />
+                                <p className="text-muted-foreground">อาชีพ:</p>
+                                <p>{GeneralUserById?.position}</p>
+                                <br />
+                                <p className="text-muted-foreground">รหัสผ่าน:</p>
+                                <p>{GeneralUserById?.password}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-end mt-4">
+                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteGeneralUserData}>ลบข้อมูล</button>
+                </div>
+            </div>
         </>
     );
 }

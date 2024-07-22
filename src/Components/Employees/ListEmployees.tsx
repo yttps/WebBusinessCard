@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react'
 import Header from '@/Components/Header/Header';
 import { Form, InputGroup, Table, Button } from 'react-bootstrap';
 import { EmployeesApi } from '@/ApiEndpoints/EmployeesApi';
-import { GetAllEmployees } from '@/Model/GetAllEmployees';
-import { NavLink , useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import AddEmployees from './AddEmployees';
+import { GetEmployeeById } from '@/Model/GetEmployeeById';
 
 export default function ListEmployees() {
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [dataEmployees, setDataEmployees] = useState<GetAllEmployees[]>([]);
+    const [dataEmployees, setDataEmployees] = useState<GetEmployeeById[]>([]);
     const [dataFetched, setDataFetched] = useState(false);
     const [hasError, setHasError] = useState(false);
     const [isFetch, setIsFetch] = useState(false);
@@ -22,9 +22,13 @@ export default function ListEmployees() {
 
         try {
             const res = await employeesapi.GetAllEmployees(); //get user form companyid and companybranch
-            setDataEmployees(res);
-            setDataFetched(true);
-            setHasError(false);
+
+            if (res) {
+                setDataEmployees(res);
+                setDataFetched(true);
+                setHasError(false);
+            }
+
 
         } catch (error) {
             console.error('Error fetching general users:', error);
@@ -35,11 +39,11 @@ export default function ListEmployees() {
         dataEmployees.firstname.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    function toCreateCardPage () {
+    function toCreateCardPage() {
         nav('/CreateCard');
     }
 
-    function toCreateTemplate () {
+    function toCreateTemplate() {
         nav('/CreateTemplate');
     }
 
@@ -97,7 +101,7 @@ export default function ListEmployees() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredData.map((item: GetAllEmployees, index: number) => (
+                                    {filteredData.map((item: GetEmployeeById, index: number) => (
                                         <tr key={index}>
                                             <td id={`idCompany${index}`}></td>
                                             <td id={`nameCompany${index}`}>{item.firstname}</td>

@@ -1,9 +1,8 @@
 import axios from 'axios';
 const url = "https://business-api-638w.onrender.com";
-// const url = "http://localhost:8080";   
-const axiosHeaders = {
-    "ngrok-skip-browser-warning": "ngrok-skip-browser-warning",
-}
+// const url = "http://localhost:8080"; 
+import { GetEmployeeById } from '@/Model/GetEmployeeById';  
+
 
 export class EmployeesApi {
 
@@ -18,24 +17,18 @@ export class EmployeesApi {
                 const CompanyId = parsedData.companyId;
 
                 if (CompanyId) {
-
-                    const endpoint = url + '/users/by-companyandposition/';
-                    const res = await axios.get(endpoint + `${CompanyId}/user`, {
-                        headers: axiosHeaders,
-                    });
-                    const companyData = res.data;
-                    console.log('in context', companyData);
-                    return companyData;
-                }
-                else {
-                    return;
+                    
+                    const endpoint = `${url}/user/by-company/${CompanyId}`;
+                    const res = await axios.get(endpoint);
+                    const EmployeesData: GetEmployeeById[] = res.data;
+                    
+                    const filterEmployees = EmployeesData.filter(employee => {
+                        return employee.department.name !== 'HR';
+                    });                    
+                    
+                    return filterEmployees;
                 }
             }
-            else {
-                return;
-            }
-
-
 
         } catch (error) {
             console.error(error);
@@ -47,9 +40,7 @@ export class EmployeesApi {
 
         try {
 
-            const res = await axios.get(`${url}/user/${id}`, {
-                headers: axiosHeaders,
-            });
+            const res = await axios.get(`${url}/user/${id}`);
 
             const companyDataById = res.data;
             return companyDataById;
@@ -60,17 +51,17 @@ export class EmployeesApi {
         }
     }
 
-    async UploadProfile(Image:File , uid : string ,folderName : string , collection : string) {
+    async UploadProfile(Image: File, uid: string, folderName: string, collection: string) {
 
-        
-        console.log("image" , Image);
-        console.log("uid" , uid);
-        console.log("collection" , collection);
-        console.log("foldername" , folderName);
+
+        console.log("image", Image);
+        console.log("uid", uid);
+        console.log("collection", collection);
+        console.log("foldername", folderName);
 
         const formData = new FormData();
 
-        formData.append('file', Image); 
+        formData.append('file', Image);
         formData.append('folder', folderName);
         formData.append('collection', collection)
         formData.append('uid', uid);
@@ -99,7 +90,7 @@ export class EmployeesApi {
             console.error(error);
             throw error;
         }
-}
+    }
 
     async AddDataEmployee(
         firstnameValue: string,
@@ -116,7 +107,7 @@ export class EmployeesApi {
         departmentValue: string,
         positionValue: string,
         startworkValue: string,
-        birthdateValue:string) {
+        birthdateValue: string) {
 
         const dataEmployee = {
             firstname: firstnameValue,
@@ -133,15 +124,15 @@ export class EmployeesApi {
             department: departmentValue,
             position: positionValue,
             startwork: startworkValue,
-            birthdate: birthdateValue 
+            birthdate: birthdateValue
         }
 
-        console.log("form in context" , dataEmployee);
+        console.log("form in context", dataEmployee);
 
         try {
 
             const endpoint = `${url}/users`;
-            const res = await axios.post(endpoint , dataEmployee);
+            const res = await axios.post(endpoint, dataEmployee);
 
             console.log('res in context', res.data.userId);
             return res.data.userId;
@@ -165,11 +156,11 @@ export class EmployeesApi {
         }
     }
 
-    async updateDataEmployee (firstnameElement: string ,lastnameElement: string ,positionElement: string ,genderElement: string,
-        birthdayElement: string ,startworkElement: string ,subdistrictElement: string ,districtElement: string,
-        provinceElement: string ,countryElement: string ,telElement: string ,emailElement: string,
-        branchElement: string , departmentElement: string , passwordElement: string , HRId: string
-    ){
+    async updateDataEmployee(firstnameElement: string, lastnameElement: string, positionElement: string, genderElement: string,
+        birthdayElement: string, startworkElement: string, subdistrictElement: string, districtElement: string,
+        provinceElement: string, countryElement: string, telElement: string, emailElement: string,
+        branchElement: string, departmentElement: string, passwordElement: string, HRId: string
+    ) {
 
         try {
 
@@ -178,24 +169,24 @@ export class EmployeesApi {
                 lastname: lastnameElement,
                 email: emailElement,
                 password: passwordElement,
-                gender : genderElement,
-                birthdate : birthdayElement,
-                companybranch :branchElement,
-                department : departmentElement,
+                gender: genderElement,
+                birthdate: birthdayElement,
+                companybranch: branchElement,
+                department: departmentElement,
                 // positionTemplate : req.body.positionTemplate, 
-                phone : telElement,
-                position : positionElement,
-                startwork : startworkElement,
+                phone: telElement,
+                position: positionElement,
+                startwork: startworkElement,
                 subdistrict: subdistrictElement,
-                district:districtElement,
-                province:provinceElement, 
-                country:countryElement,
+                district: districtElement,
+                province: provinceElement,
+                country: countryElement,
 
             }
 
-            const res = await axios.put(`${url}/users/${HRId}` , dataHr);
+            const res = await axios.put(`${url}/users/${HRId}`, dataHr);
             return res.status;
-            
+
         } catch (error) {
             console.error(error);
             throw error;

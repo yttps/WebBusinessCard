@@ -473,7 +473,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   }
 
   async function GetDepartmentByCompanyId(CompanyId: string) {
-    const res = await companyapi.getDepartmentByCompanyId(CompanyId);
+    const res = await companyapi.getDepartmentNotHrByCompanyId(CompanyId);
     setDataDepartmentById(res);
     setIsFetch(true);
   }
@@ -574,7 +574,6 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             )}
             <br />
             <p>แผนกบริษัท</p>
-            //add text when department not found
             {dataDepartmentById && (
               <Form.Select onChange={handleDepartment}>
                 <option value="">เลือกแผนกบริษัท</option>
@@ -586,7 +585,6 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
               </Form.Select>
             )}
             <br />
-            <p><b>ส่วนนี้จะไม่มีการเพิ่มแผนก * HR *</b></p>
             <Form.Label htmlFor="position">ตำแหน่ง</Form.Label>
             <Form.Control type="text" id="position" required />
             <br />

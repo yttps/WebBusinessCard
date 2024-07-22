@@ -2,7 +2,11 @@ import axios from 'axios';
 
 const url = "https://business-api-638w.onrender.com";
 // const url = "http://localhost:3000";   
-
+interface departmentData {
+    name: string,
+    companyID: string,
+    phone: string
+}
 
 export class CompanyApi {
 
@@ -15,7 +19,7 @@ export class CompanyApi {
             const res = await axios.get(url + '/companies');
             const companyData = res.data;
 
-            const filteredData = companyData.filter((company: {status: string}) => company.status !== '0');
+            const filteredData = companyData.filter((company: { status: string }) => company.status !== '0');
             console.log('in context', filteredData);
             return filteredData;
 
@@ -25,12 +29,12 @@ export class CompanyApi {
         }
     }
 
-    async AcceptCompanyData (companyid: string){
+    async AcceptCompanyData(companyid: string) {
 
         try {
-            
+
             const status = { status: '1' };
-            const res = await axios.put(`${url}/companies/status/${companyid}` , status);
+            const res = await axios.put(`${url}/companies/status/${companyid}`, status);
             return res.status;
 
         } catch (error) {
@@ -46,7 +50,7 @@ export class CompanyApi {
             const res = await axios.get(url + '/companies');
             const companyData = res.data;
 
-            const filteredData = companyData.filter((company: {status: string}) => company.status === '0');
+            const filteredData = companyData.filter((company: { status: string }) => company.status === '0');
             console.log('in context', filteredData);
             return filteredData;
 
@@ -145,7 +149,7 @@ export class CompanyApi {
                 province: province,
                 country: country,
                 logo: 'logo',
-                status:'0'
+                status: '0'
             }
 
             console.log('data com in context', dataCompany);
@@ -173,7 +177,7 @@ export class CompanyApi {
 
         try {
 
-            console.log('DeleteCompany' , companyId);
+            console.log('DeleteCompany', companyId);
             const res = await axios.delete(`${url}/companies/${companyId}`);
             return res.status;
 
@@ -269,7 +273,6 @@ export class CompanyApi {
         const loggedInData = localStorage.getItem("LoggedIn");
         const statusCodes: number[] = [];
 
-        //เหลือเช็คว่าซ้ำหรือไม่
         if (loggedInData) {
             const parsedData = JSON.parse(loggedInData);
             const CompanyId = parsedData.id;
@@ -277,24 +280,31 @@ export class CompanyApi {
 
             if (CompanyId) {
                 try {
-                    for (let i = 0; i < departments.length; i++) {
-                        const dept = departments[i];
-                        const dataDepartment = {
-                            name: dept.name,
-                            companyID: CompanyId,
-                            phone: dept.phone
-                        };
+                    // Fetch existing departments once
+                    const resCheckData = await axios.get(`${url}/departments/by-company/${CompanyId}`);
+                    const DepartmentcheckData: departmentData[] = resCheckData.data;
 
-                        console.log(`Sending department ${i + 1}:`, dataDepartment);
+                    for (const dept of departments) {
+                        // Check if the department name already exists
+                        const exists = DepartmentcheckData.some(existingDept => existingDept.name.toUpperCase() === dept.name.toUpperCase());
 
-                        const res = await fetch(endpoint, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(dataDepartment)
-                        });
+                        if (!exists) {
+                            const dataDepartment = {
+                                name: dept.name,
+                                companyID: CompanyId,
+                                phone: dept.phone
+                            };
 
-                        statusCodes.push(res.status);
-                        console.log(`Response status for department ${i + 1}:`, res.status);
+                            const res = await fetch(endpoint, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(dataDepartment)
+                            });
+
+                            statusCodes.push(res.status);
+                        } else {
+                            console.log(`Department with name ${dept.name} already exists.`);
+                        }
                     }
 
                     return statusCodes;
@@ -341,7 +351,44 @@ export class CompanyApi {
 
     }
 
-    async GetUsersByCompany(companyId: string){
+    async getDepartmentNotHrByCompanyId(companyId: string) {
+
+        try {
+
+            const endpoint = `${url}/departments/by-company/${companyId}`;
+            const res = await axios.get(endpoint);
+            const departmentData = res.data;
+            const filteredData = departmentData.filter((departmentHR: { name: string }) => departmentHR.name !== 'HR');
+
+            console.log("getDepartmentByCompanyId", res.data);
+            return filteredData;
+
+        } catch (error) {
+            console.error(error);
+        }
+
+    }
+
+    async getDepartmentHRByCompanyId(companyId: string) {
+
+        try {
+
+            const endpoint = `${url}/departments/by-company/${companyId}`;
+            const res = await axios.get(endpoint);
+            const departmentHR = res.data;
+            //filter 
+            const filteredData = departmentHR.filter((departmentHR: { name: string }) => departmentHR.name === 'HR');
+
+            console.log("getDepartmentByCompanyId", filteredData);
+            return filteredData;
+
+        } catch (error) {
+            console.error(error);
+        }
+
+    }
+
+    async GetUsersByCompany(companyId: string) {
         try {
 
             const endpoint = `${url}/user/by-company/${companyId}`;
