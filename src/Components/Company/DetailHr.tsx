@@ -1,9 +1,8 @@
-import { useEffect, useState, ChangeEvent, useRef } from 'react'
+import { useEffect, useState, ChangeEvent, useRef, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { HrApi } from '@/ApiEndpoints/HrApi';
 import { GetDataHrById } from '@/Model/GetDataHrById';
 import Header from '../Header/Header';
-import { Row, Col, Button, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
@@ -17,26 +16,29 @@ import { GetDataCompanyById } from '@/Model/GetCompanyById';
 export default function DetailHr() {
 
     const { id: HrId } = useParams();
-    const hrapi = new HrApi();
-    const templateapi = new TemplateApi();
+    const hrapi = useMemo(() => new HrApi(), []);
+    const templateapi = useMemo(() => new TemplateApi(), []);
+    const companyapi = useMemo(() => new CompanyApi(), []);
     const [hrById, setHrById] = useState<GetDataHrById | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isFetch, setIsFetch] = useState(false);
     const nav = useNavigate();
     const [update, setUpdate] = useState(false);
-    const companyapi = new CompanyApi();
     const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
     const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
     const [TemplateBycompanyId, setTemplateBycompanyId] = useState<GetTemplateCompanyId[]>([]);
     const [getDataCompanyById, setGetDataCompanyById] = useState<GetDataCompanyById | null>(null);
-    const [statusEditCard, setStatusEditCard] = useState(0);
-
     const [genderValue, setGenderValue] = useState('');
     const [departmentValue, setDepartmentValue] = useState('');
     const [departName, setDepartmentName] = useState('');
     const [branchValue, setBranchValue] = useState('');
     const [addressBranch, setAddressBranch] = useState('');
     const [telDepartment, setTelDepartment] = useState('');
+
+    const [subdistrict, setSubdistrict] = useState('');
+    const [district, setDistrict] = useState('');
+    const [province, setProvince] = useState('');
+    const [country, setCountry] = useState('');
 
     const [file, setFile] = useState<File | null>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,8 +48,6 @@ export default function DetailHr() {
         imageName: '',
         showImage: false,
     });
-
-
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
@@ -74,24 +74,24 @@ export default function DetailHr() {
             const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
 
             const formEdit = {
-                firstname: firstnameElement.value,
-                lastname: lastnameElement.value,
-                position: positionElement.value,
-                gender: genderValue,
-                birthdate: birthdayElement.value,
-                startwork: startworkElement.value,
-                subdistrict: subdistrictElement.value,
-                district: districtElement.value,
-                province: provinceElement.value,
-                country: countryElement.value,
-                phone: telElement.value,
-                email: emailElement.value,
-                password: passwordElement.value,
-                branch: branchValue,
-                department: departmentValue,
-                HRId: HRId,
-                file: file
-            }
+                firstname: firstnameElement.value !== '' ? firstnameElement.value : hrById?.firstname ?? '',
+                lastname: lastnameElement.value !== '' ? lastnameElement.value : hrById?.lastname ?? '',
+                position: positionElement.value !== '' ? positionElement.value : hrById?.position ?? '',
+                gender: genderValue !== '' ? genderValue : hrById?.gender ?? '',
+                birthdate: birthdayElement.value !== '' ? birthdayElement.value : hrById?.birthdate ?? '',
+                startwork: startworkElement.value !== '' ? startworkElement.value : hrById?.startwork ?? '',
+                subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
+                district: districtElement.value !== '' ? districtElement.value : district ?? '',
+                province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
+                country: countryElement.value !== '' ? countryElement.value : country ?? '',
+                phone: telElement.value !== '' ? telElement.value : hrById?.phone ?? '',
+                email: emailElement.value !== '' ? emailElement.value : hrById?.email ?? '',
+                password: passwordElement.value !== '' ? passwordElement.value : hrById?.password ?? '',
+                branch: branchValue !== '' ? branchValue : hrById?.companybranch?.id ?? '',
+                department: departmentValue !== '' ? departmentValue : hrById?.department.id ?? ''
+            };
+
+            console.log('formEdit check before update', formEdit);
 
             const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
             const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
@@ -132,29 +132,75 @@ export default function DetailHr() {
             }
 
             const resUpdateData = await hrapi.updateDataHR(
-                firstnameElement.value, lastnameElement.value, positionElement.value, genderValue, birthdayElement.value, startworkElement.value,
-                subdistrictElement.value, districtElement.value, provinceElement.value, countryElement.value, telElement.value, emailElement.value,
-                branchValue, departmentValue, passwordElement.value, HRId
+                formEdit.firstname,
+                formEdit.lastname,
+                formEdit.position,
+                formEdit.gender,
+                formEdit.birthdate,
+                formEdit.startwork,
+                formEdit.subdistrict,
+                formEdit.district,
+                formEdit.province,
+                formEdit.country,
+                formEdit.phone,
+                formEdit.email,
+                formEdit.branch,
+                formEdit.department,
+                formEdit.password,
+                HRId
             );
 
-            if (resUpdateData == 200 && file) {
+            // const resUpdateData = await hrapi.updateDataHR(
+            //     firstnameElement.value, lastnameElement.value, positionElement.value, genderValue, birthdayElement.value, startworkElement.value,
+            //     subdistrictElement.value, districtElement.value, provinceElement.value, countryElement.value, telElement.value, emailElement.value,
+            //     branchValue, departmentValue, passwordElement.value, HRId
+            // );
 
-                const folderName = '';
-                const collection = 'users';
-                const resUploadLogo = await hrapi.UploadProfile(file, HRId, folderName, collection);
-                //update card
-                await updateDetailCard();
+            console.log('res data', resUpdateData);
 
-                if (resUploadLogo == 200 && statusEditCard == 200) {
+            if (resUpdateData == 200) {
 
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'อัปเดทข้อมูลสำเร็จ!',
-                        icon: 'success',
-                    });
+                if (file) {
+                    const folderName = '';
+                    const collection = 'users';
+                    const resUploadLogo = await hrapi.UploadProfile(file, HRId, folderName, collection);
+                    //update card
+                    const resUpdateDetailCard = await updateDetailCard();
 
-                    nav('/ListHr', { replace: true });
+                    if (resUploadLogo == 200 && resUpdateDetailCard == 200) {
+
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'อัปเดทข้อมูลและรูปสำเร็จ!',
+                            icon: 'success',
+                        }).then(() => {
+                            nav('/ListHr');
+                            window.location.reload();
+                        });
+                    }
                 }
+
+                if (!file) {
+
+                    //update card
+                    const resUpdateDetailCard = await updateDetailCard();
+                    console.log('check1', resUpdateDetailCard);
+
+                    if (resUpdateDetailCard == 200) {
+
+                        console.log('check2', resUpdateDetailCard);
+
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'อัปเดทข้อมูลสำเร็จ!',
+                            icon: 'success',
+                        }).then(() => {
+                            nav('/ListHr');
+                            window.location.reload();
+                        });
+                    }
+                }
+
             }
 
         } catch (error) {
@@ -180,7 +226,7 @@ export default function DetailHr() {
 
         const selectedDepartment = dataDepartmentById.find(department => department.id === selectedValue);
         if (selectedDepartment) {
-            setDepartmentName(selectedDepartment.name);
+            setDepartmentName(selectedDepartment.name);//
             setTelDepartment(selectedDepartment.phone);
         } else {
             setDepartmentName('');
@@ -207,20 +253,9 @@ export default function DetailHr() {
         setGenderValue(e.target.value);
     };
 
-    const fetchData = async () => {
-        try {
+    console.log(handleGender);
 
-            if (HrId) {
 
-                const resGetdataDetail = await hrapi.GetDataHrById(HrId);
-                setHrById(resGetdataDetail);
-                setIsLoading(true);
-            }
-        } catch (error) {
-            console.error('Error fetching company data:', error);
-            setIsLoading(false);
-        }
-    };
 
     const DeleteHrData = async (): Promise<void> => {
 
@@ -261,7 +296,7 @@ export default function DetailHr() {
 
 
 
-    const updateDetailCard = async () => {
+    async function updateDetailCard() {
 
         if (TemplateBycompanyId[0]?.status?.toString() !== '1') {
             return;
@@ -286,22 +321,22 @@ export default function DetailHr() {
         const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
 
         const formEdit = {
-            firstname: firstnameElement.value,
-            lastname: lastnameElement.value,
-            position: positionElement.value,
-            gender: genderValue,
-            birthdate: birthdayElement.value,
-            startwork: startworkElement.value,
-            subdistrict: subdistrictElement.value,
-            district: districtElement.value,
-            province: provinceElement.value,
-            country: countryElement.value,
-            phone: telElement.value,
-            email: emailElement.value,
-            password: passwordElement.value,
-            branch: branchValue,
-            department: departmentValue
-        }
+            firstname: firstnameElement.value !== '' ? firstnameElement.value : hrById?.firstname ?? '',
+            lastname: lastnameElement.value !== '' ? lastnameElement.value : hrById?.lastname ?? '',
+            position: positionElement.value !== '' ? positionElement.value : hrById?.position ?? '',
+            gender: genderValue !== '' ? genderValue : hrById?.gender ?? '',
+            birthdate: birthdayElement.value !== '' ? birthdayElement.value : hrById?.birthdate ?? '',
+            startwork: startworkElement.value !== '' ? startworkElement.value : hrById?.startwork ?? '',
+            subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
+            district: districtElement.value !== '' ? districtElement.value : district ?? '',
+            province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
+            country: countryElement.value !== '' ? countryElement.value : country ?? '',
+            phone: telElement.value !== '' ? telElement.value : hrById?.phone ?? '',
+            email: emailElement.value !== '' ? emailElement.value : hrById?.email ?? '',
+            password: passwordElement.value !== '' ? passwordElement.value : hrById?.password ?? '',
+            branch: branchValue !== '' ? branchValue : hrById?.companybranch?.id ?? '',
+            department: departmentValue !== '' ? departmentValue : hrById?.department.id ?? ''
+        };
 
         const newGeneratedFiles: { file: File; uid: string }[] = [];
         const temId = TemplateBycompanyId[0].id;
@@ -324,12 +359,12 @@ export default function DetailHr() {
             const textMappingsArray = {
                 "fullname": `${formEdit.firstname} ${formEdit.lastname}`,
                 "companyName": `${hrById.companybranch.company.name}`,
-                "companyAddress": `${addressBranch}`,
-                "position": `${departName}`,
+                "companyAddress": `${addressBranch ? addressBranch : hrById.companybranch.address}`, //
+                "position": `${formEdit.position}`, //
                 "email": `${formEdit.email}`,
-                "phoneDepartment": `${telDepartment}`,
+                "phoneDepartment": `${telDepartment ? telDepartment : hrById.department.phone}`, //
                 "phone": `${formEdit.phone}`,
-                "departmentName": `${departName}`,
+                "departmentName": `${departName ? departName : hrById.department.name}`, //
             };
 
             console.log('textMappings', textMappingsArray);
@@ -354,8 +389,8 @@ export default function DetailHr() {
 
         if (newGeneratedFiles.length > 0) {
 
-            await uploadSelectedTemplate(newGeneratedFiles, temId);
-
+            const resuploadSelectedTemplate = await uploadSelectedTemplate(newGeneratedFiles, temId);
+            return resuploadSelectedTemplate;
         }
 
     }
@@ -394,7 +429,7 @@ export default function DetailHr() {
                     logoImg.onload = () => {
                         if (positions.logo) {
                             const { x, y } = positions.logo;
-                            ctx.drawImage(logoImg, x, y, 100, 70);
+                            ctx.drawImage(logoImg, x, y, 120, 100);
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -430,15 +465,13 @@ export default function DetailHr() {
             const resUpload = await templateapi.uploadSelectedTemplate(cardUsers);
             const allSuccess = resUpload.every((status: number) => status === 200);
 
-            // all undifined
-
             if (allSuccess) {
 
                 const resUpdateStatus = await templateapi.updateStatus(temId, status, getDataCompanyById?.id);
 
                 if (resUpdateStatus == 200) {
 
-                    setStatusEditCard(resUpdateStatus);
+                    return resUpdateStatus;
                 }
 
             } else {
@@ -456,39 +489,77 @@ export default function DetailHr() {
 
     }
 
-    async function getCompanyBranchById(CompanyId: string) {
+    const getCompanyBranchById = useCallback(async (CompanyId: string) => {
         const res = await companyapi.getCompanyBranchById(CompanyId);
         setDataBranchesById(res);
-        setIsFetch(true);
-    }
+    }, [companyapi]);
 
-    async function GetDepartmentByCompanyId(CompanyId: string) {
+    const GetDepartmentByCompanyId = useCallback(async (CompanyId: string) => {
         const res = await companyapi.getDepartmentByCompanyId(CompanyId);
         setDataDepartmentById(res);
-        setIsFetch(true);
-    }
+    }, [companyapi]);
 
-    async function getTemplateByCompanyId(CompanyId: string) {
+    const getTemplateByCompanyId = useCallback(async (CompanyId: string) => {
         const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
         setTemplateBycompanyId(res);
-        setIsFetch(true);
-    }
+    }, [templateapi]);
 
-    async function getUrlLogoCompany(CompanyId: string) {
+    const getUrlLogoCompany = useCallback(async (CompanyId: string) => {
         const resGetdataDetail = await companyapi.GetDataCompanyById(CompanyId);
         setGetDataCompanyById(resGetdataDetail);
-        setIsFetch(true);
-    }
+    }, [companyapi]);
 
     useEffect(() => {
+
+        function splitAddress() {
+
+            if (hrById?.address) {
+                const [subdistrict, district, province, country] = hrById.address.split(',');
+                setHrById(prevState => prevState ? {
+                    ...prevState,
+                    subdistrict: subdistrict || '',
+                    district: district || '',
+                    province: province || '',
+                    country: country || ''
+                } : null);
+
+                setSubdistrict(subdistrict);
+                setDistrict(district);
+                setProvince(province);
+                setCountry(country);
+            }
+        }
+
+        splitAddress();
+    }, [hrById?.address]);
+
+    useEffect(() => {
+
+        const fetchData = async () => {
+            try {
+
+                if (HrId) {
+
+                    const resGetdataDetail = await hrapi.GetDataHrById(HrId);
+                    setHrById(resGetdataDetail);
+                    setIsLoading(true);
+                }
+            } catch (error) {
+                console.error('Error fetching company data:', error);
+                setIsLoading(false);
+            }
+        };
+
         if (!isLoading) {
             fetchData();
         }
-    }, [HrId]);
+
+    }, [HrId, hrapi, isLoading]);
 
     useEffect(() => {
 
         if (!isFetch) {
+
             const loggedInData = localStorage.getItem("LoggedIn");
 
             if (loggedInData) {
@@ -501,11 +572,12 @@ export default function DetailHr() {
                     GetDepartmentByCompanyId(CompanyId);
                     getTemplateByCompanyId(CompanyId);
                     getUrlLogoCompany(CompanyId);
+                    setIsFetch(true);
                 }
             }
         }
 
-    }, [isFetch]);
+    }, [isFetch, getCompanyBranchById, GetDepartmentByCompanyId, getTemplateByCompanyId, getUrlLogoCompany]);
 
 
     if (!hrById) {
@@ -517,116 +589,216 @@ export default function DetailHr() {
             <>
                 <Header />
                 <br />
-                <div id='con3' className="container">
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-max mx-auto">
                     <form onSubmit={(e) => SaveDetails(e, hrById.id)}>
-                        <div className="col1">
-                            <h4>Profile</h4>
-                            <br />
-                            <hr />
-                            <div id="header">
-                                <h6>ชื่อ:</h6>
-                                <input type='text' id="firstnameEdit" placeholder={hrById.firstname} required></input>
+                        <div className="flex">
+                            <div className="max-w-full bg-gray-100 p-3 rounded-lg ml-0">
+                                <h2 className="text-lg font-semibold mb-4">แก้ไขข้อมูลรายละเอียดพนักงานฝ่ายบุคคล</h2>
                                 <br />
-                                <h6>นามสกุล:</h6>
-                                <input id="lastnameEdit" type='text' placeholder={hrById.lastname} required></input>
-                                <br />
-                                <h6>ตำแหน่ง:</h6>
-                                <input id="positionEdit" type='text' placeholder={hrById.position} required></input>
-                            </div>
-
-                        </div>
-                        <div className="col2">
-                            <h4>รายละเอียด HR </h4>
-                            <br />
-                            <hr />
-                            <div id="col2-1">
-                                <Row>
-                                    <Col>
-                                        <h5 >เพศ</h5>
-                                        <Form.Select aria-label="เลือกเพศ" onChange={handleGender} value={genderValue}>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <p className="text-muted-foreground">ชื่อ:</p>
+                                        <input
+                                            onChange={(e) => setHrById({ ...hrById, firstname: e.target.value })}
+                                            value={hrById.firstname || ''}
+                                            type="text" id="firstnameEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={hrById.firstname} />
+                                        <br />
+                                        <p className="text-muted-foreground">นามสกุล:</p>
+                                        <input
+                                            onChange={(e) => setHrById({ ...hrById, lastname: e.target.value })}
+                                            value={hrById.lastname || ''}
+                                            type="text" id="lastnameEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={hrById.lastname} />
+                                        <br />
+                                        <p className="text-muted-foreground">ตำแหน่ง:</p>
+                                        <input
+                                            onChange={(e) => setHrById({ ...hrById, position: e.target.value })}
+                                            value={hrById.position || ''}
+                                            type="text"
+                                            id="positionEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={hrById.position} />
+                                        <br />
+                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">เลือกเพศ</label>
+                                        <select
+                                            id="genderEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            //onChange={handleGender}
+                                            value={hrById.gender ? hrById.gender : genderValue}
+                                            onChange={(e) => setHrById({ ...hrById, gender: e.target.value })}
+                                        >
                                             <option value="">เลือกเพศ</option>
-                                            <option value="male">ชาย</option>
-                                            <option value="female">หญิง</option>
-                                        </Form.Select>
+                                            <option value="ชาย">ชาย</option>
+                                            <option value="หญิง">หญิง</option>
+                                        </select>
                                         <br />
-                                        <h5>วันเกิด</h5>
-                                        <input type='datetime-local' id="birthdayEdit" placeholder={hrById.birthdate} required></input>
+                                        <p className="text-muted-foreground">วันเกิด:</p>
+                                        <input
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            type='datetime-local'
+                                            id="birthdayEdit"
+                                            value={hrById.birthdate ? new Date(hrById.birthdate).toISOString().slice(0, 16) : ''}
+                                            onChange={(e) => setHrById({ ...hrById, birthdate: e.target.value })}
+                                        />
                                         <br />
-                                        <h5>วันที่เริ่มงาน</h5>
-                                        <input type='datetime-local' id="startworkEdit" placeholder={hrById.startwork} required></input>
+                                        <p className="text-muted-foreground">วันที่เริ่มงาน:</p>
+                                        <input
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            type='datetime-local'
+                                            id="startworkEdit"
+                                            placeholder={hrById.startwork}
+                                            value={hrById.startwork || ''}
+                                            onChange={(e) => setHrById({ ...hrById, startwork: e.target.value })}
+                                        />
                                         <br />
-                                        <h5>ตำบล</h5>
-                                        <input id="subdistrictEdit" type='text' placeholder="Subdistrict" required></input>
+                                        <p className="text-muted-foreground">ตำบล:</p>
+                                        <input
+                                            onChange={(e) => setSubdistrict(e.target.value)}
+                                            value={subdistrict || ''}
+                                            type="text" id="subdistrictEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={subdistrict} />
                                         <br />
-                                        <h5>อำเภอ</h5>
-                                        <input id="districtEdit" type='text' placeholder="District" required></input>
+                                        <p className="text-muted-foreground">อำเภอ:</p>
+                                        <input
+                                            onChange={(e) => setDistrict(e.target.value)}
+                                            value={district || ''}
+                                            type="text"
+                                            id="districtEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={district} />
                                         <br />
-                                        <h5>จังหวัด</h5>
-                                        <input id="provinceEdit" type='text' placeholder="Province" required></input>
+                                        <p className="text-muted-foreground">จังหวัด:</p>
+                                        <input
+                                            onChange={(e) => setProvince(e.target.value)}
+                                            value={province || ''}
+                                            type="text"
+                                            id="provinceEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={province} />
                                         <br />
-                                    </Col>
-                                    <Col>
-                                        <h5>ประเทศ</h5>
-                                        <input id="countryEdit" type='text' placeholder="Country" required></input>
+                                        <p className="text-muted-foreground">ประเทศ:</p>
+                                        <input
+                                            onChange={(e) => setCountry(e.target.value)}
+                                            value={country || ''}
+                                            type="text"
+                                            id="countryEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={country} />
+                                    </div>
+                                    <div>
+                                        <p className="text-muted-foreground">เบอร์โทร:</p>
+                                        <input
+                                            onChange={(e) => setHrById({ ...hrById, phone: e.target.value })}
+                                            value={hrById.phone || ''}
+                                            type="text"
+                                            id="telEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={hrById.phone} />
                                         <br />
-                                        <h5>เบอร์โทรศัพท์</h5>
-                                        <input id="telEdit" type='text' placeholder={hrById.phone} required></input>
-                                        <br />
-                                        <h5>สาขาบริษัท</h5>
-                                        {dataBranchesById && (
-                                            <Form.Select onChange={handleBranches} value={branchValue}>
+                                        <label htmlFor="branches" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            เลือกสาขาบริษัท
+                                        </label>
+                                        {dataBranchesById && hrById && (
+                                            <select
+                                                id="branches"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                onChange={handleBranches}
+                                                value={branchValue !== '' ? branchValue : hrById.companybranch?.id || ''}
+                                            >
                                                 <option value="">เลือกสาขาบริษัท</option>
+                                                {hrById.companybranch && !dataBranchesById.some(branch => branch.id === hrById.companybranch.id) && (
+                                                    <option key={hrById.companybranch.id} value={hrById.companybranch.id}>
+                                                        {hrById.companybranch.name}
+                                                    </option>
+                                                )}
                                                 {dataBranchesById.map((item: GetCompanyBranchesById) => (
                                                     <option key={item.id} value={item.id}>
                                                         {item.name}
                                                     </option>
                                                 ))}
-                                            </Form.Select>
+                                            </select>
                                         )}
+
                                         <br />
-                                        <h5>แผนก</h5>
-                                        {dataDepartmentById && (
-                                            <Form.Select onChange={handleDepartment} value={departmentValue}>
+                                        <label htmlFor="departments" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            เลือกแผนกบริษัท
+                                        </label>
+                                        {dataDepartmentById && hrById && (
+                                            <select
+                                                id="departments"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                onChange={handleDepartment}
+                                                value={departmentValue !== '' ? departmentValue : hrById.department?.id || ''}
+                                            >
                                                 <option value="">เลือกแผนกบริษัท</option>
+                                                {hrById.department && !dataDepartmentById.some(dept => dept.id === hrById.department.id) && (
+                                                    <option key={hrById.department.id} value={hrById.department.id}>
+                                                        {hrById.department.name}
+                                                    </option>
+                                                )}
                                                 {dataDepartmentById.map((item: GetDepartmentByComId) => (
                                                     <option key={item.id} value={item.id}>
                                                         {item.name}
                                                     </option>
                                                 ))}
-                                            </Form.Select>
+                                            </select>
+                                        )}
+
+                                        <br />
+                                        <p className="text-muted-foreground">อีเมล:</p>
+                                        <input
+                                            onChange={(e) => setHrById({ ...hrById, email: e.target.value })}
+                                            value={hrById.email || ''} type="text" id="emailEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={hrById.email} />
+                                        <br />
+                                        <p className="text-muted-foreground">รหัสผ่าน:</p>
+                                        <input
+                                            onChange={(e) => setHrById({ ...hrById, password: e.target.value })}
+                                            value={hrById.password || ''}
+                                            type="text" id="passwordEdit"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder={hrById.password} />
+                                        <br />
+                                        <br />
+                                        <p className="text-muted-foreground">รูปประจำตัวพนักงาน:</p>
+                                        <label>
+                                            <input
+                                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                                type="file"
+                                                id='selectImg'
+                                                onChange={handleFileChange}
+                                            />
+                                        </label>
+                                        {imageData.showImage ? (
+                                            <div>
+                                                <img
+                                                    src={imageData.base64textString}
+                                                    alt={imageData.imageName}
+                                                    style={{ maxWidth: '100%' }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <br />
+                                                <p>รูปประจำตัวพนักงาน :</p>
+                                                <br />
+                                                <img src={hrById.profile || ''} alt="" />
+                                            </div>
                                         )}
                                         <br />
-
-                                        <div className="container mt-1">
-                                            <h4>รูปประจำตัวพนักงาน</h4>
-                                            <label>
-                                                <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
-                                            </label>
-                                            {imageData.showImage && (
-                                                <div>
-                                                    <img
-                                                        src={imageData.base64textString}
-                                                        alt={imageData.imageName}
-                                                        style={{ maxWidth: '100%' }} />
-                                                </div>
-                                            )}
-                                            <br />
-                                        </div>
-                                    </Col>
-                                    <Col>
-                                        <h5>Email</h5>
-                                        <input id="emailEdit" type='text' placeholder={hrById.email} required></input>
-                                        <br />
-                                        <h5>password</h5>
-                                        <input id="passwordEdit" type='text' placeholder={hrById.password} required></input>
-                                    </Col>
-                                </Row>
-                                <div id="col2-2">
-                                    <Button type='submit' variant="success">บันทึก</Button>
-                                    <Button variant="danger" onClick={editDetails}>ยกเลิก</Button>
-
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                        <div className="flex justify-end mt-4">
+                            <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
+                            &nbsp;
+                            <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={editDetails}>ยกเลิก</button>
                         </div>
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
                     </form>
@@ -636,34 +808,78 @@ export default function DetailHr() {
     }
 
     return (
-        <div>
-            <Header />
-            <h1>HR Details</h1>
-            <p>Firstname: {hrById.firstname}</p>
-            <p>Lastname: {hrById.lastname}</p>
-            <p>Email: {hrById.email}</p>
-            <p>Company branch: {hrById.companybranch.name}</p>
-            <p>Email: {hrById.email}</p>
-            <p>Department: {hrById.department.name}</p>
-            <p>Address : {hrById.address}</p>
-            <p>Password : {hrById.password}</p>
-            <p>Position : {hrById.position}</p>
-            <p>Birthdate : {hrById.birthdate}</p>
-            <p>Gender : {hrById.gender}</p>
-            <p>Phone : {hrById.phone}</p>
-
+        <>
             <div>
-                <img src={hrById.profile} alt="" />
-                <img src={hrById.business_card} alt="" />
-            </div>
-            <div id="col2-2">
-                <Button id='delete-btn' variant="danger" onClick={DeleteHrData}>ลบข้อมูล</Button>
-                &nbsp;
-                <Button onClick={editDetails} variant="warning">แก้ไขข้อมูล</Button>
-                <button onClick={updateDetailCard}>check</button>
-            </div>
+                <Header />
+                <br />
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex flex-col items-center">
+                                <img src={hrById.profile} alt="Profile Picture" className="w-70 h-24 object-cover rounded-lg mb-5" />
+                                <h2 className="text-lg font-semibold mb-2">Profile</h2>
+                                <br />
+                                <div className="text-center">
+                                    <p className="text-muted-foreground">ชื่อ:</p>
+                                    <p>{hrById.firstname}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">นามสกุล:</p>
+                                    <p>{hrById.lastname}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">ตำแหน่ง:</p>
+                                    <p>{hrById.position}</p>
+                                </div>
+                            </div>
+                        </div>
 
-        </div>
+                        <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <h2 className="text-lg font-semibold mb-4">รายละเอียดพนักงานฝ่ายบุคคล</h2>
+                            <br />
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <p className="text-muted-foreground">เพศ:</p>
+                                    <p>{hrById.gender}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">วันเกิด:</p>
+                                    <p>{hrById.birthdate}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">วันที่เริ่มงาน:</p>
+                                    <p>{hrById.startwork}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">ที่อยู่:</p>
+                                    <p>{hrById.address}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">เบอร์โทร:</p>
+                                    <p>{hrById.phone}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">สาขาบริษัท:</p>
+                                    <p>{hrById.companybranch.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground">แผนก:</p>
+                                    <p>{hrById.department.name}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">อีเมล:</p>
+                                    <p>{hrById.email}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">รหัสผ่าน:</p>
+                                    <p>{hrById.password}</p>
+
+                                    <br />
+                                    <br />
+                                    <p className="text-muted-foreground">นามบัตร:</p>
+                                    <img src={hrById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                        <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteHrData}>ลบข้อมูล</button>
+                        <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={editDetails}>แก้ไขข้อมูล</button>
+                    </div>
+                </div>
+            </div>
+        </>
     );
 
 

@@ -23,7 +23,6 @@ export default function ListHr() {
 
     const [selectedDateRange, setSelectedDateRange] = useState<string>('Last 30 days');
     const [dropdownVisible, setDropdownVisible] = useState<boolean>(false);
-
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 5;
 
@@ -40,19 +39,18 @@ export default function ListHr() {
         nav('/ListDetailBranchAndDepartment');
     }
 
-
-
     const getHr = async () => {
+
         try {
-            //edit get data hr
+
             const res = await hrapi.GetAllHrByCompanyId();
 
             if (res) {
                 setDataHr(res);
-                console.log('get all data hr by company id', dataHr);
                 setDataFetched(true);
                 setHasError(false);
             }
+
         } catch (error) {
             console.error('Error fetching general users:', error);
             setHasError(true);
@@ -90,17 +88,10 @@ export default function ListHr() {
                         <hr />
                         <div className="h-screen px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
                             <ul className="space-y-2 font-medium">
-                                {/* <li>
-                                    <AddHr isFetch={isFetch} setIsFetch={setIsFetch} />
-                                    <Button variant="success" onClick={handleToListBranchAndDepartment}>สาขาบริษัทและแผนก</Button>
-                                    <AddCompanyBranch />
-                                    <AddDepartment />
-                                </li> */}
                                 <li>
                                     <a>
                                         <AddHr isFetch={isFetch} setIsFetch={setIsFetch} />
                                     </a>
-
                                 </li>
                                 <li>
                                     <div onClick={handleToListBranchAndDepartment} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
@@ -162,7 +153,6 @@ export default function ListHr() {
                                                 />
                                             </svg>
                                         </button>
-                                        {/* Dropdown menu */}
                                         {dropdownVisible && (
                                             <div
                                                 id="dropdownRadio"

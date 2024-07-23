@@ -12,9 +12,7 @@ export class HrApi {
 
             const parsedData = JSON.parse(loggedInData);
             const CompanyId = parsedData.id;
-
-            //1 get department by comopany id
-            const endpointGetDepartmentByCom = `https://business-api-638w.onrender.com/departments/by-company/${CompanyId}`;
+            const endpointGetDepartmentByCom = `https://business-api-638w.onrender.com/users/by-company/${CompanyId}/departmentName/HR`;
 
 
             if (CompanyId) {
@@ -22,17 +20,8 @@ export class HrApi {
                 try {
 
                     const res = await axios.get(endpointGetDepartmentByCom);
-                    const DepartmentData = res.data;
-                    const DepartmentId = DepartmentData.filter((DepartmentData: { name: string }) => DepartmentData.name === 'HR');
-                    //filter hr 
-
-                    if (DepartmentId[0]) {
-                        const endpointGetUserDepartHRById = `https://business-api-638w.onrender.com/users/by-department/${DepartmentId[0].id}`;
-                        const res = await axios.get(endpointGetUserDepartHRById);
-                        const userDepartHR = res.data;
-                        return userDepartHR;
-                    }
-
+                    return res.data;
+                
                 } catch (error) {
                     console.error(error);
                     throw error;
@@ -181,7 +170,6 @@ export class HrApi {
                 birthdate: birthdayElement,
                 companybranch: branchElement,
                 department: departmentElement,
-                // positionTemplate : req.body.positionTemplate, 
                 phone: telElement,
                 position: positionElement,
                 startwork: startworkElement,

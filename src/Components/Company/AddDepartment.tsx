@@ -3,11 +3,13 @@ import '@/Components/Admin/CSS/AddCompany.css';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import Swal from 'sweetalert2';
 import { Button, Modal, Form } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 function AddDepartment() {
   const [show, setShow] = useState(false);
   const [KeepDepartments, setKeepDepartments] = useState<{ name: string; phone: string }[]>([{ name: '', phone: '' }]);
   const companyapi = new CompanyApi();
+  const nav = useNavigate();
 
   const handleClose = () => {
     setShow(false);
@@ -19,21 +21,17 @@ function AddDepartment() {
   const handleDepartmentChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const { name, value } = e.target;
-    console.log(name , value);
+    console.log(name, value);
     const isEnglish = /^[a-zA-Z\s]*$/.test(value);
-  
+
     const updatedValue = isEnglish ? value.toUpperCase() : value;
-  
+
     const updatedDepartments = KeepDepartments.map((department, i) =>
       i === index ? { ...department, [name]: updatedValue } : department
     );
-  
+
     setKeepDepartments(updatedDepartments);
   };
-  
-
-  console.log('check upper case', KeepDepartments);
-
 
   const handleAddDepartment = () => {
     setKeepDepartments([...KeepDepartments, { name: '', phone: '' }]);
@@ -45,11 +43,12 @@ function AddDepartment() {
     //Njw9AgE4nAcRHNuNMz3Y
 
     const phoneRegex = /^\d+$/;
+    const textOnlyRegex = /^[a-zA-Z\s]+$/;
     const allPhonesNumber = KeepDepartments.every((dept) => phoneRegex.test(dept.phone));
     const allPhonesValid = KeepDepartments.every((dept) => dept.phone.trim() !== '');
-    const checknameNotNumber = KeepDepartments.every((dept) => phoneRegex.test(dept.name));
+    const checknameNotNumber = KeepDepartments.every((dept) => textOnlyRegex.test(dept.name));
 
-    if (checknameNotNumber) {
+    if (!checknameNotNumber) {
       Swal.fire({
         title: 'Error!',
         text: 'ชื่อแผนกต้องไม่เป็นตัวเลข!',
@@ -81,12 +80,17 @@ function AddDepartment() {
       const resUploadData = await addData();
 
       if (resUploadData?.every((res) => res === 200)) {
+
         Swal.fire({
           title: 'Success!',
           text: 'เพิ่มข้อมูลแผนกสำเร็จ!',
           icon: 'success',
+        }).then(() => {
+          handleClose();
+          nav('/ListDetailBranchAndDepartment');
+          window.location.reload();
         });
-        handleClose();
+
       }  //เหลือเช็คกรณีไม่ซ้ำบางตัว
       else if (resUploadData?.every((res) => res === 400)) {
         Swal.fire({
@@ -108,10 +112,10 @@ function AddDepartment() {
 
     const statusCodes: number[] = [];
     try {
-    
+
       const res = await companyapi.AddDepartments(KeepDepartments);
       statusCodes.push(...res);
-    
+
     } catch (error) {
       console.error('Error adding departments:', error);
       statusCodes.push(400);
@@ -147,6 +151,7 @@ function AddDepartment() {
                   <Form.Label htmlFor={`departmentName-${index}`}>{`ชื่อแผนกที่ ${index + 1}`}</Form.Label>
                   <Form.Control
                     type="text"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     id={`departmentName-${index}`}
                     name="name"
                     value={department.name}
@@ -158,6 +163,7 @@ function AddDepartment() {
                   <Form.Control
                     type="text"
                     id={`phoneDepartment-${index}`}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     name="phone"
                     value={department.phone}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDepartmentChange(index, e)}
@@ -170,12 +176,15 @@ function AddDepartment() {
             </div>
             <br />
             <hr />
-            <Button variant="secondary" onClick={handleClose}>
-              ยกเลิก
-            </Button>
-            <Button variant="primary" type="submit">
-              ตกลง
-            </Button>
+            <div className="flex justify-end mt-4">
+              <Button variant="secondary" onClick={handleClose}>
+                ยกเลิก
+              </Button>
+              &nbsp;
+              <Button variant="primary" type="submit">
+                ตกลง
+              </Button>
+            </div>
           </form>
         </Modal.Body>
       </Modal>

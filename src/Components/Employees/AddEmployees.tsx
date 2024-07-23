@@ -612,6 +612,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <Button variant="primary" type='submit'>
               ตกลง
             </Button>
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
           </form>
         </Modal.Body>
       </Modal>

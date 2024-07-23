@@ -3,6 +3,7 @@ import '@/Components/Admin/CSS/AddCompany.css'
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import Swal from 'sweetalert2';
 import { Button, Modal, Form } from "react-bootstrap";
+import { useNavigate } from 'react-router-dom';
 
 
 interface FormData {
@@ -20,6 +21,7 @@ function AddCompanyBranch() {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const companyapi = new CompanyApi();
+  const nav = useNavigate();
 
 
   const getNameValue = (): string => {
@@ -72,6 +74,10 @@ function AddCompanyBranch() {
           title: 'Success!',
           text: 'เพิ่มข้อมูลสำเร็จ',
           icon: 'success',
+        }).then(() => {
+          handleClose();
+          nav('/ListDetailBranchAndDepartment');
+          window.location.reload();
         });
 
         handleClose();
@@ -109,7 +115,6 @@ function AddCompanyBranch() {
         formData.province,
         formData.country);
 
-      console.log('ssss', res);
       return res;
 
     } else {
@@ -146,29 +151,62 @@ function AddCompanyBranch() {
             <hr />
             <br />
             <Form.Label htmlFor="name">ชื่อสาขา</Form.Label>
-            <Form.Control type="text" id="name" required />
+            {/* <Form.Control type="text" id="name" required /> */}
+            <input
+              type="text"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              id="name"
+              required
+            />
             <br />
             <p>ที่อยู่ - Address</p>
             <hr />
             <br />
             <Form.Label htmlFor="subdistrict">ตำบล</Form.Label>
-            <Form.Control type="text" id="subdistrict" required />
+            {/* <Form.Control type="text" id="subdistrict" required /> */}
+            <input
+              type="text"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              id="subdistrict"
+              required
+            />
             <br />
             <Form.Label htmlFor="district">อำเภอ</Form.Label>
-            <Form.Control type="text" id="district" required />
+            {/* <Form.Control type="text" id="district" required /> */}
+            <input
+              type="text"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              id="district"
+              required
+            />
             <br />
             <Form.Label htmlFor="province">จังหวัด</Form.Label>
-            <Form.Control type="text" id="province" required />
+            {/* <Form.Control type="text" id="province" required /> */}
+            <input
+              type="text"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              id="province"
+              required
+            />
             <br />
             <Form.Label htmlFor="country">ประเทศ</Form.Label>
-            <Form.Control type="text" id="country" required />
+            {/* <Form.Control type="text" id="country" required /> */}
+            <input
+              type="text"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              id="country"
+              required
+            />
             <br />
-            <Button variant="secondary" onClick={handleClose}>
-              ยกเลิก
-            </Button>
-            <Button variant="primary" type="submit">
-              ตกลง
-            </Button>
+            <div className="flex justify-end mt-4">
+              <Button variant="secondary" onClick={handleClose}>
+                ยกเลิก
+              </Button>
+              &nbsp;
+              <Button variant="primary" type="submit">
+                ตกลง
+              </Button>
+            </div>
           </form>
         </Modal.Body>
       </Modal>
