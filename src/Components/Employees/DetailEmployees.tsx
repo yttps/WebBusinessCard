@@ -2,7 +2,6 @@ import { useEffect, useState, ChangeEvent, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { GetEmployeeById } from '@/Model/GetEmployeeById';
 import Header from '../Header/Header';
-import { Row, Col, Button, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { GetCompanyBranchesById } from '@/Model/GetCompanyBranchesById';
@@ -17,7 +16,6 @@ import { GetDataCompanyById } from '@/Model/GetCompanyById';
 
 export default function DetailEmployees() {
 
-    //non test update card
     const { id: employeesId } = useParams();
     const employeesapi = new EmployeesApi();
     const [dataemployeesById, setDataEmployeesById] = useState<GetEmployeeById | null>(null);
@@ -44,6 +42,11 @@ export default function DetailEmployees() {
     const [telDepartment, setTelDepartment] = useState('');
     const [departName, setDepartmentName] = useState('');
     const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    const [subdistrict, setSubdistrict] = useState('');
+    const [district, setDistrict] = useState('');
+    const [province, setProvince] = useState('');
+    const [country, setCountry] = useState('');
 
 
 
@@ -126,6 +129,8 @@ export default function DetailEmployees() {
         setGenderValue(e.target.value);
     };
 
+    console.log(handleGender);
+
     const fetchData = async () => {
 
         try {
@@ -158,7 +163,7 @@ export default function DetailEmployees() {
             });
 
             if (result.isConfirmed) {
-                const response = await employeesapi.DeleteEmployee(dataemployeesById.id); 
+                const response = await employeesapi.DeleteEmployee(dataemployeesById.id);
 
                 if (response == 200) {
                     await Swal.fire({
@@ -198,23 +203,21 @@ export default function DetailEmployees() {
             const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
 
             const formEdit = {
-                firstname: firstnameElement.value,
-                lastname: lastnameElement.value,
-                position: positionElement.value,
-                gender: genderValue,
-                birthdate: birthdayElement.value,
-                startwork: startworkElement.value,
-                subdistrict: subdistrictElement.value,
-                district: districtElement.value,
-                province: provinceElement.value,
-                country: countryElement.value,
-                phone: telElement.value,
-                email: emailElement.value,
-                password: passwordElement.value,
-                branch: branchValue,
-                department: departmentValue,
-                EMId: EMId,
-                file: file
+                firstname: firstnameElement.value !== '' ? firstnameElement.value : dataemployeesById?.firstname ?? '',
+                lastname: lastnameElement.value !== '' ? lastnameElement.value : dataemployeesById?.lastname ?? '',
+                position: positionElement.value !== '' ? positionElement.value : dataemployeesById?.position ?? '',
+                gender: genderValue !== '' ? genderValue : dataemployeesById?.gender ?? '',
+                birthdate: birthdayElement.value !== '' ? birthdayElement.value : dataemployeesById?.birthdate ?? '',
+                startwork: startworkElement.value !== '' ? startworkElement.value : dataemployeesById?.startwork ?? '',
+                subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
+                district: districtElement.value !== '' ? districtElement.value : district ?? '',
+                province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
+                country: countryElement.value !== '' ? countryElement.value : country ?? '',
+                phone: telElement.value !== '' ? telElement.value : dataemployeesById?.phone ?? '',
+                email: emailElement.value !== '' ? emailElement.value : dataemployeesById?.email ?? '',
+                password: passwordElement.value !== '' ? passwordElement.value : dataemployeesById?.password ?? '',
+                branch: branchValue !== '' ? branchValue : dataemployeesById?.companybranch?.id ?? '',
+                department: departmentValue !== '' ? departmentValue : dataemployeesById?.department.id ?? ''
             }
 
             const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
@@ -256,38 +259,64 @@ export default function DetailEmployees() {
             }
 
             const resUpdateData = await employeeapi.updateDataEmployee(
-                firstnameElement.value, lastnameElement.value, positionElement.value, genderValue, birthdayElement.value, startworkElement.value,
-                subdistrictElement.value, districtElement.value, provinceElement.value, countryElement.value, telElement.value, emailElement.value,
-                branchValue, departmentValue, passwordElement.value, EMId
+                formEdit.firstname,
+                formEdit.lastname,
+                formEdit.position,
+                formEdit.gender,
+                formEdit.birthdate,
+                formEdit.startwork,
+                formEdit.subdistrict,
+                formEdit.district,
+                formEdit.province,
+                formEdit.country,
+                formEdit.phone,
+                formEdit.email,
+                formEdit.branch,
+                formEdit.department,
+                formEdit.password,
+                EMId
             );
 
-            if (resUpdateData == 200 && file) {
+            if (resUpdateData == 200) {
 
-                const folderName = '';
-                const collection = 'users';
+                if (file) {
+
+                    const folderName = '';
+                    const collection = 'users';
+                    const resUploadLogo = await hrapi.UploadProfile(file, EMId, folderName, collection);
+                    //update card
+                    const resUpdateDetailCard = await updateDetailCard();
+
+                    if (resUploadLogo == 200 && resUpdateDetailCard == 200) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'อัปเดทข้อมูลสำเร็จ!',
+                            icon: 'success',
+                        }).then(() => {
+                            nav('/ListEmployees');
+                            window.location.reload();
+                        });
+                    }
+                }
+            }
+
+            if (!file) {
+
                 const resUploadLogo = await hrapi.UploadProfile(file, EMId, folderName, collection);
-                //update card
-                await updateDetailCard();
+                
+                if (resUpdateDetailCard == 200) {
 
-                if (resUploadLogo == 200 && statusEditCard == 200) {
+                    console.log('check2', resUpdateDetailCard);
+
                     Swal.fire({
                         title: 'Success!',
                         text: 'อัปเดทข้อมูลสำเร็จ!',
                         icon: 'success',
+                    }).then(() => {
+                        nav('/ListEmployees');
+                        window.location.reload();
                     });
-
-                    nav('/ListEmployees', { replace: true });
                 }
-            }
-            else {
-
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'อัปเดทข้อมูลไม่สำเร็จ!',
-                    icon: 'error',
-                });
-
-                return;
             }
 
         } catch (error) {
@@ -518,127 +547,251 @@ export default function DetailEmployees() {
 
     }, [isFetch]);
 
+    useEffect(() => {
+
+        function splitAddress() {
+
+            if (dataemployeesById?.address) {
+                const [subdistrict, district, province, country] = dataemployeesById.address.split(',');
+                setDataEmployeesById(prevState => prevState ? {
+                    ...prevState,
+                    subdistrict: subdistrict || '',
+                    district: district || '',
+                    province: province || '',
+                    country: country || ''
+                } : null);
+
+                setSubdistrict(subdistrict);
+                setDistrict(district);
+                setProvince(province);
+                setCountry(country);
+            }
+        }
+
+        splitAddress();
+    }, [dataemployeesById?.address]);
+
     if (update) {
         return (
             <>
                 <Header />
                 <br />
-                <div id='con3' className="container">
-                    {dataemployeesById ? (
+                {dataemployeesById && (
+                    <div className="bg-card p-6 rounded-lg shadow-lg max-w-max mx-auto">
                         <form onSubmit={(e) => SaveDetails(e, dataemployeesById.id)}>
-                            <div className="col1">
-                                <h4>Profile</h4>
-                                <br />
-                                <hr />
-                                <div id="header">
-                                    <h6>ชื่อ:</h6>
-                                    <input type='text' id="firstnameEdit" placeholder={dataemployeesById.firstname} required></input>
+                            <div className="flex">
+                                <div className="max-w-full bg-gray-100 p-3 rounded-lg ml-0">
+                                    <h2 className="text-lg font-semibold mb-4">แก้ไขข้อมูลรายละเอียดพนักงานฝ่ายบุคคล</h2>
                                     <br />
-                                    <h6>นามสกุล:</h6>
-                                    <input id="lastnameEdit" type='text' placeholder={dataemployeesById.lastname} required></input>
-                                    <br />
-                                    <h6>ตำแหน่ง:</h6>
-                                    <input id="positionEdit" type='text' placeholder={dataemployeesById.position} required></input>
-                                </div>
-
-                            </div>
-                            <div className="col2">
-                                <h4>รายละเอียด HR </h4>
-                                <br />
-                                <hr />
-                                <div id="col2-1">
-                                    <Row>
-                                        <Col>
-                                            <h5 >เพศ</h5>
-                                            <Form.Select aria-label="เลือกเพศ" onChange={handleGender} value={genderValue}>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div>
+                                            <p className="text-muted-foreground">ชื่อ:</p>
+                                            <input
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, firstname: e.target.value })}
+                                                value={dataemployeesById.firstname || ''}
+                                                type="text" id="firstnameEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={dataemployeesById.firstname} />
+                                            <br />
+                                            <p className="text-muted-foreground">นามสกุล:</p>
+                                            <input
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, lastname: e.target.value })}
+                                                value={dataemployeesById.lastname || ''}
+                                                type="text" id="lastnameEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={dataemployeesById.lastname} />
+                                            <br />
+                                            <p className="text-muted-foreground">ตำแหน่ง:</p>
+                                            <input
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, position: e.target.value })}
+                                                value={dataemployeesById.position || ''}
+                                                type="text"
+                                                id="positionEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={dataemployeesById.position} />
+                                            <br />
+                                            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">เลือกเพศ</label>
+                                            <select
+                                                id="genderEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                //onChange={handleGender}
+                                                value={dataemployeesById.gender ? dataemployeesById.gender : genderValue}
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, gender: e.target.value })}
+                                            >
                                                 <option value="">เลือกเพศ</option>
-                                                <option value="male">ชาย</option>
-                                                <option value="female">หญิง</option>
-                                            </Form.Select>
+                                                <option value="ชาย">ชาย</option>
+                                                <option value="หญิง">หญิง</option>
+                                            </select>
                                             <br />
-                                            <h5>วันเกิด</h5>
-                                            <input type='datetime-local' id="birthdayEdit" placeholder={dataemployeesById.birthdate} required></input>
+                                            <p className="text-muted-foreground">วันเกิด:</p>
+                                            <input
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                type='datetime-local'
+                                                id="birthdayEdit"
+                                                value={dataemployeesById.birthdate ? new Date(dataemployeesById.birthdate).toISOString().slice(0, 16) : ''}
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, birthdate: e.target.value })}
+                                            />
                                             <br />
-                                            <h5>วันที่เริ่มงาน</h5>
-                                            <input type='datetime-local' id="startworkEdit" placeholder={dataemployeesById.startwork} required></input>
+                                            <p className="text-muted-foreground">วันที่เริ่มงาน:</p>
+                                            <input
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                type='datetime-local'
+                                                id="startworkEdit"
+                                                placeholder={dataemployeesById.startwork}
+                                                value={dataemployeesById.startwork || ''}
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, startwork: e.target.value })}
+                                            />
                                             <br />
-                                            <h5>ตำบล</h5>
-                                            <input id="subdistrictEdit" type='text' placeholder="Subdistrict" required></input>
+                                            <p className="text-muted-foreground">ตำบล:</p>
+                                            <input
+                                                onChange={(e) => setSubdistrict(e.target.value)}
+                                                value={subdistrict || ''}
+                                                type="text" id="subdistrictEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={subdistrict} />
                                             <br />
-                                            <h5>อำเภอ</h5>
-                                            <input id="districtEdit" type='text' placeholder="District" required></input>
+                                            <p className="text-muted-foreground">อำเภอ:</p>
+                                            <input
+                                                onChange={(e) => setDistrict(e.target.value)}
+                                                value={district || ''}
+                                                type="text"
+                                                id="districtEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={district} />
                                             <br />
-                                            <h5>จังหวัด</h5>
-                                            <input id="provinceEdit" type='text' placeholder="Province" required></input>
+                                            <p className="text-muted-foreground">จังหวัด:</p>
+                                            <input
+                                                onChange={(e) => setProvince(e.target.value)}
+                                                value={province || ''}
+                                                type="text"
+                                                id="provinceEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={province} />
                                             <br />
-                                        </Col>
-                                        <Col>
-                                            <h5>ประเทศ</h5>
-                                            <input id="countryEdit" type='text' placeholder="Country" required></input>
+                                            <p className="text-muted-foreground">ประเทศ:</p>
+                                            <input
+                                                onChange={(e) => setCountry(e.target.value)}
+                                                value={country || ''}
+                                                type="text"
+                                                id="countryEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={country} />
+                                        </div>
+                                        <div>
+                                            <p className="text-muted-foreground">เบอร์โทร:</p>
+                                            <input
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, phone: e.target.value })}
+                                                value={dataemployeesById.phone || ''}
+                                                type="text"
+                                                id="telEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={dataemployeesById.phone} />
                                             <br />
-                                            <h5>เบอร์โทรศัพท์</h5>
-                                            <input id="telEdit" type='text' placeholder={dataemployeesById.phone} required></input>
-                                            <br />
-                                            <h5>สาขาบริษัท</h5>
-                                            {dataBranchesById && (
-                                                <Form.Select onChange={handleBranches}>
+                                            <label htmlFor="branches" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                เลือกสาขาบริษัท
+                                            </label>
+                                            {dataBranchesById && dataemployeesById && (
+                                                <select
+                                                    id="branches"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    onChange={handleBranches}
+                                                    value={branchValue !== '' ? branchValue : dataemployeesById.companybranch?.id || ''}
+                                                >
                                                     <option value="">เลือกสาขาบริษัท</option>
-                                                    {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
-                                                        <option key={index} value={item.id}>
+                                                    {dataemployeesById.companybranch && !dataBranchesById.some(branch => branch.id === dataemployeesById.companybranch.id) && (
+                                                        <option key={dataemployeesById.companybranch.id} value={dataemployeesById.companybranch.id}>
+                                                            {dataemployeesById.companybranch.name}
+                                                        </option>
+                                                    )}
+                                                    {dataBranchesById.map((item: GetCompanyBranchesById) => (
+                                                        <option key={item.id} value={item.id}>
                                                             {item.name}
                                                         </option>
                                                     ))}
-                                                </Form.Select>
+                                                </select>
                                             )}
-                                            <br />
-                                            <h5>แผนก</h5>
-                                            {dataDepartmentById && (
-                                                <Form.Select onChange={handleDepartment}>
-                                                    <option value="">เลือกแผนกบริษัท</option>
-                                                    {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
-                                                        <option key={index} value={item.id}>
-                                                            {item.name}
-                                                        </option>
-                                                    ))}
-                                                </Form.Select>
-                                            )}
-                                            <br />
 
-                                            <div className="container mt-1">
-                                                <h4>รูปประจำตัวพนักงาน</h4>
-                                                <label>
-                                                    <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
-                                                </label>
-                                                {imageData.showImage && (
-                                                    <div>
-                                                        <img
-                                                            src={imageData.base64textString}
-                                                            alt={imageData.imageName}
-                                                            style={{ maxWidth: '100%' }} />
-                                                    </div>
-                                                )}
-                                                <br />
-                                            </div>
-                                        </Col>
-                                        <Col>
-                                            <h5>Email</h5>
-                                            <input id="emailEdit" type='text' placeholder={dataemployeesById.email} required></input>
                                             <br />
-                                            <h5>password</h5>
-                                            <input id="passwordEdit" type='text' placeholder={dataemployeesById.password} required></input>
-                                        </Col>
-                                    </Row>
-                                    <div id="col2-2">
-                                        <Button type='submit' variant="success">บันทึก</Button>
-                                        <Button variant="danger" onClick={handleUpdate}>ยกเลิก</Button>
+                                            <label htmlFor="departments" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                เลือกแผนกบริษัท
+                                            </label>
+                                            {dataDepartmentById && dataemployeesById && (
+                                                <select
+                                                    id="departments"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    onChange={handleDepartment}
+                                                    value={departmentValue !== '' ? departmentValue : dataemployeesById.department?.id || ''}
+                                                >
+                                                    <option value="">เลือกแผนกบริษัท</option>
+                                                    {dataemployeesById.department && !dataDepartmentById.some(dept => dept.id === dataemployeesById.department.id) && (
+                                                        <option key={dataemployeesById.department.id} value={dataemployeesById.department.id}>
+                                                            {dataemployeesById.department.name}
+                                                        </option>
+                                                    )}
+                                                    {dataDepartmentById.map((item: GetDepartmentByComId) => (
+                                                        <option key={item.id} value={item.id}>
+                                                            {item.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+
+                                            <br />
+                                            <p className="text-muted-foreground">อีเมล:</p>
+                                            <input
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, email: e.target.value })}
+                                                value={dataemployeesById.email || ''} type="text" id="emailEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={dataemployeesById.email} />
+                                            <br />
+                                            <p className="text-muted-foreground">รหัสผ่าน:</p>
+                                            <input
+                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, password: e.target.value })}
+                                                value={dataemployeesById.password || ''}
+                                                type="text" id="passwordEdit"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder={dataemployeesById.password} />
+                                            <br />
+                                            <br />
+                                            <p className="text-muted-foreground">รูปประจำตัวพนักงาน:</p>
+                                            <label>
+                                                <input
+                                                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                                    type="file"
+                                                    id='selectImg'
+                                                    onChange={handleFileChange}
+                                                />
+                                            </label>
+                                            {imageData.showImage ? (
+                                                <div>
+                                                    <img
+                                                        src={imageData.base64textString}
+                                                        alt={imageData.imageName}
+                                                        style={{ maxWidth: '100%' }}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <br />
+                                                    <p>รูปประจำตัวพนักงาน :</p>
+                                                    <br />
+                                                    <img src={dataemployeesById.profile || ''} alt="" />
+                                                </div>
+                                            )}
+                                            <br />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <div className="flex justify-end mt-4">
+                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
+                                &nbsp;
+                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={handleUpdate}>ยกเลิก</button>
+                            </div>
+                            <canvas ref={canvasRef} style={{ display: 'none' }} />
                         </form>
-                    ) : (
-                        <p>Loading...</p>
-                    )}
-                </div>
+                    </div>
+                )}
             </>
         );
     }
@@ -651,7 +804,76 @@ export default function DetailEmployees() {
     return (
         <div>
             <Header />
-            <h1>Company Details</h1>
+            <br />
+            <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                <div className="flex">
+                    <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                        <div className="flex flex-col items-center">
+                            <img src={dataemployeesById.profile} alt="Profile Picture" className="w-70 h-24 object-cover rounded-lg mb-5" />
+                            <h2 className="text-lg font-semibold mb-2">Profile</h2>
+                            <br />
+                            <div className="text-center">
+                                <p className="text-muted-foreground">ชื่อ:</p>
+                                <p>{dataemployeesById.firstname}</p>
+                                <br />
+                                <p className="text-muted-foreground">นามสกุล:</p>
+                                <p>{dataemployeesById.lastname}</p>
+                                <br />
+                                <p className="text-muted-foreground">ตำแหน่ง:</p>
+                                <p>{dataemployeesById.position}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                        <h2 className="text-lg font-semibold mb-4">รายละเอียดพนักงานฝ่ายบุคคล</h2>
+                        <br />
+                        <div className="grid grid-cols-3 gap-4">
+                            <div>
+                                <p className="text-muted-foreground">เพศ:</p>
+                                <p>{dataemployeesById.gender}</p>
+                                <br />
+                                <p className="text-muted-foreground">วันเกิด:</p>
+                                <p>{dataemployeesById.birthdate}</p>
+                                <br />
+                                <p className="text-muted-foreground">วันที่เริ่มงาน:</p>
+                                <p>{dataemployeesById.startwork}</p>
+                                <br />
+                                <p className="text-muted-foreground">ที่อยู่:</p>
+                                <p>{dataemployeesById.address}</p>
+                                <br />
+                                <p className="text-muted-foreground">เบอร์โทร:</p>
+                                <p>{dataemployeesById.phone}</p>
+                                <br />
+                                <p className="text-muted-foreground">สาขาบริษัท:</p>
+                                <p>{dataemployeesById.companybranch.name}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">แผนก:</p>
+                                <p>{dataemployeesById.department.name}</p>
+                                <br />
+                                <p className="text-muted-foreground">อีเมล:</p>
+                                <p>{dataemployeesById.email}</p>
+                                <br />
+                                <p className="text-muted-foreground">รหัสผ่าน:</p>
+                                <p>{dataemployeesById.password}</p>
+
+                                <br />
+                                <br />
+                                <p className="text-muted-foreground">นามบัตร:</p>
+                                <img src={dataemployeesById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-end mt-4">
+                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteEmployeeData}>ลบข้อมูล</button>
+                    &nbsp;
+                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={handleUpdate}>แก้ไขข้อมูล</button>
+                </div>
+            </div>
+            //
+            {/* <h1>Company Details</h1>
             <p>Name: {dataemployeesById.firstname}</p>
             <p>Email: {dataemployeesById.email}</p>
             <p>Company branch: {dataemployeesById.companybranch.name}</p>
@@ -668,9 +890,7 @@ export default function DetailEmployees() {
             <div id="col2-2">
                 <Button variant="danger" onClick={DeleteEmployeeData}>ลบข้อมูล</Button>
                 <Button variant="warning" onClick={handleUpdate}>แก้ไขข้อมูล</Button>
-
-            </div>
-
+            </div> */}
         </div>
     );
 

@@ -514,9 +514,16 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
   return (
     <>
-      <Button variant="success" onClick={handleShow}>
+      {/* <Button variant="success" onClick={handleShow}>
         เพิ่มข้อมูลพนักงาน
-      </Button>
+      </Button> */}
+
+      <div onClick={handleShow} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+        <svg className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+          <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
+        </svg>
+        <span className="flex-1 ms-3 whitespace-nowrap group-hover:text-gray-900 dark:group-hover:text-white">เพิ่มข้อมูลพนักงาน</span>
+      </div>
 
       <Modal show={show} onHide={handleClose} animation={false}>
         <Modal.Header closeButton>
@@ -525,45 +532,95 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         <Modal.Body>
           <form onSubmit={uploadData}>
             <Form.Label htmlFor="firstname">ชื่อ</Form.Label>
-            <Form.Control type="text" id="firstname" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="firstname"
+              required />
             <br />
             <Form.Label htmlFor="lastname">นามสกุล</Form.Label>
-            <Form.Control type="text" id="lastname" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="lastname"
+              required />
             <br />
             <Form.Label htmlFor="email">อีเมล</Form.Label>
-            <Form.Control type="text" id="email" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="email"
+              required />
             <br />
             <Form.Label htmlFor="password">รหัสผ่าน</Form.Label>
-            <Form.Control type="text" id="password" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="password"
+              required />
             <br />
             <p>เพศ</p>
-            <Form.Select aria-label="เลือกเพศ" onChange={handleGender} value={genderValue}>
+            <Form.Select
+              required
+              aria-label="เลือกเพศ"
+              onChange={handleGender}
+              value={genderValue}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
               <option value="">เลือกเพศ</option>
               <option value="male">ชาย</option>
               <option value="female">หญิง</option>
             </Form.Select>
             <br />
             <Form.Label htmlFor="birthdate">วันเกิด</Form.Label>
-            <Form.Control type="datetime-local" id="birthdate" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="datetime-local"
+              id="birthdate"
+              required />
             <br />
             <Form.Label htmlFor="phone">เบอร์โทร</Form.Label>
-            <Form.Control type="text" id="phone" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="phone"
+              required />
             <br />
             <Form.Label htmlFor="subdistrict">ตำบล</Form.Label>
-            <Form.Control type="text" id="subdistrict" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="subdistrict"
+              required />
             <br />
             <Form.Label htmlFor="district">อำเภอ</Form.Label>
-            <Form.Control type="text" id="district" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="district"
+              required />
             <br />
             <Form.Label htmlFor="province">จังหวัด</Form.Label>
-            <Form.Control type="text" id="province" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="province"
+              required />
             <br />
             <Form.Label htmlFor="country">ประเทศ</Form.Label>
-            <Form.Control type="text" id="country" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="country"
+              required />
             <br />
             <p>สาขาบริษัท</p>
             {dataBranchesById && (
-              <Form.Select onChange={handleBranches}>
+              <Form.Select
+                onChange={handleBranches}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                required
+              >
                 <option value="">เลือกสาขาบริษัท</option>
                 {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
                   <option key={index} value={item.id}>
@@ -575,7 +632,11 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             <br />
             <p>แผนกบริษัท</p>
             {dataDepartmentById && (
-              <Form.Select onChange={handleDepartment}>
+              <Form.Select
+                onChange={handleDepartment}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                required
+              >
                 <option value="">เลือกแผนกบริษัท</option>
                 {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
                   <option key={index} value={item.id}>
@@ -586,10 +647,18 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             )}
             <br />
             <Form.Label htmlFor="position">ตำแหน่ง</Form.Label>
-            <Form.Control type="text" id="position" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="text"
+              id="position"
+              required />
             <br />
             <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
-            <Form.Control type="datetime-local" id="startwork" required />
+            <Form.Control
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              type="datetime-local"
+              id="startwork"
+              required />
             <br />
             <div className="container mt-1">
               <h4>รูปประจำตัวพนักงาน</h4>
@@ -606,12 +675,15 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
               )}
               <br />
             </div>
-            <Button variant="secondary" onClick={handleClose}>
-              ยกเลิก
-            </Button>
-            <Button variant="primary" type='submit'>
-              ตกลง
-            </Button>
+            <div className="flex justify-end mt-4">
+              <Button variant="secondary" onClick={handleClose}>
+                ยกเลิก
+              </Button>
+              &nbsp;
+              <Button variant="primary" type='submit'>
+                ตกลง
+              </Button>
+            </div>
             <canvas ref={canvasRef} style={{ display: 'none' }} />
           </form>
         </Modal.Body>

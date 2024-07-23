@@ -150,12 +150,6 @@ export default function DetailHr() {
                 HRId
             );
 
-            // const resUpdateData = await hrapi.updateDataHR(
-            //     firstnameElement.value, lastnameElement.value, positionElement.value, genderValue, birthdayElement.value, startworkElement.value,
-            //     subdistrictElement.value, districtElement.value, provinceElement.value, countryElement.value, telElement.value, emailElement.value,
-            //     branchValue, departmentValue, passwordElement.value, HRId
-            // );
-
             console.log('res data', resUpdateData);
 
             if (resUpdateData == 200) {
@@ -226,7 +220,7 @@ export default function DetailHr() {
 
         const selectedDepartment = dataDepartmentById.find(department => department.id === selectedValue);
         if (selectedDepartment) {
-            setDepartmentName(selectedDepartment.name);//
+            setDepartmentName(selectedDepartment.name);
             setTelDepartment(selectedDepartment.phone);
         } else {
             setDepartmentName('');
