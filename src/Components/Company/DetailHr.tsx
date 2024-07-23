@@ -875,6 +875,7 @@ export default function DetailHr() {
                     </div>
                     <div className="flex justify-end mt-4">
                         <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteHrData}>ลบข้อมูล</button>
+                        &nbsp;
                         <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={editDetails}>แก้ไขข้อมูล</button>
                     </div>
                 </div>

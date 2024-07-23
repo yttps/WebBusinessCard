@@ -55,7 +55,6 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   const [telDepartment, setTelDepartment] = useState('');
   const [addressBranch, setAddressBranch] = useState('');
   const [departName, setDepartmentName] = useState('');
-  const [employeeId, setEmployeeId] = useState<string | undefined>(undefined);
 
 
   const handleDepartment = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -101,6 +100,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   };
 
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
+    
     event.preventDefault();
 
     const formData: FormData = {
@@ -176,18 +176,17 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         return;
       }
 
-      setEmployeeId(resUploadData);
+      
 
       if (resUploadData && file) {
+
+        const resUpdateDetailCard = await updateDetailCard(resUploadData);
+
         const folderName = '';
         const collection = 'users';
         const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
-
-        console.log('em id' , employeeId);
-
-        const res = await updateDetailCard();
-
-        if (resUploadLogo === 200 && res == 200) {
+        
+        if (resUploadLogo === 200 && resUpdateDetailCard == 200) {
 
           clearImageCache();
 
@@ -196,9 +195,9 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
             text: 'เพิ่มข้อมูลสำเร็จ',
             icon: 'success',
           }).then(() => {
-            setShow(true);
+            setShow(false);
             nav('/ListHr');
-            // window.location.reload();
+            window.location.reload();
           })
 
           handleClose();
@@ -220,8 +219,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     }
   };
 
-
-  const updateDetailCard = async () => {
+  const updateDetailCard = async (employeeId: string) => {
 
     const formData: FormData = {
       firstname: getInputValue('firstname'),
@@ -267,8 +265,6 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       position: { x: TemplateBycompanyId[0].position.x, y: TemplateBycompanyId[0].position.y }
     };
 
-    console.log('positions', positions);
-
     if (allValuesNotNull) {
 
       const textMappingsArray = {
@@ -282,8 +278,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         "departmentName": `${departName}`,
       };
 
-      console.log('textMappings', textMappingsArray);
-      console.log('em id', employeeId);
+      console.log('em in updateDetailCard', employeeId);
 
       try {
 
@@ -507,11 +502,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     }
   }, [isFetch, GetDepartmentByCompanyId, getCompanyBranchById, getUrlLogoCompany, getTemplateByCompanyId, setIsFetch]);
 
-  useEffect(() => {
-    if (employeeId) {
-      console.log('Employee ID set:', employeeId);
-    }
-  }, [employeeId]);
+
 
   return (
     <>

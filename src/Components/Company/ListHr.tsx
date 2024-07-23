@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '@/Components/Header/Header';
 import { Row, Col } from 'react-bootstrap';
 import { HrApi } from '@/ApiEndpoints/HrApi';
@@ -18,8 +18,7 @@ export default function ListHr() {
     const nav = useNavigate();
 
     console.log(hasError);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const hrapi = new HrApi();
+    const hrapi = useMemo(() => new HrApi(), []);
 
     const [selectedDateRange, setSelectedDateRange] = useState<string>('Last 30 days');
     const [dropdownVisible, setDropdownVisible] = useState<boolean>(false);
@@ -39,33 +38,38 @@ export default function ListHr() {
         nav('/ListDetailBranchAndDepartment');
     }
 
-    const getHr = async () => {
 
-        try {
-
-            const res = await hrapi.GetAllHrByCompanyId();
-
-            if (res) {
-                setDataHr(res);
-                setDataFetched(true);
-                setHasError(false);
-            }
-
-        } catch (error) {
-            console.error('Error fetching general users:', error);
-            setHasError(true);
-        }
-    }
 
     const filteredData = dataHr.filter((Hr) =>
         Hr.firstname.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     useEffect(() => {
+
+        const getHr = async () => {
+
+            try {
+    
+                const res = await hrapi.GetAllHrByCompanyId();
+    
+                if (res) {
+                    setDataHr(res);
+                    setDataFetched(true);
+                    setHasError(false);
+                }
+    
+            } catch (error) {
+                console.error('Error fetching general users:', error);
+                setHasError(true);
+            }
+        }
+
         if (!dataFetched) {
             getHr();
         }
-    }, [dataFetched]);
+
+        
+    }, [dataFetched , hrapi]);
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
