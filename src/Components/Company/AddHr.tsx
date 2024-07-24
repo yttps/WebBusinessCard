@@ -347,7 +347,7 @@ const AddHr: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
           logoImg.onload = () => {
             if (positions.logo) {
               const { x, y } = positions.logo;
-              ctx.drawImage(logoImg, x, y, 100, 70);
+              ctx.drawImage(logoImg, x, y, 180, 100);
 
               canvas.toBlob((blob) => {
                 if (blob) {

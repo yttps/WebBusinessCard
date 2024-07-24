@@ -456,7 +456,7 @@ export default function DetailEmployees() {
                     logoImg.onload = () => {
                         if (positions.logo) {
                             const { x, y } = positions.logo;
-                            ctx.drawImage(logoImg, x, y, 120, 100);
+                            ctx.drawImage(logoImg, x, y, 180, 100);
 
                             canvas.toBlob((blob) => {
                                 if (blob) {

@@ -1,0 +1,17 @@
+.carousel-content {
+    position: absolute;
+    bottom: 20px; 
+    left: 20px; 
+    color: white;
+    z-index: 1000; 
+    pointer-events: auto; 
+  }
+  
+  .carousel-buttons {
+    margin-top: 10px; /* Adjust spacing between name and buttons */
+  }
+  
+  .carousel-buttons .btn {
+    margin-right: 5px; /* Space between buttons */
+}
+  

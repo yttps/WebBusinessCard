@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, ChangeEvent } from "react";
+import React, { useEffect, useState, useRef, ChangeEvent, useCallback, useMemo } from "react";
 import '@/Components/Employees/CSS/createTemplate.css'
 import Header from "@/Components/Header/Header";
 
@@ -15,7 +15,7 @@ const CreateTemplate: React.FC = () => {
   const templateapi = new TemplateApi();
 
   const nav = useNavigate();
-  const companyapi = new CompanyApi();
+  const companyapi = useMemo(() => new CompanyApi(), []);
   const [getLogoCompany, setGetLogoCompany] = useState('');
   const [getCompanyId, setGetcompanyId] = useState<string | ''>('');
   const [logo, setLogo] = useState<File | null>(null);
@@ -201,12 +201,23 @@ const CreateTemplate: React.FC = () => {
 
       if (textMappings[draggedItem]) {
 
+        const draggedPosition = allPositions[draggedItem];
+
+        if (draggedPosition && (draggedPosition.x !== 0 || draggedPosition.y !== 0)) {
+          Swal.fire({
+            title: 'Error!',
+            text: `${draggedItem} ถูกเซ็ตค่าแล้ว!`,
+            icon: 'error',
+          });
+          return;
+        }
+
         const text = textMappings[draggedItem];
         ctx.fillStyle = selectedColor;
         ctx.textBaseline = 'middle';
         ctx.font = fontSize + 'px Arial';
-        ctx.fillText(text, scaledX, scaledY + 40);
-        addToCanvasHistory({ type: 'text', data: text, position: { x: scaledX, y: scaledY + 40 } });
+        ctx.fillText(text, scaledX + 30, scaledY + 33);
+        addToCanvasHistory({ type: 'text', data: text, position: { x: scaledX + 30, y: scaledY + 33 } });
 
 
         setAllPositions(prevPositions => ({
@@ -218,6 +229,17 @@ const CreateTemplate: React.FC = () => {
 
         console.log('Image loaded, drawing at:', x, y);
 
+        const draggedPosition = allPositions[draggedItem];
+
+        if (draggedPosition && (draggedPosition.x !== 0 || draggedPosition.y !== 0)) {
+          Swal.fire({
+            title: 'Error!',
+            text: `${draggedItem} ถูกเซ็ตค่าแล้ว!`,
+            icon: 'error',
+          });
+          return;
+        }
+
         const image = new Image();
         image.src = getLogoCompany;
 
@@ -225,11 +247,11 @@ const CreateTemplate: React.FC = () => {
         const height = 120;
 
         image.onload = () => {
-          ctx.drawImage(image, scaledX - 110, scaledY - 50, width, height);
+          ctx.drawImage(image, scaledX - 110, scaledY - 60, width, height);
 
           setAllPositions(prevPositions => ({
             ...prevPositions,
-            ['logo']: { x: scaledX - 110, y: scaledY - 50 },
+            ['logo']: { x: scaledX - 110, y: scaledY - 60 },
           }));
 
           addToCanvasHistory({
@@ -283,52 +305,50 @@ const CreateTemplate: React.FC = () => {
     }
   }
 
-  // Function to handle undo operation
-  const handleUndo = () => {
-    if (canvasHistory.length > 0) {
-      const updatedHistory = [...canvasHistory];
-      const lastOperation = updatedHistory.pop(); // Remove the last item
-      setCanvasHistory(updatedHistory);
 
-      // Clear canvas
-      const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
-      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // const handleUndo = () => {
+  //   if (canvasHistory.length > 0) {
+  //     const updatedHistory = [...canvasHistory];
+  //     const lastOperation = updatedHistory.pop(); 
+  //     setCanvasHistory(updatedHistory);
 
-      // Redraw background
-      if (background) {
-        const img = new Image();
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            // Redraw all text operations
-            updatedHistory.forEach(operation => {
-              if (operation && operation.type === 'text') {
-                ctx.fillStyle = selectedColor;
-                ctx.textBaseline = 'middle';
-                ctx.font = fontSize + 'px Arial';
-                ctx.fillText(operation.data, operation.position.x, operation.position.y);
-              }
-            });
-          };
-          img.src = e.target?.result as string;
-        };
-        reader.readAsDataURL(background);
-      }
+  //     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
+  //     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+  //     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Remove the position of the undone text
-      if (lastOperation && lastOperation.type === 'text') {
-        setAllPositions(prevPositions => {
-          const newPositions = { ...prevPositions };
-          delete newPositions[lastOperation.data];
-          return newPositions;
-        });
-      }
-    }
-  };
+  //     if (background) {
+  //       const img = new Image();
+  //       const reader = new FileReader();
+  //       reader.onload = (e) => {
+  //         img.onload = () => {
+  //           canvas.width = img.width;
+  //           canvas.height = img.height;
+  //           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  //           // Redraw all text operations
+  //           updatedHistory.forEach(operation => {
+  //             if (operation && operation.type === 'text') {
+  //               ctx.fillStyle = selectedColor;
+  //               ctx.textBaseline = 'middle';
+  //               ctx.font = fontSize + 'px Arial';
+  //               ctx.fillText(operation.data, operation.position.x, operation.position.y);
+  //             }
+  //           });
+  //         };
+  //         img.src = e.target?.result as string;
+  //       };
+  //       reader.readAsDataURL(background);
+  //     }
+
+  //     // Remove the position of the undone text
+  //     if (lastOperation && lastOperation.type === 'text') {
+  //       setAllPositions(prevPositions => {
+  //         const newPositions = { ...prevPositions };
+  //         delete newPositions[lastOperation.data];
+  //         return newPositions;
+  //       });
+  //     }
+  //   }
+  // };
 
   const handleSizeFonstChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFontSize(event.target.value);
@@ -347,7 +367,24 @@ const CreateTemplate: React.FC = () => {
 
     if (!file) return;
 
-    setBackground(file);
+    if (file) {
+
+      if (file.size > 1 * 1024 * 1024) {
+
+        if (backgroundInputRef.current) {
+
+          backgroundInputRef.current.value = "";
+          Swal.fire({
+            title: 'Error!',
+            text: 'โปรดเลือกไฟล์ไม่เกิน 1 MB!',
+            icon: 'error',
+          });
+
+          return;
+        }
+      }
+      setBackground(file);
+    }
   }
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -437,15 +474,13 @@ const CreateTemplate: React.FC = () => {
     }
   }
 
-  const getDataCompanyById = async (companyId: string) => {
-
+  const getDataCompanyById = useCallback(async (companyId: string) => {
     const res = await companyapi.GetDataCompanyById(companyId);
 
     if (res) {
       setGetLogoCompany(res.logo);
     }
-
-  }
+  }, [companyapi]);
 
   useEffect(() => {
 
@@ -461,7 +496,7 @@ const CreateTemplate: React.FC = () => {
         getDataCompanyById(CompanyId);
       }
     }
-  }, [allPositions])
+  }, [allPositions, getDataCompanyById])
 
   console.log(allPositions);
 
@@ -469,57 +504,45 @@ const CreateTemplate: React.FC = () => {
   return (
     <>
       <Header />
-      <br />
-      {/* <Container id="con">
-        <Row>
-          <Col sm={8} id="col1">
-            <h1>Preview Image</h1>
-            {background ? (
-              <div id="div-1">
-                <canvas
-                  id="imageCanvas"
-                  width='850px'
-                  height='410px'
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}>
-                </canvas>
+      <div className="container">
+        <div className="min-h-screen h-[160vh] rounded-lg px-3 p-6 py-4 overflow-y-hidden bg-card bg-gray-50 shadow-lg dark:bg-gray-800">
+          <div className="flex h-full w-full justify-center items-center">
+            <div className="w-1/4 h-max w-[50vh] p-4 bg-blue-500 text-white border border-solid border-gray-300">
+              <h2 className="text-lg font-bold mb-4">รายละเอียดข้อมูล</h2>
+              <div className="mb-2">
+                <p className="text-muted-foreground">ชื่อเทมเพลต</p>
+                <Form onChange={setNameTem}>
+                  <Form.Group className="mb-0">
+                    <Form.Control
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      type="text"
+                      required />
+                  </Form.Group>
+                </Form>
               </div>
-            ) : (
-              <div id="div-1" className="empty-canvas-placeholder">
-                <p>Please upload a background image to start</p>
-              </div>
-            )}
-            <br />
-          </Col>
-          <Col sm={4} id="col2">
-            <div id="div-2">
-              <Form onChange={setNameTem}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Name Template</Form.Label>
-                  <Form.Control type="text" required />
-                </Form.Group>
-              </Form>
-              {Object.keys(textMappings).map((item, index) => (
-                <div
-                  id="drag-with-colour"
-                  key={index}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, item)}
-                  onDragEnd={handleDragEnd}
-                  style={{ backgroundColor: "transparent", margin: '5px' }}>
+              <div className="text-align-content-center md-4 grid grid-cols-2 gap-4">
+                {Object.keys(textMappings).map((item, index) => (
+                  <div
+                    id="drag-with-colour"
+                    key={index}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, item)}
+                    className="mb-[-20px]"
+                    style={{ backgroundColor: "transparent" }}>
 
-                  <Card style={{ width: '15rem', textAlign: 'center', height: '5rem' }}>
-                    <Card.Body>
-                      <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
-                      <CIcon id='text-icon' icon={icon.cilText} size="xl" className="text-success" />
-                    </Card.Body>
-                  </Card>
-                  <br />
-                </div>
-              ))}
-              <br />
-              <div>
-                <Card style={{ width: '15rem', textAlign: 'center' }}>
+                    <Card style={{ width: '12rem', textAlign: 'center', height: '5rem', margin: '0 auto' }}>
+                      <Card.Body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
+                        <CIcon id='text-icon' icon={icon.cilText} size="xl" className="text-success" />
+                      </Card.Body>
+                    </Card>
+                    <br />
+                  </div>
+                ))}
+              </div>
+              <h2 className="text-lg font-bold mb-4">Font size & Pick Color</h2>
+              <div className="md-4 grid grid-cols-2 gap-4">
+                <Card style={{ width: '12rem', textAlign: 'center' }}>
                   <Card.Body>
                     <Card.Title style={{ fontSize: '15px' }}>Font size</Card.Title>
                     <input
@@ -532,10 +555,7 @@ const CreateTemplate: React.FC = () => {
                     <h6>{fontSize}</h6>
                   </Card.Body>
                 </Card>
-              </div>
-              <br />
-              <div>
-                <Card style={{ width: '15rem', textAlign: 'center' }}>
+                <Card style={{ width: '12rem', textAlign: 'center' }}>
                   <Card.Body>
                     <Card.Title style={{ fontSize: '15px' }}>Color</Card.Title>
                     <input type="color"
@@ -546,9 +566,28 @@ const CreateTemplate: React.FC = () => {
                 </Card>
               </div>
               <br />
-              <div>
-                <Card style={{ width: '15rem', textAlign: 'center' }}>
-                  <Card.Body>
+              <h2 className="text-lg font-bold mb-4">Preview Logo</h2>
+              <div className="flex justify-center items-center">
+                <div draggable
+                  onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
+                  <Card style={{ width: '15rem', textAlign: 'center' }}>
+                    <Card.Body>
+                      <Card.Title style={{ fontSize: '15px' }}>Preview Logo</Card.Title>
+                      <hr />
+                      <div id="preview-logo">
+                        {getLogoCompany &&
+                          <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />
+                        }
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+              </div>
+              <br />
+              <h2 className="text-lg font-bold mb-4">Selected Background</h2>
+              <div className="flex justify-center items-center">
+                <Card style={{ width: '20rem', textAlign: 'center' }}>
+                  <Card.Body className="w-[20rem]">
                     <Card.Title style={{ fontSize: '15px' }}>Upload Background</Card.Title>
                     <hr />
                     <form>
@@ -556,7 +595,7 @@ const CreateTemplate: React.FC = () => {
                         type="file"
                         id="img"
                         ref={backgroundInputRef}
-                        className="background"
+                        className="w-[12rem]"
                         accept="image/*"
                         onChange={handleImageBackgroundChange} />
                     </form>
@@ -564,146 +603,35 @@ const CreateTemplate: React.FC = () => {
                 </Card>
               </div>
               <br />
-              <div draggable
-                onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
-                <Card style={{ width: '15rem', textAlign: 'center' }}>
-                  <Card.Body>
-                    <Card.Title style={{ fontSize: '15px' }}>Preview Logo</Card.Title>
-                    <hr />
-                    <div id="preview-logo">
-                      {getLogoCompany &&
-                        <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />
-                      }
-                    </div>
-                  </Card.Body>
-                </Card>
-              </div>
-              <Button variant="warning" onClick={(e) => handleReset(e)}>Reset</Button>
-              <br />
-              <Button variant="secondary" onClick={handleUndo}>Undo</Button>
-              <br />
-              <Button variant="success" onClick={(e) => handleUploadTemplate(e)}>Upload Template</Button>
+              {/* <button onClick={handleUndo} className="bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Undo</button> */}
+              <button onClick={(e) => handleReset(e)} className="bg-danger text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Reset</button>
+              <button onClick={(e) => handleUploadTemplate(e)} className="bg-success text-primary-foreground hover:bg-primary/80 w-full py-2">Upload Template</button>
             </div>
-          </Col>
-        </Row>
-      </Container> */}
-
-      <div className="min-h-screen h-[150vh] px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
-        <div className="flex h-screen w-full bg-background justify-center items-center">
-          <div className="w-1/4 h-full p-4 bg-blue-500 text-white">
-            <h2 className="text-lg font-bold mb-4">รายละเอียดข้อมูล</h2>
-            <div className="mb-2">
-              <p className="text-muted-foreground">ชื่อเทมเพลต</p>
-              <Form onChange={setNameTem}>
-                <Form.Group className="mb-3">
-                  <Form.Control
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    type="text"
-                    required />
-                </Form.Group>
-              </Form>
-            </div>
-            <div className="text-align-content-center md-4 grid grid-cols-2 gap-4">
-              {Object.keys(textMappings).map((item, index) => (
-                <div
-                  id="drag-with-colour"
-                  key={index}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, item)}
-                  style={{ backgroundColor: "transparent", margin: '5px' }}>
-
-                  <Card style={{ width: '12rem', textAlign: 'center', height: '5rem', margin: '0 auto' }}>
-                    <Card.Body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                      <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
-                      <CIcon id='text-icon' icon={icon.cilText} size="xl" className="text-success" />
-                    </Card.Body>
-                  </Card>
-                  <br />
+            <div className="flex-1 bg-gray border-l border-zinc-300 pl-4">
+              <h1 className="text-xl font-bold mb-4">Preview Template</h1>
+              <br />
+              <hr />
+              {background ? (
+                <div id="div-1">
+                  <canvas
+                    className="scroll-ml-20px ml-[60px]"
+                    id="imageCanvas"
+                    width='850px' //850px
+                    height='410px' //410px
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}>
+                  </canvas>
                 </div>
-              ))}
+              ) : (
+                <div id="div-1"
+                  className="flex justify-center items-center">
+                  <img
+                    src="https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg"
+                    alt=""
+                    style={{ width: '31rem', height: '35rem', paddingTop: '5rem' }} />
+                </div>
+              )}
             </div>
-            <h2 className="text-lg font-bold mb-4">Font size & Pick Color</h2>
-            <div className="md-4 grid grid-cols-2 gap-4">
-              <Card style={{ width: '12rem', textAlign: 'center' }}>
-                <Card.Body>
-                  <Card.Title style={{ fontSize: '15px' }}>Font size</Card.Title>
-                  <input
-                    type="range"
-                    id="size-slider"
-                    min="30"
-                    max="100"
-                    value={fontSize}
-                    onChange={handleSizeFonstChange} />
-                  <h6>{fontSize}</h6>
-                </Card.Body>
-              </Card>
-              <Card style={{ width: '12rem', textAlign: 'center' }}>
-                <Card.Body>
-                  <Card.Title style={{ fontSize: '15px' }}>Color</Card.Title>
-                  <input type="color"
-                    id="colorpicker"
-                    value={selectedColor}
-                    onChange={handleColorChange} />
-                </Card.Body>
-              </Card>
-            </div>
-            <br />
-            <h2 className="text-lg font-bold mb-4">Preview Logo</h2>
-            <div className="flex justify-center items-center">
-              <div draggable
-                onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
-                <Card style={{ width: '15rem', textAlign: 'center' }}>
-                  <Card.Body>
-                    <Card.Title style={{ fontSize: '15px' }}>Preview Logo</Card.Title>
-                    <hr />
-                    <div id="preview-logo">
-                      {getLogoCompany &&
-                        <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />
-                      }
-                    </div>
-                  </Card.Body>
-                </Card>
-              </div>
-            </div>
-            <h2 className="text-lg font-bold mb-4">Selected Background</h2>
-            <div className="flex justify-center items-center">
-              <Card style={{ width: '15rem', textAlign: 'center' }}>
-                <Card.Body>
-                  <Card.Title style={{ fontSize: '15px' }}>Upload Background</Card.Title>
-                  <hr />
-                  <form>
-                    <input
-                      type="file"
-                      id="img"
-                      ref={backgroundInputRef}
-                      className="background"
-                      accept="image/*"
-                      onChange={handleImageBackgroundChange} />
-                  </form>
-                </Card.Body>
-              </Card>
-            </div>
-            <br />
-            <button onClick={handleUndo} className="bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Undo</button>
-            <button onClick={(e) => handleReset(e)} className="bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Reset</button>
-            <button onClick={(e) => handleUploadTemplate(e)} className="bg-primary text-primary-foreground hover:bg-primary/80 w-full py-2">Upload Template</button>
-          </div>
-          <div className="flex-1 bg-gray border-l border-zinc-300">
-            {background ? (
-              <div id="div-1">
-                <canvas
-                  id="imageCanvas"
-                  width='850px'
-                  height='410px'
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}>
-                </canvas>
-              </div>
-            ) : (
-              <div id="div-1" className="empty-canvas-placeholder">
-                <p>Please upload a background image to start</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

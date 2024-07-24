@@ -9,6 +9,7 @@ import { GetUsersByCompany } from "@/Model/GetUsersByCompany";
 import CanvasTemplate from "./CanvasTemplate";
 import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
+import '@/Components/Employees/CSS/CreactCard.css';
 
 export default function CreateCard() {
   const templateapi = new TemplateApi();
@@ -19,7 +20,7 @@ export default function CreateCard() {
   const [positions, setPositions] = useState<{ [key: string]: { x: number; y: number } }[]>([]);
   const [index, setIndex] = useState(0);
   const [getUserByCompanies, setGetUserByCompanies] = useState<GetUsersByCompany[] | null>(null);
-  const [companyId , setCompanyId] = useState('');
+  const [companyId, setCompanyId] = useState('');
   const nav = useNavigate();
 
 
@@ -77,7 +78,7 @@ export default function CreateCard() {
           logoImg.onload = () => {
             if (positions.logo) {
               const { x, y } = positions.logo;
-              ctx.drawImage(logoImg, x, y, 100, 70);
+              ctx.drawImage(logoImg, x, y, 180, 100);
 
               canvas.toBlob((blob) => {
                 if (blob) {
@@ -158,7 +159,7 @@ export default function CreateCard() {
     if (getUserByCompanies) {
 
       const newGeneratedFiles: { file: File; uid: string }[] = [];
-      
+
 
       for (const user of getUserByCompanies) {
 
@@ -196,7 +197,7 @@ export default function CreateCard() {
 
       if (newGeneratedFiles.length > 0) {
 
-        await uploadSelectedTemplate(newGeneratedFiles,temId);
+        await uploadSelectedTemplate(newGeneratedFiles, temId);
 
       }
     }
@@ -210,7 +211,7 @@ export default function CreateCard() {
 
     if (allSuccess) {
 
-      const resUpdateStatus = await templateapi.updateStatus(temId,status,companyId);
+      const resUpdateStatus = await templateapi.updateStatus(temId, status, companyId);
 
       if (resUpdateStatus) {
         Swal.fire({
@@ -294,27 +295,57 @@ export default function CreateCard() {
   }
 
   return (
-    <div>
+    <>
       <Header />
-      {TemplateBycompanyId?.length > 0 ? (
-        <Carousel activeIndex={index} onSelect={handleSelect}>
-          {TemplateBycompanyId.map((template, idx) => (
-            <Carousel.Item key={idx}>
-              <CanvasTemplate background={template.background} textMappings={textMappings} positions={positions[idx]} logo={UrlLogocompany} />
-              <Carousel.Caption>
-                <h3>{template.name}</h3>
-                <Button onClick={(e) => handleSelectedTemplate(e, template)}>เลือกเทมเพลต</Button>
-                <Button onClick={(e) => handleDeleteTemplate(e, template.id)}>ลบเทมเพลต</Button>
-              </Carousel.Caption>
-            </Carousel.Item>
-          ))}
-        </Carousel>
-      ) : (
-        <p>Not Found Template</p>
-      )}
       <br />
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
-      <br />
-    </div>
+      <div className="container">
+        <div className="h-1/2 px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+          <h1 className="text-xl font-bold mb-4 pl-[50px] pt-[25px]">Selected Template</h1>
+          <br />
+          <hr />
+          <br />
+          <div className="flex justify-center">
+            {TemplateBycompanyId.length > 0 ? (
+              <Carousel activeIndex={index} onSelect={handleSelect} className="relative w-full">
+                {TemplateBycompanyId.map((template, idx) => (
+                  <Carousel.Item key={idx} interval={5000}>
+                    <div className="relative flex flex-col justify-between h-56 overflow-hidden rounded-lg md:h-[30rem]">
+                      {/* CanvasTemplate */}
+                      <div className="flex justify-center">
+                        <CanvasTemplate
+                          background={template.background}
+                          textMappings={textMappings}
+                          positions={positions[idx]}
+                          logo={UrlLogocompany}
+                        />
+                        <Carousel.Caption>
+                          <div className="absolute bottom-0 left-0 right-0 bg-gray-800 bg-opacity-50 p-4 text-white">
+                            <h3>Name : {template.name}</h3>
+                            <div className="flex justify-center space-x-4">
+                            <Button
+                              onClick={(e) => handleSelectedTemplate(e, template)}
+                              className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg">เลือกเทมเพลต</Button>
+                            <Button
+                              onClick={(e) => handleDeleteTemplate(e, template.id)}
+                              className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg">ลบเทมเพลต</Button>
+                          </div>
+                          </div>
+                        </Carousel.Caption>
+                      </div>
+                    </div>
+                  </Carousel.Item>
+                ))}
+
+              </Carousel>
+            ) : (
+              <div className="text-center mt-4">
+                <p>ไม่พบเทมเพลต</p>
+              </div>
+            )}
+          </div>
+        </div>
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+      </div>
+    </>
   );
 }
