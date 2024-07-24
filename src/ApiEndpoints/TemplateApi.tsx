@@ -130,7 +130,6 @@ export class TemplateApi {
                 const res = await axios.get(`${url}/templates/by-company/${companyId}`);
                 const templateData = res.data;
                 const filteredTemplateData = templateData.filter((template: { status: string }) => template.status == '1');
-                console.log('getTemplateUsedByCompanyId' , filteredTemplateData);
                 return filteredTemplateData;
             }
             else {
@@ -155,7 +154,6 @@ export class TemplateApi {
             formData.append('file', cardUser.file);
             formData.append('folder', folderName);
             formData.append('uid', cardUser.uid);
-            //add used status
 
             try {
 

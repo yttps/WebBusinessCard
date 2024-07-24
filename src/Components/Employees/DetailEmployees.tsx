@@ -22,9 +22,7 @@ export default function DetailEmployees() {
     const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
     const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
     const [TemplateBycompanyId, setTemplateBycompanyId] = useState<GetTemplateCompanyId[]>([]);
-    const [statusEditCard, setStatusEditCard] = useState(0);
     const [getDataCompanyById, setGetDataCompanyById] = useState<GetDataCompanyById | null>(null);
-
 
     const [isLoading, setIsLoading] = useState(false);
     const templateapi = new TemplateApi();
@@ -298,11 +296,11 @@ export default function DetailEmployees() {
                         });
                     }
                 }
-            }
+            
 
             if (!file) {
 
-                const resUploadLogo = await hrapi.UploadProfile(file, EMId, folderName, collection);
+                const resUpdateDetailCard = await updateDetailCard();
                 
                 if (resUpdateDetailCard == 200) {
 
@@ -318,6 +316,7 @@ export default function DetailEmployees() {
                     });
                 }
             }
+        }
 
         } catch (error) {
             console.error(error);
@@ -349,21 +348,21 @@ export default function DetailEmployees() {
         const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
 
         const formEdit = {
-            firstname: firstnameElement.value,
-            lastname: lastnameElement.value,
-            position: positionElement.value,
-            gender: genderValue,
-            birthdate: birthdayElement.value,
-            startwork: startworkElement.value,
-            subdistrict: subdistrictElement.value,
-            district: districtElement.value,
-            province: provinceElement.value,
-            country: countryElement.value,
-            phone: telElement.value,
-            email: emailElement.value,
-            password: passwordElement.value,
-            branch: branchValue,
-            department: departmentValue
+            firstname: firstnameElement.value !== '' ? firstnameElement.value : dataemployeesById?.firstname ?? '',
+            lastname: lastnameElement.value !== '' ? lastnameElement.value : dataemployeesById?.lastname ?? '',
+            position: positionElement.value !== '' ? positionElement.value : dataemployeesById?.position ?? '',
+            gender: genderValue !== '' ? genderValue : dataemployeesById?.gender ?? '',
+            birthdate: birthdayElement.value !== '' ? birthdayElement.value : dataemployeesById?.birthdate ?? '',
+            startwork: startworkElement.value !== '' ? startworkElement.value : dataemployeesById?.startwork ?? '',
+            subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
+            district: districtElement.value !== '' ? districtElement.value : district ?? '',
+            province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
+            country: countryElement.value !== '' ? countryElement.value : country ?? '',
+            phone: telElement.value !== '' ? telElement.value : dataemployeesById?.phone ?? '',
+            email: emailElement.value !== '' ? emailElement.value : dataemployeesById?.email ?? '',
+            password: passwordElement.value !== '' ? passwordElement.value : dataemployeesById?.password ?? '',
+            branch: branchValue !== '' ? branchValue : dataemployeesById?.companybranch?.id ?? '',
+            department: departmentValue !== '' ? departmentValue : dataemployeesById?.department.id ?? ''
         }
 
         const newGeneratedFiles: { file: File; uid: string }[] = [];
@@ -387,12 +386,12 @@ export default function DetailEmployees() {
             const textMappingsArray = {
                 "fullname": `${formEdit.firstname} ${formEdit.lastname}`,
                 "companyName": `${dataemployeesById.companybranch.company.name}`,
-                "companyAddress": `${addressBranch}`,
-                "position": `${departName}`,
+                "companyAddress": `${addressBranch ? addressBranch : dataemployeesById.companybranch.address}`,
+                "position": `${formEdit.position}`,
                 "email": `${formEdit.email}`,
-                "phoneDepartment": `${telDepartment}`,
+                "phoneDepartment": `${telDepartment ? telDepartment : dataemployeesById.department.phone}`,
                 "phone": `${formEdit.phone}`,
-                "departmentName": `${departName}`,
+                "departmentName": `${departName ? departName : dataemployeesById.department.name}`,
             };
 
             console.log('textMappings', textMappingsArray);
@@ -417,8 +416,8 @@ export default function DetailEmployees() {
 
         if (newGeneratedFiles.length > 0) {
 
-            await uploadSelectedTemplate(newGeneratedFiles, temId);
-
+            const resuploadSelectedTemplate = await uploadSelectedTemplate(newGeneratedFiles, temId);
+            return resuploadSelectedTemplate;
         }
 
     }
@@ -457,7 +456,7 @@ export default function DetailEmployees() {
                     logoImg.onload = () => {
                         if (positions.logo) {
                             const { x, y } = positions.logo;
-                            ctx.drawImage(logoImg, x, y, 100, 70);
+                            ctx.drawImage(logoImg, x, y, 120, 100);
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -501,7 +500,7 @@ export default function DetailEmployees() {
 
                 if (resUpdateStatus == 200) {
 
-                    setStatusEditCard(resUpdateStatus);
+                   return resUpdateStatus;
                 }
 
             } else {
@@ -614,7 +613,6 @@ export default function DetailEmployees() {
                                             <select
                                                 id="genderEdit"
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                //onChange={handleGender}
                                                 value={dataemployeesById.gender ? dataemployeesById.gender : genderValue}
                                                 onChange={(e) => setDataEmployeesById({ ...dataemployeesById, gender: e.target.value })}
                                             >
@@ -784,7 +782,7 @@ export default function DetailEmployees() {
                                 </div>
                             </div>
                             <div className="flex justify-end mt-4">
-                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
+                                <button className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
                                 &nbsp;
                                 <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={handleUpdate}>ยกเลิก</button>
                             </div>
@@ -869,7 +867,7 @@ export default function DetailEmployees() {
                 <div className="flex justify-end mt-4">
                     <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteEmployeeData}>ลบข้อมูล</button>
                     &nbsp;
-                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={handleUpdate}>แก้ไขข้อมูล</button>
+                    <button className="bg-yellow-500 text-red-50 hover:bg-yellow-600 py-2 px-4 rounded-lg" onClick={handleUpdate}>แก้ไขข้อมูล</button>
                 </div>
             </div>
             //

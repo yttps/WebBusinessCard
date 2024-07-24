@@ -90,6 +90,26 @@ export class CompanyApi {
         }
     }
 
+    async updateLogoCompany(Logo: File, companyid: string, folderName: string, collection: string): Promise<string | undefined> {
+
+        try {
+
+            const formData = new FormData();
+
+            formData.append('file', Logo);
+            formData.append('folder', folderName);
+            formData.append('collection', collection)
+            formData.append('uid', companyid);
+
+            const res = await axios.post(`${url}/upload-image`, formData);
+            return res.data.imageUrl;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
     async UploadLogo(Logo: File, companyid: string, folderName: string, collection: string): Promise<number | undefined> {
 
         const formData = new FormData();
@@ -212,6 +232,41 @@ export class CompanyApi {
         } catch (error) {
             console.error(error);
             throw error;
+        }
+    }
+
+    async updateDataCompany(
+        name:string,
+        website:string,
+        password:string,
+        businessType:string,
+        yearFounded: string,
+        email: string,
+        logo: string,
+        status: string,
+        CompanyId: string
+    ){
+
+        try {
+            
+            const data = {
+                name:name,
+                businessType:businessType,
+                website:website,
+                email:email,
+                password: password,
+                yearFounded: yearFounded,
+                status: status,
+                logo: logo,
+                id:CompanyId
+            };
+
+            const res = await axios.put(`${url}/companies/${data.id}`,data);
+            console.log('in api' , data);
+            return res.status;
+
+        } catch (error) {
+            console.error(error);
         }
     }
 

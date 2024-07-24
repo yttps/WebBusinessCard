@@ -51,6 +51,21 @@ export class EmployeesApi {
         }
     }
 
+    async GetAllDataemployeesByCompanyId(CompanyId: string) {
+
+        try {
+
+            const res = await axios.get(`${url}/user/by-company/${CompanyId}`);
+
+            const employeesData = res.data;
+            return employeesData;
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
     async UploadProfile(Image: File, uid: string, folderName: string, collection: string) {
 
 
@@ -173,7 +188,6 @@ export class EmployeesApi {
                 birthdate: birthdayElement,
                 companybranch: branchElement,
                 department: departmentElement,
-                // positionTemplate : req.body.positionTemplate, 
                 phone: telElement,
                 position: positionElement,
                 startwork: startworkElement,

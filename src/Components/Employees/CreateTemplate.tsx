@@ -1,16 +1,14 @@
-import React, { useEffect, useState, useRef , ChangeEvent } from "react";
+import React, { useEffect, useState, useRef, ChangeEvent } from "react";
 import '@/Components/Employees/CSS/createTemplate.css'
 import Header from "@/Components/Header/Header";
 
-import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
+import { Card, Form } from 'react-bootstrap';
 import CIcon from '@coreui/icons-react';
 import * as icon from '@coreui/icons';
 import { TemplateApi } from "@/ApiEndpoints/TemplateApi";
 import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { CompanyApi } from "@/ApiEndpoints/CompanyApi";
-
-
 
 const CreateTemplate: React.FC = () => {
 
@@ -26,13 +24,10 @@ const CreateTemplate: React.FC = () => {
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [fontSize, setFontSize] = useState('30');
   const [canvasHistory, setCanvasHistory] = useState<(CanvasOperation | null)[]>([]);
-  const [dragText, setDragText] = useState<string>('');
   const [nameTemplate, setNameTemplate] = useState<string>('');
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
-
-  console.log(logo, dragText, getCompanyId, templateapi);
 
   const setNameTem = (e: ChangeEvent<HTMLFormElement>) => {
     console.log(e.target.value);
@@ -72,10 +67,7 @@ const CreateTemplate: React.FC = () => {
         }
       }
     }
-  }, [background])
-
-
-
+  }, [background]);
 
   const [allPositions, setAllPositions] = useState<AllPosition>({
     "fullname": { x: 0, y: 0 },
@@ -123,7 +115,7 @@ const CreateTemplate: React.FC = () => {
       position => position.x !== 0 && position.y !== 0
     );
 
-    if(allPositionsNotNull){
+    if (allPositionsNotNull) {
       Swal.fire({
         title: 'Error!',
         text: 'กำหนดค่าครบแล้ว!',
@@ -135,7 +127,6 @@ const CreateTemplate: React.FC = () => {
     console.log('USE START');
     event.dataTransfer.setData("text", item);
     setDraggedItem(item);
-    setDragText(item);
 
     const dragText = document.createElement("div");
     dragText.style.position = "absolute";
@@ -158,7 +149,7 @@ const CreateTemplate: React.FC = () => {
       position => position.x !== 0 && position.y !== 0
     );
 
-    if(allPositionsNotNull){
+    if (allPositionsNotNull) {
       Swal.fire({
         title: 'Error!',
         text: 'กำหนดค่าครบแล้ว!',
@@ -190,7 +181,7 @@ const CreateTemplate: React.FC = () => {
     console.log('USE DRAG DROP');
 
     event.preventDefault();
-    setDragText('');
+
     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -339,8 +330,6 @@ const CreateTemplate: React.FC = () => {
     }
   };
 
-  console.log(handleUndo);
-
   const handleSizeFonstChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFontSize(event.target.value);
     console.log('size', fontSize);
@@ -359,11 +348,6 @@ const CreateTemplate: React.FC = () => {
     if (!file) return;
 
     setBackground(file);
-  }
-
-
-  const handleDragEnd = () => {
-    setDragText('');
   }
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -386,11 +370,11 @@ const CreateTemplate: React.FC = () => {
       }
 
       const status = '0';
-      const uidTemplate = await uploadTemplateCompany(nameTemplate , getCompanyId , allPositions , status)
-      
+      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status)
+
       if (uidTemplate) {
 
-        const resUrlTemplate = await uploadBgCompany(background , uidTemplate); 
+        const resUrlTemplate = await uploadBgCompany(background, uidTemplate);
 
         if (resUrlTemplate) {
 
@@ -425,12 +409,12 @@ const CreateTemplate: React.FC = () => {
     }
   }
 
-  const uploadTemplateCompany = async (nameTemplate:string , getCompanyId:string , allPositions:AllPosition , status:string ):Promise<string | undefined> => {
+  const uploadTemplateCompany = async (nameTemplate: string, getCompanyId: string, allPositions: AllPosition, status: string): Promise<string | undefined> => {
 
     try {
 
-      const res = await templateapi.uploadTemplateCompany(nameTemplate, getCompanyId, allPositions , status);
-      
+      const res = await templateapi.uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status);
+
       return res;
 
     } catch (error) {
@@ -439,7 +423,7 @@ const CreateTemplate: React.FC = () => {
   }
 
 
-  const uploadBgCompany = async (background: File , uidTemplate : string) => {
+  const uploadBgCompany = async (background: File, uidTemplate: string) => {
 
     try {
 
@@ -457,11 +441,11 @@ const CreateTemplate: React.FC = () => {
 
     const res = await companyapi.GetDataCompanyById(companyId);
 
-    if(res){
+    if (res) {
       setGetLogoCompany(res.logo);
     }
 
-  } 
+  }
 
   useEffect(() => {
 
@@ -485,7 +469,8 @@ const CreateTemplate: React.FC = () => {
   return (
     <>
       <Header />
-      <Container id="con">
+      <br />
+      {/* <Container id="con">
         <Row>
           <Col sm={8} id="col1">
             <h1>Preview Image</h1>
@@ -511,7 +496,7 @@ const CreateTemplate: React.FC = () => {
               <Form onChange={setNameTem}>
                 <Form.Group className="mb-3">
                   <Form.Label>Name Template</Form.Label>
-                  <Form.Control type="text" required/>
+                  <Form.Control type="text" required />
                 </Form.Group>
               </Form>
               {Object.keys(textMappings).map((item, index) => (
@@ -595,13 +580,133 @@ const CreateTemplate: React.FC = () => {
               </div>
               <Button variant="warning" onClick={(e) => handleReset(e)}>Reset</Button>
               <br />
-              {/* <Button variant="secondary" onClick={handleUndo}>Undo</Button> */}
+              <Button variant="secondary" onClick={handleUndo}>Undo</Button>
               <br />
               <Button variant="success" onClick={(e) => handleUploadTemplate(e)}>Upload Template</Button>
             </div>
           </Col>
         </Row>
-      </Container>
+      </Container> */}
+
+      <div className="min-h-screen h-[150vh] px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+        <div className="flex h-screen w-full bg-background justify-center items-center">
+          <div className="w-1/4 h-full p-4 bg-blue-500 text-white">
+            <h2 className="text-lg font-bold mb-4">รายละเอียดข้อมูล</h2>
+            <div className="mb-2">
+              <p className="text-muted-foreground">ชื่อเทมเพลต</p>
+              <Form onChange={setNameTem}>
+                <Form.Group className="mb-3">
+                  <Form.Control
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    type="text"
+                    required />
+                </Form.Group>
+              </Form>
+            </div>
+            <div className="text-align-content-center md-4 grid grid-cols-2 gap-4">
+              {Object.keys(textMappings).map((item, index) => (
+                <div
+                  id="drag-with-colour"
+                  key={index}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item)}
+                  style={{ backgroundColor: "transparent", margin: '5px' }}>
+
+                  <Card style={{ width: '12rem', textAlign: 'center', height: '5rem', margin: '0 auto' }}>
+                    <Card.Body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
+                      <CIcon id='text-icon' icon={icon.cilText} size="xl" className="text-success" />
+                    </Card.Body>
+                  </Card>
+                  <br />
+                </div>
+              ))}
+            </div>
+            <h2 className="text-lg font-bold mb-4">Font size & Pick Color</h2>
+            <div className="md-4 grid grid-cols-2 gap-4">
+              <Card style={{ width: '12rem', textAlign: 'center' }}>
+                <Card.Body>
+                  <Card.Title style={{ fontSize: '15px' }}>Font size</Card.Title>
+                  <input
+                    type="range"
+                    id="size-slider"
+                    min="30"
+                    max="100"
+                    value={fontSize}
+                    onChange={handleSizeFonstChange} />
+                  <h6>{fontSize}</h6>
+                </Card.Body>
+              </Card>
+              <Card style={{ width: '12rem', textAlign: 'center' }}>
+                <Card.Body>
+                  <Card.Title style={{ fontSize: '15px' }}>Color</Card.Title>
+                  <input type="color"
+                    id="colorpicker"
+                    value={selectedColor}
+                    onChange={handleColorChange} />
+                </Card.Body>
+              </Card>
+            </div>
+            <br />
+            <h2 className="text-lg font-bold mb-4">Preview Logo</h2>
+            <div className="flex justify-center items-center">
+              <div draggable
+                onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
+                <Card style={{ width: '15rem', textAlign: 'center' }}>
+                  <Card.Body>
+                    <Card.Title style={{ fontSize: '15px' }}>Preview Logo</Card.Title>
+                    <hr />
+                    <div id="preview-logo">
+                      {getLogoCompany &&
+                        <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />
+                      }
+                    </div>
+                  </Card.Body>
+                </Card>
+              </div>
+            </div>
+            <h2 className="text-lg font-bold mb-4">Selected Background</h2>
+            <div className="flex justify-center items-center">
+              <Card style={{ width: '15rem', textAlign: 'center' }}>
+                <Card.Body>
+                  <Card.Title style={{ fontSize: '15px' }}>Upload Background</Card.Title>
+                  <hr />
+                  <form>
+                    <input
+                      type="file"
+                      id="img"
+                      ref={backgroundInputRef}
+                      className="background"
+                      accept="image/*"
+                      onChange={handleImageBackgroundChange} />
+                  </form>
+                </Card.Body>
+              </Card>
+            </div>
+            <br />
+            <button onClick={handleUndo} className="bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Undo</button>
+            <button onClick={(e) => handleReset(e)} className="bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Reset</button>
+            <button onClick={(e) => handleUploadTemplate(e)} className="bg-primary text-primary-foreground hover:bg-primary/80 w-full py-2">Upload Template</button>
+          </div>
+          <div className="flex-1 bg-gray border-l border-zinc-300">
+            {background ? (
+              <div id="div-1">
+                <canvas
+                  id="imageCanvas"
+                  width='850px'
+                  height='410px'
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}>
+                </canvas>
+              </div>
+            ) : (
+              <div id="div-1" className="empty-canvas-placeholder">
+                <p>Please upload a background image to start</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </>
 
   );

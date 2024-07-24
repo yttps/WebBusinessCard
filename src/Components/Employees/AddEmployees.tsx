@@ -8,6 +8,7 @@ import { GetDepartmentByComId } from '@/Model/GetDepartmentByComId';
 import { TemplateApi } from '@/ApiEndpoints/TemplateApi';
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
 import { GetTemplateCompanyId } from '@/Model/GetTemplateCompanyId';
+import { useNavigate } from 'react-router-dom';
 
 
 interface AddHrProps {
@@ -41,6 +42,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   const companyapi = new CompanyApi();
   const employeesapi = new EmployeesApi();
   const templateapi = new TemplateApi();
+  const nav = useNavigate();
 
   const [file, setFile] = useState<File | null>(null);
   const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
@@ -54,8 +56,6 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   const [telDepartment, setTelDepartment] = useState('');
   const [addressBranch, setAddressBranch] = useState('');
   const [departName, setDepartmentName] = useState('');
-  const [statusEditCard, setStatusEditCard] = useState(0);
-  const [employeeId, setEmployeeId] = useState<string | undefined>(undefined);
 
 
 
@@ -165,51 +165,56 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       return;
     }
 
-    const resUploadData = await addData(formData);
-    setEmployeeId(resUploadData);
+    try {
 
-    if (resUploadData === '0')  //add return 0 in node js
-    {
-      Swal.fire({
-        title: 'Error!',
-        text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
-        icon: 'error',
-      });
-      return;
-    }
+      const resUploadData = await addData(formData);
 
-
-    console.log(resUploadData, file);
-
-    if (resUploadData && resUploadData !== '0' && file) {
-
-      const folderName = '';
-      const collection = 'users';
-      const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
-      //update card
-      await updateDetailCard();
-
-      if (resUploadLogo === 200 && statusEditCard == 200) {
-        clearImageCache();
+      if (resUploadData === '0') {
         Swal.fire({
-          title: 'Success!',
-          text: 'เพิ่มข้อมูลสำเร็จ',
-          icon: 'success',
-        });
-
-        handleClose();
-      } else {
-        Swal.fire({
-          title: 'Upload Error!',
-          text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+          title: 'Error!',
+          text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
           icon: 'error',
         });
+        return;
       }
+
+      if (resUploadData && file) {
+
+        const resUpdateDetailCard = await updateDetailCard(resUploadData);
+
+        const folderName = '';
+        const collection = 'users';
+        const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
+
+        if (resUploadLogo === 200 && resUpdateDetailCard == 200) {
+          clearImageCache();
+          Swal.fire({
+            title: 'Success!',
+            text: 'เพิ่มข้อมูลสำเร็จ',
+            icon: 'success',
+          }).then(() => {
+            setShow(false);
+            nav('/ListEmployees');
+            window.location.reload();
+          })
+
+          handleClose();
+        } else {
+          Swal.fire({
+            title: 'Upload Error!',
+            text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+            icon: 'error',
+          });
+        }
+      }
+
+    } catch (error) {
+      console.error(error);
     }
 
   };
 
-  const updateDetailCard = async () => {
+  const updateDetailCard = async (employeeId: string) => {
 
     if (TemplateBycompanyId[0]?.status?.toString() !== '1') {
       return;
@@ -220,18 +225,18 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       return;
     }
 
-    const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
-    const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
-    const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
-    const birthdayElement = document.getElementById('birthdayEdit') as HTMLInputElement;
-    const startworkElement = document.getElementById('startworkEdit') as HTMLInputElement;
-    const subdistrictElement = document.getElementById('subdistrictEdit') as HTMLInputElement;
-    const districtElement = document.getElementById('districtEdit') as HTMLInputElement;
-    const provinceElement = document.getElementById('provinceEdit') as HTMLInputElement;
-    const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
-    const telElement = document.getElementById('telEdit') as HTMLInputElement;
-    const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
-    const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
+    const firstnameElement = document.getElementById('firstname') as HTMLInputElement;
+    const lastnameElement = document.getElementById('lastname') as HTMLInputElement;
+    const positionElement = document.getElementById('position') as HTMLInputElement;
+    const birthdayElement = document.getElementById('birthdate') as HTMLInputElement;
+    const startworkElement = document.getElementById('startwork') as HTMLInputElement;
+    const subdistrictElement = document.getElementById('subdistrict') as HTMLInputElement;
+    const districtElement = document.getElementById('district') as HTMLInputElement;
+    const provinceElement = document.getElementById('province') as HTMLInputElement;
+    const countryElement = document.getElementById('country') as HTMLInputElement;
+    const telElement = document.getElementById('phone') as HTMLInputElement;
+    const emailElement = document.getElementById('email') as HTMLInputElement;
+    const passwordElement = document.getElementById('password') as HTMLInputElement;
 
     const formEdit = {
       firstname: firstnameElement.value,
@@ -290,11 +295,11 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         const blob = await response.blob();
         const file = new File([blob], `${employeeId}.png`, { type: 'image/png' });
 
-        if (employeeId !== undefined) {
+        if (employeeId) {
 
           const data = {
             file: file,
-            uid: employeeId || '',
+            uid: employeeId,
           };
 
           newGeneratedFiles.push(data);
@@ -310,8 +315,8 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
     if (newGeneratedFiles.length > 0) {
 
-      await uploadSelectedTemplate(newGeneratedFiles, temId);
-
+      const res = await uploadSelectedTemplate(newGeneratedFiles, temId);
+      return res;
     }
 
   }
@@ -391,8 +396,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         const resUpdateStatus = await templateapi.updateStatus(temId, status, getDataCompanyById?.id);
 
         if (resUpdateStatus == 200) {
-
-          setStatusEditCard(resUpdateStatus);
+          return resUpdateStatus;
         }
 
       } else {
