@@ -4,7 +4,7 @@ import { GetTemplateCompanyId } from "@/Model/GetTemplateCompanyId";
 import Carousel from 'react-bootstrap/Carousel';
 import Header from "../Header/Header";
 import { CompanyApi } from "@/ApiEndpoints/CompanyApi";
-import { Button } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { GetUsersByCompany } from "@/Model/GetUsersByCompany";
 import CanvasTemplate from "./CanvasTemplate";
 import Swal from 'sweetalert2';
@@ -49,8 +49,8 @@ export default function CreateCard() {
       const ctx = canvas?.getContext('2d');
 
       if (canvas && ctx) {
-        canvas.width = 850;
-        canvas.height = 410;
+        canvas.width = 950;
+        canvas.height = 550;
 
         const img = new Image();
         img.crossOrigin = 'anonymous';
@@ -78,7 +78,7 @@ export default function CreateCard() {
           logoImg.onload = () => {
             if (positions.logo) {
               const { x, y } = positions.logo;
-              ctx.drawImage(logoImg, x, y, 220, 120);
+              ctx.drawImage(logoImg, x, y, 200, 100);
 
               canvas.toBlob((blob) => {
                 if (blob) {
@@ -450,18 +450,20 @@ export default function CreateCard() {
                 <Carousel activeIndex={index} onSelect={handleSelect} className="relative w-full">
                   {TemplateBycompanyId.map((template, idx) => (
                     <Carousel.Item key={idx} interval={5000}>
-                      <div className="relative flex flex-col justify-between h-56 overflow-hidden rounded-lg md:h-[30rem]">
-                        {/* CanvasTemplate */}
+                      <div className="relative flex flex-col justify-between h-70 overflow-hidden rounded-lg md:h-[50rem]">
                         <div className="flex justify-center">
-                          <CanvasTemplate
-                            background={template.background}
-                            textMappings={textMappings}
-                            positions={positions[idx]}
-                            logo={UrlLogocompany}
-                          />
-                          <Carousel.Caption>
-                            <div className="absolute bottom-0 left-0 right-0 bg-gray-800 bg-opacity-50 p-4 text-white">
-                              <h3>Name : {template.name}</h3>
+
+                          <Card style={{ width: '61.5rem', height: '44rem' }}>
+                            <Card.Body >
+                              <div className="rounded-lg bg-gray-50">
+                                <CanvasTemplate
+                                  background={template.background}
+                                  textMappings={textMappings}
+                                  positions={positions[idx]}
+                                  logo={UrlLogocompany}
+                                />
+                              </div>
+                              <Card.Title className="pt-2">Name Template : {template.name}</Card.Title>
                               <div className="flex justify-center space-x-4">
                                 <Button
                                   id="selectedTemplate"
@@ -472,8 +474,7 @@ export default function CreateCard() {
                                   onClick={(e) => handleDeleteTemplate(e, template.id)}
                                   className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg">ลบเทมเพลต</Button>
                               </div>
-                            </div>
-                            {loading ?
+                              {loading ?
                               <div className='flex justify-content-end'>
                                 <h1>กำลังตรวจสอบข้อมูล </h1>
                                 &nbsp;
@@ -484,7 +485,8 @@ export default function CreateCard() {
                                 ></l-tail-chase>
                               </div>
                               : <div></div>}
-                          </Carousel.Caption>
+                            </Card.Body>
+                          </Card>
                         </div>
                       </div>
                     </Carousel.Item>

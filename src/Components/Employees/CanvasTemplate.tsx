@@ -4,11 +4,12 @@ import React, { useRef, useEffect } from 'react';
 interface CanvasTemplateProps {
     background: string;
     textMappings: { [key: string]: string };
-    positions: { [key: string]: { x: number; y: number } };
+    positions: { [key: string]: { x: number; y: number, fontSize: string, fontColor: string } };
     logo: string;
 }
 
 const CanvasTemplate: React.FC<CanvasTemplateProps> = ({ background, textMappings, positions, logo }) => {
+    
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -25,9 +26,9 @@ const CanvasTemplate: React.FC<CanvasTemplateProps> = ({ background, textMapping
 
                 Object.keys(textMappings).forEach((key) => {
                     if (positions[key]) {
-                        const { x, y } = positions[key];
-                        ctx.font = '30px Bold';
-                        ctx.fillStyle = 'black';
+                        const { x, y, fontSize, fontColor } = positions[key];
+                        ctx.font = `${fontSize}px Bold`;
+                        ctx.fillStyle = `${fontColor}`;
                         ctx.fillText(textMappings[key], x, y);
                     }
                 });
@@ -37,7 +38,7 @@ const CanvasTemplate: React.FC<CanvasTemplateProps> = ({ background, textMapping
                 logoImg.onload = () => {
                     if (positions.logo) {
                         const { x, y } = positions.logo;
-                        ctx.drawImage(logoImg, x, y, 80, 50);
+                        ctx.drawImage(logoImg, x, y, 200, 100);
                     }
                 }
             };
