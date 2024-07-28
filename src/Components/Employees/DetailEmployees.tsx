@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent, useRef } from 'react'
+import { useEffect, useState, ChangeEvent, useRef, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { GetEmployeeById } from '@/Model/GetEmployeeById';
 import Header from '../Header/Header';
@@ -12,12 +12,13 @@ import { EmployeesApi } from '@/ApiEndpoints/EmployeesApi';
 import { GetTemplateCompanyId } from '@/Model/GetTemplateCompanyId';
 import { TemplateApi } from '@/ApiEndpoints/TemplateApi';
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
+import { Button } from 'react-bootstrap';
 
 
 export default function DetailEmployees() {
 
     const { id: employeesId } = useParams();
-    const employeesapi = new EmployeesApi();
+    const employeesapi = useMemo(() => new EmployeesApi(),[]) ;
     const [dataemployeesById, setDataEmployeesById] = useState<GetEmployeeById | null>(null);
     const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
     const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
@@ -25,14 +26,15 @@ export default function DetailEmployees() {
     const [getDataCompanyById, setGetDataCompanyById] = useState<GetDataCompanyById | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
-    const templateapi = new TemplateApi();
+    const templateapi = useMemo(() => new TemplateApi(),[]);  
     const nav = useNavigate();
     const [update, setUpdate] = useState(false);
     const [branchValue, setBranchValue] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const hrapi = new HrApi();
     const [isFetch, setIsFetch] = useState(false);
-    const companyapi = new CompanyApi();
+    const companyapi = useMemo(() => new CompanyApi(), []);
+    
     const employeeapi = new EmployeesApi();
     const [genderValue, setGenderValue] = useState('');
     const [departmentValue, setDepartmentValue] = useState('');
@@ -46,31 +48,144 @@ export default function DetailEmployees() {
     const [province, setProvince] = useState('');
     const [country, setCountry] = useState('');
 
+    const [loading, setLoading] = useState(false);
+    const backgroundInputRef = useRef<HTMLInputElement>(null);
+    const [password, setPassword] = useState('');
+    const [validations, setValidations] = useState({
+        lowercase: false,
+        uppercase: false,
+        number: false,
+        length: false,
+    });
+    const [showPass, setShowPass] = useState(false);
+
+    console.log('new pass', password);
+
+    const [imageData, setImageData] = useState({
+        base64textString: '',
+        imageName: '',
+        showImage: false,
+    });
 
 
-    async function getCompanyBranchById(CompanyId: string) {
-        const res = await companyapi.getCompanyBranchById(CompanyId);
-        setDataBranchesById(res);
-        setIsFetch(true);
+    const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+        const newPassword = event.target.value;
+
+
+        if (dataemployeesById?.password) {
+
+            setPassword(newPassword);
+            validatePassword(newPassword || dataemployeesById.password);
+            setDataEmployeesById({ ...dataemployeesById, password: event.target.value });
+        }
+    };
+
+    function handleRemoveImage() {
+        setImageData({
+            base64textString: '',
+            imageName: '',
+            showImage: false,
+        });
+        setFile(null);
+
+        if (backgroundInputRef.current) {
+            backgroundInputRef.current.value = "";
+        }
     }
 
-    async function GetDepartmentByCompanyId(CompanyId: string) {
-        const res = await companyapi.getDepartmentByCompanyId(CompanyId);
-        setDataDepartmentById(res);
-        setIsFetch(true);
+    const validatePassword = (password: string) => {
+
+
+        const lowerCaseRegex = /[a-z]/;
+        const upperCaseRegex = /[A-Z]/;
+        const numberRegex = /\d/;
+        const lengthRegex = /.{8,}/;
+
+        setValidations({
+            lowercase: lowerCaseRegex.test(password),
+            uppercase: upperCaseRegex.test(password),
+            number: numberRegex.test(password),
+            length: lengthRegex.test(password),
+        });
+    };
+
+    function handleShowPassword() {
+
+        setShowPass(!showPass);
+
     }
 
-    async function getTemplateByCompanyId(CompanyId: string) {
-        const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
-        setTemplateBycompanyId(res);
-        setIsFetch(true);
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setFile(event.target.files[0]);
+            setPreviewImage(event.target.files[0]);
+        }
+    };
+
+    function setPreviewImage(file: File) {
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImageData({
+                base64textString: reader.result as string,
+                imageName: file.name,
+                showImage: true,
+            });
+        };
+        reader.readAsDataURL(file);
     }
 
-    async function getUrlLogoCompany(CompanyId: string) {
-        const resGetdataDetail = await companyapi.GetDataCompanyById(CompanyId);
-        setGetDataCompanyById(resGetdataDetail);
-        setIsFetch(true);
-    }
+    useEffect(() => {
+
+        if (dataemployeesById?.password) {
+            validatePassword(dataemployeesById.password);
+        }
+        console.log('is loading', isLoading);
+
+    }, [dataemployeesById?.password, isLoading]);
+
+
+
+    const getCompanyBranchById = useCallback(async (CompanyId: string) => {
+        try {
+            const res = await companyapi.getCompanyBranchById(CompanyId);
+            setDataBranchesById(res);
+            setIsFetch(true);
+        } catch (error) {
+            console.error("Error fetching company branch by ID:", error);
+        }
+    }, [setDataBranchesById, setIsFetch, companyapi]);
+
+    const GetDepartmentByCompanyId = useCallback(async (CompanyId: string) => {
+        try {
+            const res = await companyapi.getDepartmentByCompanyId(CompanyId);
+            setDataDepartmentById(res);
+            setIsFetch(true);
+        } catch (error) {
+            console.error("Error fetching department by company ID:", error);
+        }
+    }, [setDataDepartmentById, setIsFetch, companyapi]);
+
+    const getTemplateByCompanyId = useCallback(async (CompanyId: string) => {
+        try {
+            const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
+            setTemplateBycompanyId(res);
+            setIsFetch(true);
+        } catch (error) {
+            console.error("Error fetching template by company ID:", error);
+        }
+    }, [setTemplateBycompanyId, setIsFetch, templateapi]);
+
+    const getUrlLogoCompany = useCallback(async (CompanyId: string) => {
+        try {
+            const resGetdataDetail = await companyapi.GetDataCompanyById(CompanyId);
+            setGetDataCompanyById(resGetdataDetail);
+            setIsFetch(true);
+        } catch (error) {
+            console.error("Error fetching URL logo company:", error);
+        }
+    }, [setGetDataCompanyById, setIsFetch, companyapi]);
 
     function handleUpdate() {
 
@@ -81,18 +196,6 @@ export default function DetailEmployees() {
             setUpdate(true);
         }
     }
-
-    const [imageData] = useState({
-        base64textString: '',
-        imageName: '',
-        showImage: false,
-    });
-
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-            setFile(event.target.files[0]);
-        }
-    };
 
     const handleDepartment = (e: ChangeEvent<HTMLSelectElement>) => {
         const selectedValue = e.target.value;
@@ -127,14 +230,9 @@ export default function DetailEmployees() {
         setGenderValue(e.target.value);
     };
 
-    console.log(handleGender);
-
-    const fetchData = async () => {
-
+    const fetchData = useCallback(async () => {
         try {
-
             if (employeesId) {
-
                 const resGetdataDetail = await employeesapi.GetDatadataemployeesById(employeesId);
                 setDataEmployeesById(resGetdataDetail);
                 setIsLoading(true);
@@ -143,13 +241,18 @@ export default function DetailEmployees() {
             console.error('Error fetching company data:', error);
             setIsLoading(false);
         }
-    };
+    }, [employeesId, setDataEmployeesById, setIsLoading, employeesapi]);
 
     const DeleteEmployeeData = async (): Promise<void> => {
+
+        const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement;
+        const editButton = document.getElementById('editButton') as HTMLButtonElement;
+
 
         if (!dataemployeesById) return;
 
         try {
+
             const result = await Swal.fire({
                 title: 'ลบข้อมูล?',
                 text: 'ยืนยันเพื่อทำการลบข้อมูล!',
@@ -161,15 +264,26 @@ export default function DetailEmployees() {
             });
 
             if (result.isConfirmed) {
+
+                deleteButton.style.visibility = 'hidden';
+                editButton.style.visibility = 'hidden'
+
+                setLoading(true);
                 const response = await employeesapi.DeleteEmployee(dataemployeesById.id);
 
                 if (response == 200) {
-                    await Swal.fire({
+
+                    setLoading(false);
+                    const res = await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
                         icon: 'success',
                     });
-                    nav('/ListEmployees', { replace: true });
+
+                    if (res) {
+                        nav('/ListEmployees', { replace: true });
+                    }
+
                 }
             }
         } catch (error) {
@@ -179,6 +293,8 @@ export default function DetailEmployees() {
                 text: 'เกิดข้อผิดพลาดในการลบข้อมูล!',
                 icon: 'error',
             });
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -187,6 +303,11 @@ export default function DetailEmployees() {
         try {
 
             e.preventDefault();
+
+            const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
+            const cancleButton = document.getElementById('cancleButton') as HTMLButtonElement;
+
+
             const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
             const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
             const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
@@ -256,6 +377,10 @@ export default function DetailEmployees() {
                 return;
             }
 
+            setLoading(true);
+            submitButton.style.visibility = 'hidden';
+            cancleButton.style.visibility = 'hidden';
+
             const resUpdateData = await employeeapi.updateDataEmployee(
                 formEdit.firstname,
                 formEdit.lastname,
@@ -275,58 +400,91 @@ export default function DetailEmployees() {
                 EMId
             );
 
+
             if (resUpdateData == 200) {
+
+                console.log(handleGender);
 
                 if (file) {
 
                     const folderName = '';
                     const collection = 'users';
                     const resUploadLogo = await hrapi.UploadProfile(file, EMId, folderName, collection);
-                    //update card
                     const resUpdateDetailCard = await updateDetailCard();
 
                     if (resUploadLogo == 200 && resUpdateDetailCard == 200) {
-                        Swal.fire({
+
+                        setLoading(false);
+                        const res = await Swal.fire({
                             title: 'Success!',
                             text: 'อัปเดทข้อมูลสำเร็จ!',
                             icon: 'success',
-                        }).then(() => {
+                        });
+
+                        if (res) {
                             nav('/ListEmployees');
                             window.location.reload();
+                        }
+
+
+                    }
+
+                    if (resUploadLogo == 200 && resUpdateDetailCard == 400) {
+
+                        setLoading(false);
+
+                        const res = await Swal.fire({
+                            title: 'Success!',
+                            text: 'อัปเดทข้อมูลและรูปสำเร็จ!',
+                            icon: 'success',
                         });
+
+                        if (res) {
+                            nav('/ListEmployees');
+                            window.location.reload();
+                        }
                     }
                 }
-            
 
-            if (!file) {
 
-                const resUpdateDetailCard = await updateDetailCard();
-                
-                if (resUpdateDetailCard == 200) {
+                if (!file) {
 
-                    console.log('check2', resUpdateDetailCard);
+                    const resUpdateDetailCard = await updateDetailCard();
 
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'อัปเดทข้อมูลสำเร็จ!',
-                        icon: 'success',
-                    }).then(() => {
-                        nav('/ListEmployees');
-                        window.location.reload();
-                    });
+                    if (resUpdateDetailCard == 200 || resUpdateDetailCard == 400) {
+
+                        setLoading(false);
+                        const res = await Swal.fire({
+                            title: 'Success!',
+                            text: 'อัปเดทข้อมูลสำเร็จ!',
+                            icon: 'success',
+                        });
+
+                        if (res) {
+                            nav('/ListEmployees');
+                            window.location.reload();
+                        }
+
+                    }
                 }
             }
-        }
 
         } catch (error) {
             console.error(error);
+        }
+        finally {
+            setLoading(false);
         }
     }
 
     const updateDetailCard = async () => {
 
+        if (!TemplateBycompanyId) {
+            return 400;
+        }
+
         if (TemplateBycompanyId[0]?.status?.toString() !== '1') {
-            return;
+            return 400;
         }
 
         if (!TemplateBycompanyId || !getDataCompanyById) {
@@ -500,7 +658,7 @@ export default function DetailEmployees() {
 
                 if (resUpdateStatus == 200) {
 
-                   return resUpdateStatus;
+                    return resUpdateStatus;
                 }
 
             } else {
@@ -513,7 +671,7 @@ export default function DetailEmployees() {
         }
         else {
             console.log('Non selected template');
-            return;
+            return 400;
         }
 
     }
@@ -524,7 +682,7 @@ export default function DetailEmployees() {
             fetchData();
         }
 
-    }, [employeesId]);
+    }, [employeesId, fetchData, isLoading]);
 
     useEffect(() => {
 
@@ -544,7 +702,7 @@ export default function DetailEmployees() {
             }
         }
 
-    }, [isFetch]);
+    }, [isFetch, GetDepartmentByCompanyId, getCompanyBranchById, getTemplateByCompanyId, getUrlLogoCompany]);
 
     useEffect(() => {
 
@@ -624,16 +782,16 @@ export default function DetailEmployees() {
                                             <p className="text-muted-foreground">วันเกิด:</p>
                                             <input
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                type='datetime-local'
+                                                type='date'
                                                 id="birthdayEdit"
-                                                value={dataemployeesById.birthdate ? new Date(dataemployeesById.birthdate).toISOString().slice(0, 16) : ''}
+                                                value={dataemployeesById.birthdate ? dataemployeesById.birthdate : ''}
                                                 onChange={(e) => setDataEmployeesById({ ...dataemployeesById, birthdate: e.target.value })}
                                             />
                                             <br />
                                             <p className="text-muted-foreground">วันที่เริ่มงาน:</p>
                                             <input
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                type='datetime-local'
+                                                type='date'
                                                 id="startworkEdit"
                                                 placeholder={dataemployeesById.startwork}
                                                 value={dataemployeesById.startwork || ''}
@@ -744,48 +902,110 @@ export default function DetailEmployees() {
                                             <br />
                                             <p className="text-muted-foreground">รหัสผ่าน:</p>
                                             <input
-                                                onChange={(e) => setDataEmployeesById({ ...dataemployeesById, password: e.target.value })}
+                                                onChange={handlePasswordChange}
                                                 value={dataemployeesById.password || ''}
                                                 type="text" id="passwordEdit"
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder={dataemployeesById.password} />
-                                            <br />
-                                            <br />
-                                            <p className="text-muted-foreground">รูปประจำตัวพนักงาน:</p>
-                                            <label>
-                                                <input
-                                                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                                    type="file"
-                                                    id='selectImg'
-                                                    onChange={handleFileChange}
-                                                />
+                                            <label className="flex items-center pt-2 pl-2">
+                                                <input onClick={handleShowPassword} id="showpass" type="checkbox" className="mr-2" />
+                                                <span className="text-muted-foreground">Show Password</span>
                                             </label>
-                                            {imageData.showImage ? (
-                                                <div>
-                                                    <img
-                                                        src={imageData.base64textString}
-                                                        alt={imageData.imageName}
-                                                        style={{ maxWidth: '100%' }}
+                                            <div id="message" style={{ paddingLeft: '0px' }}>
+                                                <br />
+                                                <p id="letter" className={validations.lowercase ? 'valid' : 'invalid'}>
+                                                    <b>- ตัวพิมพ์เล็ก (a-z)</b>
+                                                    {validations.lowercase && <i className="fas fa-check icon"></i>}
+                                                    {!validations.lowercase && <i className="fas fa-times icon"></i>}
+                                                </p>
+                                                <p id="capital" className={validations.uppercase ? 'valid' : 'invalid'}>
+                                                    <b>- ตัวพิมพ์ใหญ่ (A-Z)</b>
+                                                    {validations.uppercase && <i className="fas fa-check icon"></i>}
+                                                    {!validations.uppercase && <i className="fas fa-times icon"></i>}
+                                                </p>
+                                                <p id="number" className={validations.number ? 'valid' : 'invalid'}>
+                                                    <b>- ตัวเลข (0-9)</b>
+                                                    {validations.number && <i className="fas fa-check icon"></i>}
+                                                    {!validations.number && <i className="fas fa-times icon"></i>}
+                                                </p>
+                                                <p id="length" className={validations.length ? 'valid' : 'invalid'}>
+                                                    <b>- ความยาวรหัสผ่าน 8 ตัว</b>
+                                                    {validations.length && <i className="fas fa-check icon"></i>}
+                                                    {!validations.length && <i className="fas fa-times icon"></i>}
+                                                </p>
+                                                <br />
+                                                <br />
+                                                <p className="text-muted-foreground">รูปประจำตัวพนักงาน:</p>
+                                                <label>
+                                                    <input
+                                                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                                        type="file"
+                                                        id='selectImg'
+                                                        onChange={handleFileChange}
                                                     />
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    <br />
-                                                    <p>รูปประจำตัวพนักงาน :</p>
-                                                    <br />
-                                                    <img src={dataemployeesById.profile || ''} alt="" />
-                                                </div>
-                                            )}
-                                            <br />
+                                                </label>
+                                                {imageData.showImage ? (
+
+                                                    <div>
+                                                        <br />
+                                                        <p>รูปประจำตัวพนักงานใหม่ :</p>
+                                                        <br />
+                                                        <img src={imageData.base64textString} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+                                                        <div onClick={handleRemoveImage}>
+                                                            <Button variant="danger">Remove Image</Button>
+                                                        </div>
+                                                    </div>
+
+                                                ) : (
+
+                                                    <div>
+                                                        <br />
+                                                        <p>รูปประจำตัวพนักงานที่มีอยู่แล้ว :</p>
+                                                        <br />
+                                                        <img src={dataemployeesById.profile || ''} alt="" />
+                                                    </div>
+
+                                                )}
+                                                <br />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                             <div className="flex justify-end mt-4">
-                                <button className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
+                                <button
+                                    id='cancleButton'
+                                    type="button"
+                                    onClick={handleUpdate}
+                                    className="bg-gray-500 text-red-50 hover:bg-gray-600 py-2 px-4 rounded-lg"
+                                >
+                                    ยกเลิก
+                                </button>
                                 &nbsp;
-                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={handleUpdate}>ยกเลิก</button>
+                                <button
+                                    id="submitButton"
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg"
+                                >
+                                    ตกลง
+                                </button>
                             </div>
+                            <br />
+
+                            {loading ?
+                                <div className='flex justify-content-end'>
+                                    <h1>กำลังตรวจสอบข้อมูล </h1>
+                                    &nbsp;
+                                    <l-tail-chase
+                                        size="15"
+                                        speed="1.75"
+                                        color="black"
+                                    ></l-tail-chase>
+                                </div>
+                                : <div></div>}
+
                             <canvas ref={canvasRef} style={{ display: 'none' }} />
                         </form>
                     </div>
@@ -796,7 +1016,36 @@ export default function DetailEmployees() {
 
 
     if (!dataemployeesById) {
-        return <div>No company data found.</div>;
+        return (
+            <div>
+                <Header />
+                <br />
+                //check loading 10 sec to not found data
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className='pr-5'>Loading data</p>
+                                <l-tail-chase
+                                    size="30"
+                                    speed="1.75"
+                                    color="black"
+                                ></l-tail-chase>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <p className='pr-5'>Loading data</p>
+                            <l-tail-chase
+                                size="30"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -859,38 +1108,56 @@ export default function DetailEmployees() {
                                 <br />
                                 <br />
                                 <p className="text-muted-foreground">นามบัตร:</p>
-                                <img src={dataemployeesById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
+                                {dataemployeesById.business_card ? (
+                                    <img src={dataemployeesById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
+                                ) : (
+                                    <>
+                                        <div className='pl-3'>
+                                            <br />
+                                            <p className="text-muted-foreground">ยังไม่ได้สร้างนามบัตรหรือไม่ได้เลือกเทมเพลต</p>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div className="flex justify-end mt-4">
-                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteEmployeeData}>ลบข้อมูล</button>
+
+                    <button
+                        id='deleteButton'
+                        type="button"
+                        onClick={DeleteEmployeeData}
+                        className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
+                    >
+                        ลบข้อมูล
+                    </button>
                     &nbsp;
-                    <button className="bg-yellow-500 text-red-50 hover:bg-yellow-600 py-2 px-4 rounded-lg" onClick={handleUpdate}>แก้ไขข้อมูล</button>
+                    <button
+                        id="editButton"
+                        disabled={loading}
+                        onClick={handleUpdate}
+                        className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg"
+                    >
+                        แก้ไขข้อมูล
+                    </button>
                 </div>
-            </div>
-            //
-            {/* <h1>Company Details</h1>
-            <p>Name: {dataemployeesById.firstname}</p>
-            <p>Email: {dataemployeesById.email}</p>
-            <p>Company branch: {dataemployeesById.companybranch.name}</p>
-            <p>Department: {dataemployeesById.department.name}</p>
-            <p>Address : {dataemployeesById.address}</p>
-            <p>Password : {dataemployeesById.password}</p>
-            <p>Detail Company : {dataemployeesById.companybranch.company.name}</p>
-            <p>Position : {dataemployeesById.position}</p>
-            <div>
-                <img src={dataemployeesById.profile} alt="" />
                 <br />
-                <img src={dataemployeesById.business_card} alt="" />
+
+                {loading ?
+                    <div className='flex justify-content-end'>
+                        <h1>กำลังตรวจสอบข้อมูล </h1>
+                        &nbsp;
+                        <l-tail-chase
+                            size="15"
+                            speed="1.75"
+                            color="black"
+                        ></l-tail-chase>
+                    </div>
+                    : <div></div>}
+
             </div>
-            <div id="col2-2">
-                <Button variant="danger" onClick={DeleteEmployeeData}>ลบข้อมูล</Button>
-                <Button variant="warning" onClick={handleUpdate}>แก้ไขข้อมูล</Button>
-            </div> */}
         </div>
     );
-
-
 }

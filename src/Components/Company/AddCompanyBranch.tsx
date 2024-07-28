@@ -22,6 +22,7 @@ function AddCompanyBranch() {
   const handleShow = () => setShow(true);
   const companyapi = new CompanyApi();
   const nav = useNavigate();
+  const [loading, setLoading] = useState(false);
 
 
   const getNameValue = (): string => {
@@ -49,7 +50,12 @@ function AddCompanyBranch() {
     return countryElement ? countryElement.value : '';
   };
 
+
+
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
+
+    const cancleBtn = document.getElementById("cancleBtn") as HTMLButtonElement;
+    const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement;
 
     const formData = {
       name: getNameValue(),
@@ -62,44 +68,65 @@ function AddCompanyBranch() {
 
     event.preventDefault();
 
-    if (formData.name && formData.subdistrict &&
-      formData.district && formData.province && formData.country
-    ) {
+    try {
 
-      const resUploadData = await addData(formData);
+      if (formData.name && formData.subdistrict &&
+        formData.district && formData.province && formData.country
+      ) {
 
-      if (resUploadData == 200) {
+        cancleBtn.style.visibility = 'hidden';
+        submitBtn.style.visibility = 'hidden';
+        setLoading(true);
 
-        Swal.fire({
-          title: 'Success!',
-          text: 'เพิ่มข้อมูลสำเร็จ',
-          icon: 'success',
-        }).then(() => {
+        const resUploadData = await addData(formData);
+
+        if (resUploadData == 200) {
+          
+          setLoading(false);
+          const res = await Swal.fire({
+            title: 'Success!',
+            text: 'เพิ่มข้อมูลสำเร็จ',
+            icon: 'success',
+          });
+
+          
+
+          if (res) {
+            handleClose();
+            nav('/ListDetailBranchAndDepartment');
+            window.location.reload();
+          }
+
+
           handleClose();
-          nav('/ListDetailBranchAndDepartment');
-          window.location.reload();
-        });
+        }
+        if (resUploadData == 400) {
 
-        handleClose();
+          setLoading(false);
+          Swal.fire({
+            title: 'Error!',
+            text: 'เพิ่มข้อมูลล้มเหลว!',
+            icon: 'error',
+          });
+
+        }
       }
-      if (resUploadData == 400) {
+      else {
 
+        setLoading(false);
         Swal.fire({
-          title: 'Error!',
-          text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
+          title: 'Upload Error!',
+          text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
           icon: 'error',
         });
-
       }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-    else {
-      Swal.fire({
-        title: 'Upload Error!',
-        text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
-        icon: 'error',
-      });
 
-    }
+
   };
 
 
@@ -117,13 +144,6 @@ function AddCompanyBranch() {
 
       return res;
 
-    } else {
-      Swal.fire({
-        title: 'Add Data Error!',
-        text: 'กรอกข้อมูลให้ครบ',
-        icon: 'error',
-      });
-      return;
     }
   };
 
@@ -199,14 +219,25 @@ function AddCompanyBranch() {
             />
             <br />
             <div className="flex justify-end mt-4">
-              <Button variant="secondary" onClick={handleClose}>
+              <Button id='cancleBtn' variant="secondary" onClick={handleClose}>
                 ยกเลิก
               </Button>
               &nbsp;
-              <Button variant="primary" type="submit">
+              <Button id='submitBtn' variant="success" type="submit">
                 ตกลง
               </Button>
             </div>
+            {loading ?
+              <div className='flex justify-content-end'>
+                <h1>กำลังตรวจสอบข้อมูล </h1>
+                &nbsp;
+                <l-tail-chase
+                  size="15"
+                  speed="1.75"
+                  color="black"
+                ></l-tail-chase>
+              </div>
+              : <div></div>}
           </form>
         </Modal.Body>
       </Modal>

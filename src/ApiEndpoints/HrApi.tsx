@@ -126,16 +126,15 @@ export class HrApi {
                 birthdate: birthdateValue
             }
 
-
+            console.log('in api' , dataHr);
             const endpoint = `${url}/users`;
             const res = await axios.post(endpoint, dataHr);
-
-            console.log('res in context', res.data.userId);
+            console.log('res data' , res.data.userId);
             return res.data.userId;
 
         } catch (error) {
             console.error(error);
-            throw error;
+            return '0';
         }
     }
 

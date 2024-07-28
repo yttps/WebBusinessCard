@@ -236,33 +236,33 @@ export class CompanyApi {
     }
 
     async updateDataCompany(
-        name:string,
-        website:string,
-        password:string,
-        businessType:string,
+        name: string,
+        website: string,
+        password: string,
+        businessType: string,
         yearFounded: string,
         email: string,
         logo: string,
         status: string,
         CompanyId: string
-    ){
+    ) {
 
         try {
-            
+
             const data = {
-                name:name,
-                businessType:businessType,
-                website:website,
-                email:email,
+                name: name,
+                businessType: businessType,
+                website: website,
+                email: email,
                 password: password,
                 yearFounded: yearFounded,
                 status: status,
                 logo: logo,
-                id:CompanyId
+                id: CompanyId
             };
 
-            const res = await axios.put(`${url}/companies/${data.id}`,data);
-            console.log('in api' , data);
+            const res = await axios.put(`${url}/companies/${data.id}`, data);
+            console.log('in api', data);
             return res.status;
 
         } catch (error) {
@@ -325,6 +325,7 @@ export class CompanyApi {
     }
 
     async AddDepartments(departments: { name: string; phone: string }[]): Promise<number[]> {
+
         const loggedInData = localStorage.getItem("LoggedIn");
         const statusCodes: number[] = [];
 
@@ -333,17 +334,51 @@ export class CompanyApi {
             const CompanyId = parsedData.id;
             const endpoint = `${url}/departments`;
 
+            const resCheckData = await fetch(`${url}/departments/by-company/${CompanyId}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
             if (CompanyId) {
+
                 try {
-                    // Fetch existing departments once
-                    const resCheckData = await axios.get(`${url}/departments/by-company/${CompanyId}`);
-                    const DepartmentcheckData: departmentData[] = resCheckData.data;
 
-                    for (const dept of departments) {
-                        // Check if the department name already exists
-                        const exists = DepartmentcheckData.some(existingDept => existingDept.name.toUpperCase() === dept.name.toUpperCase());
+                    if (resCheckData.status !== 404) {
 
-                        if (!exists) {
+                        const DepartmentcheckData: departmentData[] = await resCheckData.json();
+
+                        for (const dept of departments) {
+                            // Check if the department name already exists
+                            const exists = DepartmentcheckData.some(existingDept => existingDept.name.toUpperCase() === dept.name.toUpperCase());
+                            console.log('exists', exists);
+
+                            const dataDepartment = {
+                                name: dept.name,
+                                companyID: CompanyId,
+                                phone: dept.phone
+                            };
+
+                            if (!exists) {
+
+                                const res = await fetch(endpoint, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(dataDepartment)
+                                });
+
+                                statusCodes.push(res.status);
+                            }
+                            if (exists) {
+                                console.log(`Department with name ${dept.name} already exists.`);
+                                statusCodes.push(400);
+                            }
+                        }
+
+                    }
+                    if (resCheckData.status === 404) {
+
+                        for (const dept of departments) {
+
                             const dataDepartment = {
                                 name: dept.name,
                                 companyID: CompanyId,
@@ -357,8 +392,6 @@ export class CompanyApi {
                             });
 
                             statusCodes.push(res.status);
-                        } else {
-                            console.log(`Department with name ${dept.name} already exists.`);
                         }
                     }
 

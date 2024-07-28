@@ -154,7 +154,7 @@ export class EmployeesApi {
 
         } catch (error) {
             console.error(error);
-            throw error;
+            return '0';
         }
     }
 

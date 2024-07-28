@@ -1,6 +1,8 @@
 export interface Position {
     x: number;
     y: number;
+    fontSize: string;
+    fontColor: string;
 }
 
 export interface GetTemplateCompanyId {
@@ -18,4 +20,5 @@ export interface GetTemplateCompanyId {
     email: Position;
     status: number;
     id: string;
+
 }

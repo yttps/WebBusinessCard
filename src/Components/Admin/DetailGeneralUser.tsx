@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Header from '../Header/Header';
 import Swal from 'sweetalert2';
 import { GeneralUserApi } from '@/ApiEndpoints/GeneralUserApi';
 import { GetDataGeneralUserById } from '@/Model/GetGeneralUserById';
 import { useNavigate } from 'react-router-dom';
+import HeaderAdmin from '../Header/HeaderAdmin';
 
 export default function DetailGeneralUser() {
 
     const { id: generalUserId } = useParams();
-    const generaluserapi = new GeneralUserApi();
+    const generaluserapi = useMemo(() => new GeneralUserApi(), []);
     const [GeneralUserById, setGeneralUserById] = useState<GetDataGeneralUserById | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const nav = useNavigate();
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             if (generalUserId) {
                 const resGetdataDetail = await generaluserapi.GetDataGeneralUserById(generalUserId);
@@ -25,7 +25,7 @@ export default function DetailGeneralUser() {
             console.error('Error fetching company data:', error);
             setIsLoading(false);
         }
-    };
+    }, [generaluserapi, generalUserId]);
 
     const DeleteGeneralUserData = async (): Promise<void> => {
 
@@ -46,12 +46,16 @@ export default function DetailGeneralUser() {
                 const response = await generaluserapi.DeleteGeneralUser(GeneralUserById?.id); //bug origin
 
                 if (response == 200) {
-                    await Swal.fire({
+                    const res = await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
                         icon: 'success',
                     });
-                    nav('/ListGeneralUser', { replace: true });
+
+                    if (res) {
+                        nav('/ListGeneralUser', { replace: true });
+                    }
+
                 }
             }
         } catch (error) {
@@ -66,10 +70,38 @@ export default function DetailGeneralUser() {
 
     useEffect(() => {
         fetchData();
-    }, [generalUserId]);
+    }, [generalUserId, fetchData]);
 
     if (!isLoading) {
-        return <div>is Loading...</div>;
+        return (
+            <div>
+                <HeaderAdmin />
+                <br />
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className='pr-5'>Loading data</p>
+                                <l-tail-chase
+                                    size="30"
+                                    speed="1.75"
+                                    color="black"
+                                ></l-tail-chase>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <p className='pr-5'>Loading data</p>
+                            <l-tail-chase
+                                size="30"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (!GeneralUserById) {
@@ -78,7 +110,7 @@ export default function DetailGeneralUser() {
 
     return (
         <>
-            <Header />
+            <HeaderAdmin />
             <br />
             <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
                 <div className="flex">

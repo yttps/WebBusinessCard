@@ -21,7 +21,10 @@ export default function EditCompany() {
     const nav = useNavigate();
     const templateapi = useMemo(() => new TemplateApi(), []);
     const [TemplateBycompanyId, setTemplateBycompanyId] = useState<GetTemplateCompanyId[]>([]);
-
+    const [loading, setLoading] = useState(true);
+    const [hasGetDataCompanyById, setHasGetDataCompanyById] = useState(false);
+    const [hasGetAllEmployeesByCompany, setHasGetAllEmployeesByCompany] = useState(false);
+    const [hasGetTemplateByCompanyId, setHasGetTemplateByCompanyId] = useState(false);
 
     const [imageData] = useState({
         base64textString: '',
@@ -32,6 +35,7 @@ export default function EditCompany() {
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             setFile(event.target.files[0]);
+            console.log(hasGetTemplateByCompanyId);
         }
     };
 
@@ -76,7 +80,7 @@ export default function EditCompany() {
                         formEdit.email, resUrlLogo, formEdit.status, CompanyId
                     );
 
-                    console.log('response update data company' , resUpdateDataCompany);
+                    console.log('response update data company', resUpdateDataCompany);
 
                     if (resUpdateDataCompany == 200) {
 
@@ -313,23 +317,41 @@ export default function EditCompany() {
 
 
     const getDataCompanyById = useCallback(async (CompanyId: string) => {
+        try {
 
-        const resGetdataCompany = await companyapi.GetDataCompanyById(CompanyId);
-        setDataCompanyById(resGetdataCompany);
+            const resGetdataCompany = await companyapi.GetDataCompanyById(CompanyId);
+            setDataCompanyById(resGetdataCompany);
+            setHasGetDataCompanyById(resGetdataCompany.length > 0);
 
+        } catch (error) {
+            console.error('Error fetching company data:', error);
+        }
     }, [companyapi]);
 
     const getAllEmployeesByCompany = useCallback(async (CompanyId: string) => {
+        try {
 
-        const resGetdataEmployees = await employeesapi.GetAllDataemployeesByCompanyId(CompanyId);
-        setGetEmployeesByCompany(resGetdataEmployees);
+            const resGetdataEmployees = await employeesapi.GetAllDataemployeesByCompanyId(CompanyId);
+            setGetEmployeesByCompany(resGetdataEmployees);
+            setHasGetAllEmployeesByCompany(resGetdataEmployees.length > 0);
 
+        } catch (error) {
+            console.error('Error fetching employees data:', error);
+        }
     }, [employeesapi]);
 
     const getTemplateByCompanyId = useCallback(async (CompanyId: string) => {
-        const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
-        setTemplateBycompanyId(res);
+        try {
+
+            const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
+            setTemplateBycompanyId(res);
+            setHasGetTemplateByCompanyId(res.length > 0);
+
+        } catch (error) {
+            console.error('Error fetching template data:', error);
+        }
     }, [templateapi]);
+
 
     useEffect(() => {
 
@@ -342,6 +364,7 @@ export default function EditCompany() {
                 const CompanyId = parsedData.companyId;
 
                 if (CompanyId) {
+                    setLoading(true);
                     getDataCompanyById(CompanyId);
                     getAllEmployeesByCompany(CompanyId);
                     getTemplateByCompanyId(CompanyId);
@@ -349,118 +372,179 @@ export default function EditCompany() {
                 }
             }
         }
-    }, [companyapi, isFetch, getDataCompanyById, dataCompanyById, getAllEmployeesByCompany, getTemplateByCompanyId])
 
-    return (
+        console.log('data em' , );
+    }, [companyapi, isFetch, getDataCompanyById, dataCompanyById, getAllEmployeesByCompany, getTemplateByCompanyId]);
 
-        <>
-            <Header />
-            <br />
+
+    if (loading) {
+        return (
             <div>
-                {dataCompanyById && (
-                    <div className="bg-card p-6 rounded-lg shadow-lg max-w-max mx-auto">
-                        <form onSubmit={(e) => SaveDetails(e, dataCompanyById.id)}>
-                            <div className="flex">
-                                <div className="max-w-full bg-gray-100 p-3 rounded-lg ml-0">
-                                    <h2 className="text-lg font-semibold mb-4">แก้ไขข้อมูลรายละเอียดบริษัท</h2>
-                                    <br />
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div>
-                                            <p className="text-muted-foreground">ชื่อบริษัท:</p>
-                                            <input
-                                                onChange={(e) => setDataCompanyById({ ...dataCompanyById, name: e.target.value })}
-                                                value={dataCompanyById.name || ''}
-                                                type="text" id="nameEdit"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder={dataCompanyById.name} />
-                                            <br />
-                                            <p className="text-muted-foreground">ประเภทธุรกิจ:</p>
-                                            <input
-                                                onChange={(e) => setDataCompanyById({ ...dataCompanyById, businessType: e.target.value })}
-                                                value={dataCompanyById.businessType || ''}
-                                                type="text" id="businesstypeEdit"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder={dataCompanyById.businessType} />
-                                            <br />
-                                            <p className="text-muted-foreground">เว็บไซต์:</p>
-                                            <input
-                                                onChange={(e) => setDataCompanyById({ ...dataCompanyById, website: e.target.value })}
-                                                value={dataCompanyById.website || ''}
-                                                type="text"
-                                                id="websiteEdit"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder={dataCompanyById.website} />
-                                            <br />
-                                            <p className="text-muted-foreground">ปีที่ก่อตั้ง:</p>
-                                            <input
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                type='datetime-local'
-                                                id="yearfoundedEdit"
-                                                value={dataCompanyById.yearFounded ? new Date(dataCompanyById.yearFounded).toISOString().slice(0, 16) : ''}
-                                                onChange={(e) => setDataCompanyById({ ...dataCompanyById, yearFounded: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <p className="text-muted-foreground">อีเมล:</p>
-                                            <input
-                                                onChange={(e) => setDataCompanyById({ ...dataCompanyById, email: e.target.value })}
-                                                value={dataCompanyById.email || ''}
-                                                type="text"
-                                                id="emailEdit"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder={dataCompanyById.email} />
-                                            <br />
-                                            <p className="text-muted-foreground">รหัสผ่าน:</p>
-                                            <input
-                                                onChange={(e) => setDataCompanyById({ ...dataCompanyById, password: e.target.value })}
-                                                value={dataCompanyById.password || ''}
-                                                type="text"
-                                                id="passwordEdit"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder={dataCompanyById.password} />
-                                            <br />
-                                            <br />
-                                            <p className="text-muted-foreground">Logo บริษัท:</p>
-                                            <label>
+                <Header />
+                <br />
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className='pr-5'>Loading data</p>
+                                <l-tail-chase
+                                    size="30"
+                                    speed="1.75"
+                                    color="black"
+                                ></l-tail-chase>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <p className='pr-5'>Loading data</p>
+                            <l-tail-chase
+                                size="30"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (hasGetAllEmployeesByCompany && hasGetDataCompanyById) {
+        return (
+            <>
+                <Header />
+                <br />
+                <div>
+                    {dataCompanyById ? (
+                        <div className="bg-card p-6 rounded-lg shadow-lg max-w-max mx-auto">
+                            <form onSubmit={(e) => SaveDetails(e, dataCompanyById.id)}>
+                                <div className="flex">
+                                    <div className="max-w-full bg-gray-100 p-3 rounded-lg ml-0">
+                                        <h2 className="text-lg font-semibold mb-4">แก้ไขข้อมูลรายละเอียดบริษัท</h2>
+                                        <br />
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <p className="text-muted-foreground">ชื่อบริษัท:</p>
                                                 <input
-                                                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                                    type="file"
-                                                    id='selectImg'
-                                                    onChange={handleFileChange}
+                                                    onChange={(e) => setDataCompanyById({ ...dataCompanyById, name: e.target.value })}
+                                                    value={dataCompanyById.name || ''}
+                                                    type="text" id="nameEdit"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder={dataCompanyById.name} />
+                                                <br />
+                                                <p className="text-muted-foreground">ประเภทธุรกิจ:</p>
+                                                <input
+                                                    onChange={(e) => setDataCompanyById({ ...dataCompanyById, businessType: e.target.value })}
+                                                    value={dataCompanyById.businessType || ''}
+                                                    type="text" id="businesstypeEdit"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder={dataCompanyById.businessType} />
+                                                <br />
+                                                <p className="text-muted-foreground">เว็บไซต์:</p>
+                                                <input
+                                                    onChange={(e) => setDataCompanyById({ ...dataCompanyById, website: e.target.value })}
+                                                    value={dataCompanyById.website || ''}
+                                                    type="text"
+                                                    id="websiteEdit"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder={dataCompanyById.website} />
+                                                <br />
+                                                <p className="text-muted-foreground">ปีที่ก่อตั้ง:</p>
+                                                <input
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    type='datetime-local'
+                                                    id="yearfoundedEdit"
+                                                    value={dataCompanyById.yearFounded ? dataCompanyById.yearFounded : ''}
+                                                    onChange={(e) => setDataCompanyById({ ...dataCompanyById, yearFounded: e.target.value })}
                                                 />
-                                            </label>
-                                            {imageData.showImage ? (
-                                                <div>
-                                                    <img
-                                                        src={imageData.base64textString}
-                                                        alt={imageData.imageName}
-                                                        style={{ maxWidth: '100%' }}
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">อีเมล:</p>
+                                                <input
+                                                    onChange={(e) => setDataCompanyById({ ...dataCompanyById, email: e.target.value })}
+                                                    value={dataCompanyById.email || ''}
+                                                    type="text"
+                                                    id="emailEdit"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder={dataCompanyById.email} />
+                                                <br />
+                                                <p className="text-muted-foreground">รหัสผ่าน:</p>
+                                                <input
+                                                    onChange={(e) => setDataCompanyById({ ...dataCompanyById, password: e.target.value })}
+                                                    value={dataCompanyById.password || ''}
+                                                    type="text"
+                                                    id="passwordEdit"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder={dataCompanyById.password} />
+                                                <br />
+                                                <br />
+                                                <p className="text-muted-foreground">Logo บริษัท:</p>
+                                                <label>
+                                                    <input
+                                                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                                        type="file"
+                                                        id='selectImg'
+                                                        onChange={handleFileChange}
                                                     />
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    <br />
-                                                    <p>Logo บริษัท :</p>
-                                                    <br />
-                                                    <img src={dataCompanyById.logo || ''} alt="" />
-                                                </div>
-                                            )}
-                                            <br />
+                                                </label>
+                                                {imageData.showImage ? (
+                                                    <div>
+                                                        <img
+                                                            src={imageData.base64textString}
+                                                            alt={imageData.imageName}
+                                                            style={{ maxWidth: '100%' }}
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <br />
+                                                        <p>Logo บริษัท :</p>
+                                                        <br />
+                                                        <img src={dataCompanyById.logo || ''} alt="" />
+                                                    </div>
+                                                )}
+                                                <br />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex justify-end mt-4">
-                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
-                                &nbsp;
-                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={toListEmployees}>ยกเลิก</button>
-                            </div>
-                            <canvas ref={canvasRef} style={{ display: 'none' }} />
-                        </form>
-                    </div>
-                )}
-            </div>
-        </>
+                                <div className="flex justify-end mt-4">
+                                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
+                                    &nbsp;
+                                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={toListEmployees}>ยกเลิก</button>
+                                </div>
+                                <canvas ref={canvasRef} style={{ display: 'none' }} />
+                            </form>
+                        </div>
+                    ) : (
+                        <div>
+                            <Header />
+                            <br />
+                            <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                                <div className="flex">
+                                    <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex justify-center items-center">
+                                            <h5>Not Found Data</h5>
+                                        </div>
+                                    </div>
 
-    )
+                                    <div className="flex justify-center w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                                        <img src="https://lh6.googleusercontent.com/Bu-pRqU_tWZV7O3rJ5nV1P6NjqFnnAs8kVLC5VGz_Kf7ws0nDUXoGTc7pP87tyUCfu8VyXi0YviIm7CxAISDr2lJSwWwXQxxz98qxVfMcKTJfLPqbcfhn-QEeOowjrlwX1LYDFJN"
+                                            alt=""
+                                            style={{ width: '50%' }}
+                                        />
+                                        <h5>Not Found Data</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </>
+
+        )
+    }
+
+
+
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import Header from '@/Components/Header/Header';
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import Header from '@/Components/Header/HeaderAdmin';
 import { Button, Form, InputGroup, Table, Row, Col } from 'react-bootstrap';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { GetAllCompany } from '@/Model/GetAllCompany';
@@ -17,8 +17,7 @@ export default function ApprovalCompany() {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 5;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const companyApi = new CompanyApi();
+    const companyApi = useMemo(() => new CompanyApi(), []);
 
     const toggleDropdown = () => {
         setDropdownVisible(!dropdownVisible);
@@ -29,7 +28,7 @@ export default function ApprovalCompany() {
         setDropdownVisible(false);
     };
 
-    const getCompany = async () => {
+    const getCompany = useCallback(async () => { 
         try {
             const res = await companyApi.GetAllCompanyNoAccept();
             setDataCompany(res);
@@ -38,7 +37,7 @@ export default function ApprovalCompany() {
         } catch (error) {
             console.error('Error fetching general users:', error);
         }
-    }
+    },[companyApi]);
 
     const filteredData = dataCompany.filter((company) =>
         company?.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -59,7 +58,48 @@ export default function ApprovalCompany() {
         if (!dataFetched) {
             getCompany();
         }
-    }, [dataFetched]);
+    }, [dataFetched, getCompany]);
+
+    if(!dataFetched){
+        return (
+            <>
+                <div>
+                    <Header />
+                    <br />
+                    <div>
+                        <Row>
+                            <Col xs={2} style={{ height: '100wh' }}>
+                                <div className="relative overflow-x-auto shadow-md sm:rounded-lg flex justify-center pt-2">
+                                    <div className='flex justify-content-center justify-content-around'>
+                                        <p className='text-xxl'>Loading data</p>
+                                        &nbsp;
+                                        <l-tail-chase
+                                            size="18"
+                                            speed="1.75"
+                                            color="black"
+                                        ></l-tail-chase>
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col xs={10}>
+                                <div className="relative overflow-x-auto shadow-md sm:rounded-lg flex justify-center pt-2">
+                                    <div className='flex justify-content-center justify-content-around'>
+                                        <p className='text-xxl'>Loading data</p>
+                                        &nbsp;
+                                        <l-tail-chase
+                                            size="20"
+                                            speed="1.75"
+                                            color="black"
+                                        ></l-tail-chase>
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -187,7 +227,7 @@ export default function ApprovalCompany() {
                                         />
                                     </div>
                                 </div>
-                                {filteredData.length > 0 ? (
+                                {currentItems.length > 0 ? (
                                     <><table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                             <tr>
@@ -209,7 +249,7 @@ export default function ApprovalCompany() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredData.map((item: GetAllCompany, index: number) => (
+                                            {currentItems.map((item: GetAllCompany, index: number) => (
                                                 <tr
                                                     key={index}
                                                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -264,8 +304,10 @@ export default function ApprovalCompany() {
                                             <br />
                                         </div></>
                                 ) : (
-                                    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                        <p>Not Found Data Company</p>
+                                    <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
+                                        <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{width: '50%'}}/>
+                                        <br />
+                                        {/* <button>s</button> */}
                                     </div>
                                 )}
                             </div>

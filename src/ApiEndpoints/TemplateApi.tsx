@@ -68,7 +68,8 @@ export class TemplateApi {
         }
     }
 
-    async uploadTemplateCompany(nameTemplate: string, getCompanyId: string, allPositions: AllPosition, status: string): Promise<string | undefined> {
+    async uploadTemplateCompany(
+        nameTemplate: string, getCompanyId: string, allPositions: AllPosition, status: string, fontSize: string, selectedColor: string): Promise<string | undefined> {
 
         try {
 
@@ -86,6 +87,8 @@ export class TemplateApi {
                 departmentName: allPositions.departmentName,
                 logo: allPositions.logo,
                 status: status,
+                fontSize: fontSize,
+                fontColor: selectedColor
             };
 
             console.log(data);

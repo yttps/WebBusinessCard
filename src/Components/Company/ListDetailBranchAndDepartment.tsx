@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 import AddCompanyBranch from "./AddCompanyBranch";
 import AddDepartment from "./AddDepartment";
-import AddHr from "./AddHr";
 
 export default function ListDetailBranchAndDepartment() {
 
@@ -17,6 +16,13 @@ export default function ListDetailBranchAndDepartment() {
   const [isFetch, setIsFetch] = useState(false);
   const companyapi = useMemo(() => new CompanyApi(), []);
   const nav = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [loadingDepartmentId, setLoadingDepartmentId] = useState<string | null>(null);
+  const [loadingBranchId, setLoadingBranchId] = useState<string | null>(null);
+
+
+  console.log('dataBranchesById', dataBranchesById);
+  console.log('dataDepartmentById', dataDepartmentById);
 
   // const [selectedDateRange, setSelectedDateRange] = useState<string>('Last 30 days');
   // const [dropdownVisible, setDropdownVisible] = useState<boolean>(false);
@@ -26,30 +32,35 @@ export default function ListDetailBranchAndDepartment() {
   const itemsPerPageDepartments = 5;
   const indexOfLastItemDepartments = currentPageDepartments * itemsPerPageDepartments;
   const indexOfFirstItemDepartments = indexOfLastItemDepartments - itemsPerPageDepartments;
-  const currentItemsDepartments = dataDepartmentById.slice(indexOfFirstItemDepartments, indexOfLastItemDepartments);
-  const totalPagesDepartments = Math.ceil(dataDepartmentById.length / itemsPerPageDepartments);
+  const currentItemsDepartments = dataDepartmentById?.slice(indexOfFirstItemDepartments, indexOfLastItemDepartments) || [];
+  const totalPagesDepartments = Math.ceil((dataDepartmentById?.length || 0) / itemsPerPageDepartments);
 
   // State for Branches
   const [currentPageBranches, setCurrentPageBranches] = useState<number>(1);
   const itemsPerPageBranches = 5;
   const indexOfLastItemBranches = currentPageBranches * itemsPerPageBranches;
   const indexOfFirstItemBranches = indexOfLastItemBranches - itemsPerPageBranches;
-  const currentItemsBranches = dataBranchesById.slice(indexOfFirstItemBranches, indexOfLastItemBranches);
-  const totalPagesBranches = Math.ceil(dataBranchesById.length / itemsPerPageBranches);
+  const currentItemsBranches = dataBranchesById?.slice(indexOfFirstItemBranches, indexOfLastItemBranches) || [];
+  const totalPagesBranches = Math.ceil((dataBranchesById?.length || 0) / itemsPerPageBranches);
+
 
   const getCompanyBranchById = useCallback(async (CompanyId: string) => {
     const res = await companyapi.getCompanyBranchById(CompanyId);
     setDataBranchesById(res);
+    setIsFetch(true);
   }, [companyapi]);
 
   const GetDepartmentByCompanyId = useCallback(async (CompanyId: string) => {
     const res = await companyapi.getDepartmentByCompanyId(CompanyId);
     setDataDepartmentById(res);
+    setIsFetch(true);
+
   }, [companyapi]);
 
   async function handleDeleteDepartment(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, departmentId: string) {
     e.preventDefault();
     console.log('departmentId', departmentId);
+
 
     const result = await Swal.fire({
       title: 'ลบข้อมูล?',
@@ -61,26 +72,40 @@ export default function ListDetailBranchAndDepartment() {
       confirmButtonText: 'Yes, delete it!'
     });
 
-    if (result.isConfirmed) {
+    try {
 
-      const res = await companyapi.deleteDepartment(departmentId);
+      if (result.isConfirmed) {
 
-      if (res == 200) {
-        await Swal.fire({
-          title: 'Success!',
-          text: 'ลบแผนกสำเร็จ!',
-          icon: 'success'
-        }).then(() => {
-          nav('/ListDetailBranchAndDepartment');
-          window.location.reload();
-        });
+        setLoadingDepartmentId(departmentId);
+        setLoading(true);
+
+        const res = await companyapi.deleteDepartment(departmentId);
+
+        if (res == 200) {
+
+          setLoadingDepartmentId(null);
+          const res = await Swal.fire({
+            title: 'Success!',
+            text: 'ลบแผนกสำเร็จ!',
+            icon: 'success'
+          });
+
+          if (res) {
+            nav('/ListDetailBranchAndDepartment');
+            window.location.reload();
+          }
+        }
       }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingDepartmentId(null);
+      setLoading(false);
     }
-
-
   }
 
   async function handleDeleteBranch(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, branchId: string) {
+
     e.preventDefault();
 
     console.log('branchId', branchId);
@@ -106,22 +131,39 @@ export default function ListDetailBranchAndDepartment() {
       confirmButtonText: 'Yes, delete it!'
     });
 
-    if (result.isConfirmed) {
+    try {
 
-      const res = await companyapi.deleteBranch(branchId);
+      if (result.isConfirmed) {
 
-      if (res == 200) {
-        await Swal.fire({
-          title: 'Success!',
-          text: 'ลบสาขาบริษัทสำเร็จ!',
-          icon: 'success',
-        }).then(() => {
-          nav('/ListDetailBranchAndDepartment');
-          window.location.reload();
-        });
+        setLoadingBranchId(branchId);
+        setLoading(true);
+        const res = await companyapi.deleteBranch(branchId);
 
+        if (res == 200) {
+
+          setLoadingBranchId(null);
+          const res = await Swal.fire({
+            title: 'Success!',
+            text: 'ลบสาขาบริษัทสำเร็จ!',
+            icon: 'success',
+          });
+
+          if (res) {
+            nav('/ListDetailBranchAndDepartment');
+            window.location.reload();
+          }
+
+        }
       }
+
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingBranchId(null);
+      setLoading(false);
     }
+
+
   }
 
   useEffect(() => {
@@ -176,11 +218,6 @@ export default function ListDetailBranchAndDepartment() {
           <div className="h-screen px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
             <ul className="space-y-2 font-medium">
               <li>
-                <a>
-                  <AddHr isFetch={isFetch} setIsFetch={setIsFetch} />
-                </a>
-              </li>
-              <li>
                 <div onClick={handleToListHr} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                   <svg className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
                     <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
@@ -202,7 +239,7 @@ export default function ListDetailBranchAndDepartment() {
             <div>
               <label className="block mb-2 text-xl font-medium text-gray-900 dark:text-white">แผนกบริษัท</label>
               <br />
-              {dataDepartmentById.length > 0 ? (
+              {dataDepartmentById ? (
                 <>
                   <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -227,13 +264,27 @@ export default function ListDetailBranchAndDepartment() {
                           <td className="px-6 py-4">{department.name}</td>
                           <td className="px-6 py-4">{department.phone}</td>
                           <td>
-                            <button
-                              className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
-                              onClick={(e) => handleDeleteDepartment(e, department.id)}
-                              type='submit'
-                            >
-                              ลบข้อมูลแผนก
-                            </button>
+                            {!loading ? (
+                              <button
+                                className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
+                                onClick={(e) => handleDeleteDepartment(e, department.id)}
+                                type="submit"
+                                id="deleteDepartBtn"
+                                disabled={loadingDepartmentId === department.id}
+                              >
+                                ลบข้อมูลแผนก
+                              </button>
+                            ) : (
+                              null
+                            )}
+
+                            {loadingDepartmentId === department.id && (
+                              <div className="flex justify-content-end">
+                                <h1>กำลังลบข้อมูล</h1>
+                                &nbsp;
+                                <l-tail-chase size="15" speed="1.75" color="black"></l-tail-chase>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -276,8 +327,8 @@ export default function ListDetailBranchAndDepartment() {
                   </div>
                 </>
               ) : (
-                <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                  <p>Not Found Departments.</p>
+                <div className="relative shadow-md sm:rounded-lg flex flex-row justify-center items-center pt-2 pb-5">
+                  <p className="text-xl mr-2">ยังไม่มีแผนก</p>
                 </div>
               )}
             </div>
@@ -289,7 +340,7 @@ export default function ListDetailBranchAndDepartment() {
             <div>
               <label className="block mb-2 text-xl font-medium text-gray-900 dark:text-white">สาขาบริษัท</label>
               <br />
-              {dataBranchesById.length > 0 ? (
+              {dataBranchesById ? (
                 <>
                   <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -314,13 +365,28 @@ export default function ListDetailBranchAndDepartment() {
                           <td className="px-6 py-4">{branch.name}</td>
                           <td className="px-6 py-4">{branch.address}</td>
                           <td>
-                            <button
-                              className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
-                              onClick={(e) => handleDeleteBranch(e, branch.id)}
-                              type='submit'
-                            >
-                              ลบข้อมูลสาขา
-                            </button>
+
+                            {!loading ? (
+                              <button
+                                className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
+                                onClick={(e) => handleDeleteBranch(e, branch.id)}
+                                type="submit"
+                                id="deleteBranchBtn"
+                                disabled={loadingBranchId === branch.id}
+                              >
+                                ลบข้อมูลสาขา
+                              </button>
+                            ) : (
+                              null
+                            )}
+
+                            {loadingBranchId === branch.id && (
+                              <div className="flex justify-content-end">
+                                <h1>กำลังลบข้อมูล</h1>
+                                &nbsp;
+                                <l-tail-chase size="15" speed="1.75" color="black"></l-tail-chase>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -363,8 +429,8 @@ export default function ListDetailBranchAndDepartment() {
                   </div>
                 </>
               ) : (
-                <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                  <p>Not Found Branches.</p>
+                <div className="relative shadow-md sm:rounded-lg flex flex-row justify-center items-center pt-2 pb-5">
+                  <p className="text-xl mr-2">ยังไม่มีสาขาบริษัท</p>
                 </div>
               )}
             </div>

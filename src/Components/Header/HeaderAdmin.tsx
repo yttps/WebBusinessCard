@@ -3,7 +3,7 @@ import './Header.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-export default function Header() {
+export default function HeaderAdmin() {
 
     const navigate = useNavigate();
     const [dropdownVisible, setDropdownVisible] = useState(false);

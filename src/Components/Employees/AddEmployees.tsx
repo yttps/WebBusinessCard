@@ -1,7 +1,7 @@
-import React, { useState, ChangeEvent, useEffect, useRef } from 'react'
+import React, { useState, ChangeEvent, useEffect, useRef, useMemo, useCallback } from 'react'
 import { EmployeesApi } from '@/ApiEndpoints/EmployeesApi';
 import Swal from 'sweetalert2';
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button, Modal, Form, Card } from "react-bootstrap";
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { GetCompanyBranchesById } from '@/Model/GetCompanyBranchesById';
 import { GetDepartmentByComId } from '@/Model/GetDepartmentByComId';
@@ -9,12 +9,6 @@ import { TemplateApi } from '@/ApiEndpoints/TemplateApi';
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
 import { GetTemplateCompanyId } from '@/Model/GetTemplateCompanyId';
 import { useNavigate } from 'react-router-dom';
-
-
-interface AddHrProps {
-  isFetch: boolean;
-  setIsFetch: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
 interface FormData {
   firstname: string,
@@ -34,14 +28,14 @@ interface FormData {
   birthdate: string
 }
 
-const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
+const AddEmployees = () => {
 
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const companyapi = new CompanyApi();
-  const employeesapi = new EmployeesApi();
-  const templateapi = new TemplateApi();
+  const companyapi = useMemo(() => new CompanyApi(), []);
+  const employeesapi = useMemo(() => new EmployeesApi(), []);
+  const templateapi = useMemo(() => new TemplateApi(), []);
   const nav = useNavigate();
 
   const [file, setFile] = useState<File | null>(null);
@@ -56,8 +50,50 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
   const [telDepartment, setTelDepartment] = useState('');
   const [addressBranch, setAddressBranch] = useState('');
   const [departName, setDepartmentName] = useState('');
+  const [isFetch, setIsFetch] = useState(false);
 
+  const [selectedImage, setSelectedImage] = useState({
+    base64textString: '',
+    imageName: '',
+    showImage: false,
+  });
 
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const [password, setPassword] = useState('');
+  const [validations, setValidations] = useState({
+    lowercase: false,
+    uppercase: false,
+    number: false,
+    length: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = event.target.value;
+    setPassword(newPassword);
+    validatePassword(newPassword);
+  };
+
+  const validatePassword = (password: string) => {
+    const lowerCaseRegex = /[a-z]/;
+    const upperCaseRegex = /[A-Z]/;
+    const numberRegex = /\d/;
+    const lengthRegex = /.{8,}/;
+
+    setValidations({
+      lowercase: lowerCaseRegex.test(password),
+      uppercase: upperCaseRegex.test(password),
+      number: numberRegex.test(password),
+      length: lengthRegex.test(password),
+    });
+  };
+
+  function handleShowPassword() {
+
+    setShowPass(!showPass);
+
+  }
 
   const handleDepartment = (e: ChangeEvent<HTMLSelectElement>) => {
     console.log(e.target.value);
@@ -91,12 +127,25 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     setGenderValue(e.target.value);
   };
 
-
   const [imageData] = useState({
     base64textString: '',
     imageName: '',
     showImage: false,
   });
+
+  function handleRemoveImage() {
+    setSelectedImage({
+      base64textString: '',
+      imageName: '',
+      showImage: false,
+    });
+
+    setFile(null);
+
+    if (backgroundInputRef.current) {
+      backgroundInputRef.current.value = "";
+    }
+  }
 
   const getInputValue = (id: string): string => {
     const inputElement = document.getElementById(id) as HTMLInputElement | null;
@@ -125,11 +174,13 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       birthdate: getInputValue('birthdate')
     };
 
-    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    const emailRegex = new RegExp(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z0-9-]+\.)+[a-z]{2,}))$/
+    );
     const phoneRegex = /^\d+$/;
     const allValuesNotNull = Object.values(formData).every(value => value !== null && value !== '');
 
-    if (!allValuesNotNull || !file) {
+    if (!allValuesNotNull) {
       Swal.fire({
         title: 'Error!',
         text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
@@ -165,6 +216,17 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       return;
     }
 
+    if (!file) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'กรุณาเลือกรูปภาพ!',
+        icon: 'error',
+      });
+      return;
+    }
+
+    setLoading(true);
+
     try {
 
       const resUploadData = await addData(formData);
@@ -178,46 +240,62 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         return;
       }
 
+      
+
       if (resUploadData && file) {
 
-        const resUpdateDetailCard = await updateDetailCard(resUploadData);
+        if (resUploadData !== '0') {
 
-        const folderName = '';
-        const collection = 'users';
-        const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
+          const folderName = '';
+          const collection = 'users';
+          const resUploadLogo = await addProfile(file, resUploadData, folderName, collection);
+          const resUpdateDetailCard = await updateDetailCard(resUploadData);
 
-        if (resUploadLogo === 200 && resUpdateDetailCard == 200) {
-          clearImageCache();
-          Swal.fire({
-            title: 'Success!',
-            text: 'เพิ่มข้อมูลสำเร็จ',
-            icon: 'success',
-          }).then(() => {
-            setShow(false);
-            nav('/ListEmployees');
-            window.location.reload();
-          })
+          if (resUploadLogo === 200 && resUpdateDetailCard == 200 || resUpdateDetailCard == 400) {
 
-          handleClose();
-        } else {
-          Swal.fire({
-            title: 'Upload Error!',
-            text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
-            icon: 'error',
-          });
+            clearImageCache();
+
+            setLoading(false);
+            const res = await Swal.fire({
+              title: 'Success!',
+              text: 'เพิ่มข้อมูลสำเร็จ',
+              icon: 'success',
+            })
+
+            if (res) {
+              setShow(false);
+              nav('/ListEmployees');
+              window.location.reload();
+            }
+
+            handleClose();
+
+          } else {
+            setLoading(false);
+            Swal.fire({
+              title: 'Upload Error!',
+              text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
+              icon: 'error',
+            });
+          }
         }
       }
 
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
-
   };
 
   const updateDetailCard = async (employeeId: string) => {
 
+    if (!TemplateBycompanyId) {
+      return 400;
+    }
+
     if (TemplateBycompanyId[0]?.status?.toString() !== '1') {
-      return;
+      return 400;
     }
 
     if (!TemplateBycompanyId || !getDataCompanyById) {
@@ -409,7 +487,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     }
     else {
       console.log('Non selected template');
-      return;
+      return 400;
     }
 
   }
@@ -452,9 +530,23 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
+      setPreviewImage(event.target.files[0]);
       setFile(event.target.files[0]);
     }
   };
+
+  function setPreviewImage(file: File) {
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedImage({
+        base64textString: reader.result as string,
+        imageName: file.name,
+        showImage: true,
+      });
+    };
+    reader.readAsDataURL(file);
+  }
 
   const clearImageCache = () => {
     if ('caches' in window) {
@@ -470,29 +562,26 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
     }
   };
 
-  async function getCompanyBranchById(CompanyId: string) {
+  const getCompanyBranchById = useCallback(async (CompanyId: string) => {
     const res = await companyapi.getCompanyBranchById(CompanyId);
     setDataBranchesById(res);
-    setIsFetch(true);
-  }
+  }, [companyapi]);
 
-  async function GetDepartmentByCompanyId(CompanyId: string) {
+  const GetDepartmentByCompanyId = useCallback(async (CompanyId: string) => {
     const res = await companyapi.getDepartmentNotHrByCompanyId(CompanyId);
     setDataDepartmentById(res);
-    setIsFetch(true);
-  }
+  }, [companyapi]);
 
-  async function getTemplateByCompanyId(CompanyId: string) {
+  const getTemplateByCompanyId = useCallback(async (CompanyId: string) => {
     const res = await templateapi.getTemplateUsedByCompanyId(CompanyId);
     setTemplateBycompanyId(res);
-    setIsFetch(true);
-  }
+  }, [templateapi]);
 
-  async function getUrlLogoCompany(CompanyId: string) {
+  const getUrlLogoCompany = useCallback(async (CompanyId: string) => {
     const resGetdataDetail = await companyapi.GetDataCompanyById(CompanyId);
     setGetDataCompanyById(resGetdataDetail);
-    setIsFetch(true);
-  }
+  }, [companyapi]);
+
 
   useEffect(() => {
 
@@ -504,6 +593,7 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
         const CompanyId = parsedData.companyId;
 
         if (CompanyId) {
+          setIsFetch(true);
           getCompanyBranchById(CompanyId);
           GetDepartmentByCompanyId(CompanyId);
           getTemplateByCompanyId(CompanyId);
@@ -512,16 +602,12 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
       }
     }
 
-  }, [isFetch]);
+  }, [isFetch, GetDepartmentByCompanyId, getCompanyBranchById, getTemplateByCompanyId, getUrlLogoCompany]);
 
 
 
   return (
     <>
-      {/* <Button variant="success" onClick={handleShow}>
-        เพิ่มข้อมูลพนักงาน
-      </Button> */}
-
       <div onClick={handleShow} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
         <svg className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
           <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
@@ -531,165 +617,289 @@ const AddEmployees: React.FC<AddHrProps> = ({ isFetch, setIsFetch }) => {
 
       <Modal show={show} onHide={handleClose} animation={false}>
         <Modal.Header closeButton>
-          <Modal.Title>เพิ่มพนักงานฝ่ายบุคคล</Modal.Title>
+          <Modal.Title>เพิ่มข้อมูลพนักงานบริษัท</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <form onSubmit={uploadData}>
-            <Form.Label htmlFor="firstname">ชื่อ</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="firstname"
-              required />
-            <br />
-            <Form.Label htmlFor="lastname">นามสกุล</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="lastname"
-              required />
-            <br />
-            <Form.Label htmlFor="email">อีเมล</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="email"
-              required />
-            <br />
-            <Form.Label htmlFor="password">รหัสผ่าน</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="password"
-              required />
-            <br />
-            <p>เพศ</p>
-            <Form.Select
-              required
-              aria-label="เลือกเพศ"
-              onChange={handleGender}
-              value={genderValue}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option value="">เลือกเพศ</option>
-              <option value="male">ชาย</option>
-              <option value="female">หญิง</option>
-            </Form.Select>
-            <br />
-            <Form.Label htmlFor="birthdate">วันเกิด</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="datetime-local"
-              id="birthdate"
-              required />
-            <br />
-            <Form.Label htmlFor="phone">เบอร์โทร</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="phone"
-              required />
-            <br />
-            <Form.Label htmlFor="subdistrict">ตำบล</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="subdistrict"
-              required />
-            <br />
-            <Form.Label htmlFor="district">อำเภอ</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="district"
-              required />
-            <br />
-            <Form.Label htmlFor="province">จังหวัด</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="province"
-              required />
-            <br />
-            <Form.Label htmlFor="country">ประเทศ</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="country"
-              required />
-            <br />
-            <p>สาขาบริษัท</p>
-            {dataBranchesById && (
-              <Form.Select
-                onChange={handleBranches}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          <form onSubmit={uploadData} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="col-span-1">
+              <Form.Label htmlFor="firstname">ชื่อ</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="firstname"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="lastname">นามสกุล</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="lastname"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="email">อีเมล</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="email"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="position">ตำแหน่งงาน</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="position"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <p>เพศ</p>
+              <select
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                onChange={handleGender}
+                value={genderValue}
                 required
               >
-                <option value="">เลือกสาขาบริษัท</option>
-                {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
-                  <option key={index} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </Form.Select>
-            )}
-            <br />
-            <p>แผนกบริษัท</p>
-            {dataDepartmentById && (
-              <Form.Select
-                onChange={handleDepartment}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                <option value="">เลือกเพศ</option>
+                <option value="ชาย">ชาย</option>
+                <option value="หญิง">หญิง</option>
+              </select>
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="birthdate">วันเกิด</Form.Label>
+              <input
+                type="date"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="birthdate"
                 required
-              >
-                <option value="">เลือกแผนกบริษัท</option>
-                {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
-                  <option key={index} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </Form.Select>
-            )}
-            <br />
-            <Form.Label htmlFor="position">ตำแหน่ง</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="text"
-              id="position"
-              required />
-            <br />
-            <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
-            <Form.Control
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              type="datetime-local"
-              id="startwork"
-              required />
-            <br />
-            <div className="container mt-1">
-              <h4>รูปประจำตัวพนักงาน</h4>
-              <label>
-                <input className="btn btn-primary" type="file" id='selectImg' onChange={handleFileChange} />
-              </label>
-              {imageData.showImage && (
-                <div>
-                  <img
-                    src={imageData.base64textString}
-                    alt={imageData.imageName}
-                    style={{ maxWidth: '100%' }} />
-                </div>
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="phone">เบอร์โทร</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="phone"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="subdistrict">ตำบล</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="subdistrict"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="district">อำเภอ</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="district"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="province">จังหวัด</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="province"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="country">ประเทศ</Form.Label>
+              <input
+                type="text"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="country"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <p>สาขาบริษัท</p>
+              {dataBranchesById.length > 0 ? (
+                <select
+                  required
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  onChange={handleBranches}
+                >
+                  <option value="">เลือกสาขาบริษัท</option>
+                  {dataBranchesById.map((item: GetCompanyBranchesById, index: number) => (
+                    <option key={index} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  <option value="">ไม่มีข้อมูลสาขาบริษัท</option>
+                </select>
               )}
-              <br />
             </div>
-            <div className="flex justify-end mt-4">
-              <Button variant="secondary" onClick={handleClose}>
-                ยกเลิก
-              </Button>
-              &nbsp;
-              <Button variant="primary" type='submit'>
-                ตกลง
-              </Button>
+
+            <div className="col-span-1">
+              <p>แผนกบริษัท</p>
+              {dataDepartmentById.length > 0 ? (
+                <select
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  onChange={handleDepartment}
+                  required
+                >
+                  <option value="">เลือกแผนกบริษัท</option>
+                  {dataDepartmentById.map((item: GetDepartmentByComId, index: number) => (
+                    <option key={index} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  <option value="">ไม่มีข้อมูลแผนก</option>
+                </select>
+              )}
             </div>
+
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
+              <input
+                type="date"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="startwork"
+                required
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Form.Label htmlFor="password">รหัสผ่าน</Form.Label>
+              <input
+                type={showPass ? "text" : "password"}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                id="password"
+                value={password}
+                onChange={handlePasswordChange}
+                required
+              />
+              <label className="flex items-center pt-2 pl-2">
+                <input onClick={handleShowPassword} id="showpass" type="checkbox" className="mr-2" />
+                <span className="text-muted-foreground">Show Password</span>
+              </label>
+              <div id="message" style={{ paddingLeft: '0px' }}>
+                <br />
+                <p id="letter" className={validations.lowercase ? 'valid' : 'invalid'}>
+                  <b>- ตัวพิมพ์เล็ก (a-z)</b>
+                  {validations.lowercase && <i className="fas fa-check icon"></i>}
+                  {!validations.lowercase && <i className="fas fa-times icon"></i>}
+                </p>
+                <p id="capital" className={validations.uppercase ? 'valid' : 'invalid'}>
+                  <b>- ตัวพิมพ์ใหญ่ (A-Z)</b>
+                  {validations.uppercase && <i className="fas fa-check icon"></i>}
+                  {!validations.uppercase && <i className="fas fa-times icon"></i>}
+                </p>
+                <p id="number" className={validations.number ? 'valid' : 'invalid'}>
+                  <b>- ตัวเลข (0-9)</b>
+                  {validations.number && <i className="fas fa-check icon"></i>}
+                  {!validations.number && <i className="fas fa-times icon"></i>}
+                </p>
+                <p id="length" className={validations.length ? 'valid' : 'invalid'}>
+                  <b>- ความยาวรหัสผ่าน 8 ตัว</b>
+                  {validations.length && <i className="fas fa-check icon"></i>}
+                  {!validations.length && <i className="fas fa-times icon"></i>}
+                </p>
+              </div>
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <div className="container mt-1">
+                <h4>รูปประจำตัวพนักงาน</h4>
+                <br />
+                <label>
+                  <input
+                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    type="file"
+                    id='selectImg'
+                    onChange={handleFileChange}
+                    ref={backgroundInputRef}
+                  />
+                </label>
+                {imageData.showImage && (
+                  <div>
+                    <img
+                      src={imageData.base64textString}
+                      alt={imageData.imageName}
+                      style={{ maxWidth: '100%' }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <div id="preview-logo">
+                {selectedImage.showImage ? (
+                  <><Card style={{ width: '15rem', textAlign: 'center' }}>
+                    <Card.Body>
+                      <Card.Title style={{ fontSize: '15px' }}>Preview Image</Card.Title>
+                      <div className="image-preview">
+                        <img src={selectedImage.base64textString} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+                      </div>
+                    </Card.Body>
+                  </Card><div onClick={handleRemoveImage}>
+                      <Button disabled={loading} variant="danger">Remove Image</Button>
+                    </div></>
+                ) : (
+                  <p></p>
+                )}
+              </div>
+            </div>
+
+            <div className="md:col-span-2 flex justify-end mt-6">
+              <Button
+                id='submitButton'
+                variant="success"
+                type="submit" disabled={loading}>ตกลง</Button>
+            </div>
+            <br />
+            {loading ?
+              <div className='flex justify-content-end'>
+                <h1>กำลังตรวจสอบข้อมูล </h1>
+                &nbsp;
+                <l-tail-chase
+                  size="15"
+                  speed="1.75"
+                  color="black"
+                ></l-tail-chase>
+              </div>
+              : <div>
+              </div>}
+
             <canvas ref={canvasRef} style={{ display: 'none' }} />
           </form>
+
         </Modal.Body>
       </Modal>
     </>

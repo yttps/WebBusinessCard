@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import Header from '../Header/Header'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import HeaderAdmin from '../Header/HeaderAdmin'
 import { GeneralUserApi } from '@/ApiEndpoints/GeneralUserApi';
 import { Row, Col } from 'react-bootstrap';
 import { GetAllGeneralUser } from '@/Model/GetAllGeneralUser';
@@ -8,8 +8,7 @@ import { Link, NavLink } from 'react-router-dom';
 function ListGeneralUser() {
 
     const [searchQuery, setSearchQuery] = useState('');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const generalUserApi = new GeneralUserApi();
+    const generalUserApi = useMemo(() => new GeneralUserApi(), []);
     const [dataFetched, setDataFetched] = useState(false);
     const [dataGeneralUsers, setDataGeneralUsers] = useState<GetAllGeneralUser[]>([]);
     const [selectedDateRange, setSelectedDateRange] = useState<string>('Last 30 days');
@@ -27,7 +26,7 @@ function ListGeneralUser() {
         setDropdownVisible(false);
     };
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const response = await generalUserApi.GetAllGeneralUsers(); //get by generalusers not form company
             setDataGeneralUsers(response);
@@ -38,32 +37,72 @@ function ListGeneralUser() {
         } catch (error) {
             console.error('Error fetching general users:', error);
         }
-    };
+    }, [generalUserApi, dataGeneralUsers]);
 
     const filteredData = dataGeneralUsers.filter((generalUsers) =>
         generalUsers?.firstname.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    useEffect(() => {
-        if (!dataFetched) {
-            fetchData();
-        }
-    }, [dataFetched]);
-
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
     const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-    console.log(currentItems);
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
     const handleClick = (pageNumber: number) => {
         setCurrentPage(pageNumber);
     };
 
+    useEffect(() => {
+        if (!dataFetched) {
+            fetchData();
+        }
+    }, [dataFetched, fetchData]);
+
+    if (!dataFetched) {
+        return (
+            <>
+                <div>
+                    <HeaderAdmin />
+                    <br />
+                    <div>
+                        <Row>
+                            <Col xs={2} style={{ height: '100wh' }}>
+                                <div className="relative overflow-x-auto shadow-md sm:rounded-lg flex justify-center pt-2">
+                                    <div className='flex justify-content-center justify-content-around'>
+                                        <p className='text-xxl'>Loading data</p>
+                                        &nbsp;
+                                        <l-tail-chase
+                                            size="18"
+                                            speed="1.75"
+                                            color="black"
+                                        ></l-tail-chase>
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col xs={10}>
+                                <div className="relative overflow-x-auto shadow-md sm:rounded-lg flex justify-center pt-2">
+                                    <div className='flex justify-content-center justify-content-around'>
+                                        <p className='text-xxl'>Loading data</p>
+                                        &nbsp;
+                                        <l-tail-chase
+                                            size="20"
+                                            speed="1.75"
+                                            color="black"
+                                        ></l-tail-chase>
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+
     return (
         <>
-            <Header />
+            <HeaderAdmin />
             <br />
             <div>
                 <Row>
@@ -172,13 +211,13 @@ function ListGeneralUser() {
                                             type="text"
                                             id="table-search"
                                             className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Search for items"
+                                            placeholder="Search by name..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                         />
                                     </div>
                                 </div>
-                                {filteredData.length > 0 ? (
+                                {currentItems.length > 0 ? (
                                     <><table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                             <tr>
@@ -200,7 +239,7 @@ function ListGeneralUser() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredData.map((item: GetAllGeneralUser, index: number) => (
+                                            {currentItems.map((item: GetAllGeneralUser, index: number) => (
                                                 <tr
                                                     key={index}
                                                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -255,8 +294,10 @@ function ListGeneralUser() {
                                             <br />
                                         </div></>
                                 ) : (
-                                    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                        <p>Not Found Data Company</p>
+                                    <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
+                                        <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{width: '50%'}}/>
+                                        <br />
+                                        {/* <button>s</button> */}
                                     </div>
                                 )}
                             </div>

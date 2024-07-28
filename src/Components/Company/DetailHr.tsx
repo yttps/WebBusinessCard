@@ -11,6 +11,7 @@ import { GetDepartmentByComId } from '@/Model/GetDepartmentByComId';
 import { GetTemplateCompanyId } from '@/Model/GetTemplateCompanyId';
 import { TemplateApi } from '@/ApiEndpoints/TemplateApi';
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
+import { Button } from 'react-bootstrap';
 
 
 export default function DetailHr() {
@@ -39,97 +40,176 @@ export default function DetailHr() {
     const [district, setDistrict] = useState('');
     const [province, setProvince] = useState('');
     const [country, setCountry] = useState('');
-
     const [file, setFile] = useState<File | null>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const backgroundInputRef = useRef<HTMLInputElement>(null);
+    const [password, setPassword] = useState('');
+    const [validations, setValidations] = useState({
+        lowercase: false,
+        uppercase: false,
+        number: false,
+        length: false,
+    });
+    const [loadingData, setLoadingData] = useState(false);
+    const [showPass, setShowPass] = useState(false);
 
-    const [imageData] = useState({
+    console.log('new pass', password);
+
+    const [imageData, setImageData] = useState({
         base64textString: '',
         imageName: '',
         showImage: false,
     });
 
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-            setFile(event.target.files[0]);
+
+    const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+        const newPassword = event.target.value;
+
+
+        if (hrById?.password) {
+
+            setPassword(newPassword);
+            validatePassword(newPassword || hrById.password);
+            setHrById({ ...hrById, password: event.target.value });
         }
     };
 
+    function handleRemoveImage() {
+        setImageData({
+            base64textString: '',
+            imageName: '',
+            showImage: false,
+        });
+        setFile(null);
+
+        if (backgroundInputRef.current) {
+            backgroundInputRef.current.value = "";
+        }
+    }
+
+    const validatePassword = (password: string) => {
+
+
+        const lowerCaseRegex = /[a-z]/;
+        const upperCaseRegex = /[A-Z]/;
+        const numberRegex = /\d/;
+        const lengthRegex = /.{8,}/;
+
+        setValidations({
+            lowercase: lowerCaseRegex.test(password),
+            uppercase: upperCaseRegex.test(password),
+            number: numberRegex.test(password),
+            length: lengthRegex.test(password),
+        });
+    };
+
+    function handleShowPassword() {
+
+        setShowPass(!showPass);
+
+    }
+
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setFile(event.target.files[0]);
+            setPreviewImage(event.target.files[0]);
+        }
+    };
+
+    function setPreviewImage(file: File) {
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImageData({
+                base64textString: reader.result as string,
+                imageName: file.name,
+                showImage: true,
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
     async function SaveDetails(e: React.FormEvent<HTMLFormElement>, HRId: string) {
 
+        e.preventDefault();
+        const submitButton = document.getElementById("submitButton") as HTMLButtonElement;
+
+        const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
+        const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
+        const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
+        const birthdayElement = document.getElementById('birthdayEdit') as HTMLInputElement;
+        const startworkElement = document.getElementById('startworkEdit') as HTMLInputElement;
+        const subdistrictElement = document.getElementById('subdistrictEdit') as HTMLInputElement;
+        const districtElement = document.getElementById('districtEdit') as HTMLInputElement;
+        const provinceElement = document.getElementById('provinceEdit') as HTMLInputElement;
+        const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
+        const telElement = document.getElementById('telEdit') as HTMLInputElement;
+        const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
+        const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
+
+        const formEdit = {
+            firstname: firstnameElement.value !== '' ? firstnameElement.value : hrById?.firstname ?? '',
+            lastname: lastnameElement.value !== '' ? lastnameElement.value : hrById?.lastname ?? '',
+            position: positionElement.value !== '' ? positionElement.value : hrById?.position ?? '',
+            gender: genderValue !== '' ? genderValue : hrById?.gender ?? '',
+            birthdate: birthdayElement.value !== '' ? birthdayElement.value : hrById?.birthdate ?? '',
+            startwork: startworkElement.value !== '' ? startworkElement.value : hrById?.startwork ?? '',
+            subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
+            district: districtElement.value !== '' ? districtElement.value : district ?? '',
+            province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
+            country: countryElement.value !== '' ? countryElement.value : country ?? '',
+            phone: telElement.value !== '' ? telElement.value : hrById?.phone ?? '',
+            email: emailElement.value !== '' ? emailElement.value : hrById?.email ?? '',
+            password: passwordElement.value !== '' ? passwordElement.value : hrById?.password ?? '',
+            branch: branchValue !== '' ? branchValue : hrById?.companybranch?.id ?? '',
+            department: departmentValue !== '' ? departmentValue : hrById?.department.id ?? ''
+        };
+
+        console.log('formEdit check before update', formEdit);
+
+        const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
+        const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+        const phoneRegex = /^\d+$/;
+
+        if (!allValuesNotNull) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
+                icon: 'error',
+            });
+            return;
+        }
+
+        if (passwordElement.value.length < 6) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
+                icon: 'error',
+            });
+            return;
+        }
+        if (!emailRegex.test(emailElement.value)) {
+            Swal.fire({
+                title: 'Add Data Error!',
+                text: 'อีเมลต้องมี "@" และ ".com"',
+                icon: 'error',
+            });
+            return;
+        }
+        if (!phoneRegex.test(telElement.value)) {
+            Swal.fire({
+                title: 'Add Data Error!',
+                text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+                icon: 'error',
+            });
+            return;
+        }
+
+        setLoadingData(true);
+        submitButton.style.visibility = 'hidden';
+
         try {
-
-            e.preventDefault();
-            const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
-            const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
-            const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
-            const birthdayElement = document.getElementById('birthdayEdit') as HTMLInputElement;
-            const startworkElement = document.getElementById('startworkEdit') as HTMLInputElement;
-            const subdistrictElement = document.getElementById('subdistrictEdit') as HTMLInputElement;
-            const districtElement = document.getElementById('districtEdit') as HTMLInputElement;
-            const provinceElement = document.getElementById('provinceEdit') as HTMLInputElement;
-            const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
-            const telElement = document.getElementById('telEdit') as HTMLInputElement;
-            const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
-            const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
-
-            const formEdit = {
-                firstname: firstnameElement.value !== '' ? firstnameElement.value : hrById?.firstname ?? '',
-                lastname: lastnameElement.value !== '' ? lastnameElement.value : hrById?.lastname ?? '',
-                position: positionElement.value !== '' ? positionElement.value : hrById?.position ?? '',
-                gender: genderValue !== '' ? genderValue : hrById?.gender ?? '',
-                birthdate: birthdayElement.value !== '' ? birthdayElement.value : hrById?.birthdate ?? '',
-                startwork: startworkElement.value !== '' ? startworkElement.value : hrById?.startwork ?? '',
-                subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
-                district: districtElement.value !== '' ? districtElement.value : district ?? '',
-                province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
-                country: countryElement.value !== '' ? countryElement.value : country ?? '',
-                phone: telElement.value !== '' ? telElement.value : hrById?.phone ?? '',
-                email: emailElement.value !== '' ? emailElement.value : hrById?.email ?? '',
-                password: passwordElement.value !== '' ? passwordElement.value : hrById?.password ?? '',
-                branch: branchValue !== '' ? branchValue : hrById?.companybranch?.id ?? '',
-                department: departmentValue !== '' ? departmentValue : hrById?.department.id ?? ''
-            };
-
-            console.log('formEdit check before update', formEdit);
-
-            const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
-            const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
-            const phoneRegex = /^\d+$/;
-
-            if (!allValuesNotNull) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
-                    icon: 'error',
-                });
-                return;
-            }
-
-            if (passwordElement.value.length < 6) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
-                    icon: 'error',
-                });
-                return;
-            }
-            if (!emailRegex.test(emailElement.value)) {
-                Swal.fire({
-                    title: 'Add Data Error!',
-                    text: 'อีเมลต้องมี "@" และ ".com"',
-                    icon: 'error',
-                });
-                return;
-            }
-            if (!phoneRegex.test(telElement.value)) {
-                Swal.fire({
-                    title: 'Add Data Error!',
-                    text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-                    icon: 'error',
-                });
-                return;
-            }
 
             const resUpdateData = await hrapi.updateDataHR(
                 formEdit.firstname,
@@ -163,14 +243,34 @@ export default function DetailHr() {
 
                     if (resUploadLogo == 200 && resUpdateDetailCard == 200) {
 
-                        Swal.fire({
+                        setLoadingData(false);
+
+                        const res = await Swal.fire({
                             title: 'Success!',
                             text: 'อัปเดทข้อมูลและรูปสำเร็จ!',
                             icon: 'success',
-                        }).then(() => {
+                        });
+
+                        if (res) {
                             nav('/ListHr');
                             window.location.reload();
+                        }
+                    }
+
+                    if (resUploadLogo == 200 && resUpdateDetailCard == 400) {
+
+                        setLoadingData(false);
+
+                        const res = await Swal.fire({
+                            title: 'Success!',
+                            text: 'อัปเดทข้อมูลและรูปสำเร็จ!',
+                            icon: 'success',
                         });
+
+                        if (res) {
+                            nav('/ListHr');
+                            window.location.reload();
+                        }
                     }
                 }
 
@@ -180,25 +280,31 @@ export default function DetailHr() {
                     const resUpdateDetailCard = await updateDetailCard();
                     console.log('check1', resUpdateDetailCard);
 
-                    if (resUpdateDetailCard == 200) {
+                    if (resUpdateDetailCard == 200 || resUpdateDetailCard == 400) {
+
+                        setLoadingData(false);
 
                         console.log('check2', resUpdateDetailCard);
 
-                        Swal.fire({
+                        const res = await Swal.fire({
                             title: 'Success!',
                             text: 'อัปเดทข้อมูลสำเร็จ!',
                             icon: 'success',
-                        }).then(() => {
+                        });
+
+                        if (res) {
                             nav('/ListHr');
                             window.location.reload();
-                        });
+                        }
                     }
                 }
-
             }
 
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoadingData(false);
+            submitButton.style.visibility = 'hidden';
         }
     }
 
@@ -253,6 +359,9 @@ export default function DetailHr() {
 
     const DeleteHrData = async (): Promise<void> => {
 
+        const deleteBtn = document.getElementById("deleteBtn") as HTMLButtonElement;
+        const editBtn = document.getElementById("editBtn") as HTMLButtonElement;
+
         if (!hrById) return;
 
         try {
@@ -267,15 +376,28 @@ export default function DetailHr() {
             });
 
             if (result.isConfirmed) {
+
+                setLoadingData(true);
+
+                deleteBtn.style.visibility = 'hidden';
+                editBtn.style.visibility = 'hidden';
+
                 const response = await hrapi.DeleteHr(hrById.id);
 
                 if (response == 200) {
-                    await Swal.fire({
+
+                    setLoadingData(false);
+                    
+                    const res = await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
                         icon: 'success',
                     });
-                    nav('/ListHr', { replace: true });
+
+                    if (res) {
+                        nav('/ListHr', { replace: true });
+                    }
+
                 }
             }
         } catch (error) {
@@ -292,8 +414,12 @@ export default function DetailHr() {
 
     async function updateDetailCard() {
 
+        if (!TemplateBycompanyId) {
+            return 400;
+        }
+
         if (TemplateBycompanyId[0]?.status?.toString() !== '1') {
-            return;
+            return 400;
         }
 
         if (!TemplateBycompanyId || !getDataCompanyById) {
@@ -478,7 +604,7 @@ export default function DetailHr() {
         }
         else {
             console.log('Non selected template');
-            return;
+            return 400;
         }
 
     }
@@ -573,9 +699,46 @@ export default function DetailHr() {
 
     }, [isFetch, getCompanyBranchById, GetDepartmentByCompanyId, getTemplateByCompanyId, getUrlLogoCompany]);
 
+    useEffect(() => {
+
+        if (hrById?.password) {
+            validatePassword(hrById.password);
+        }
+        console.log('is loading', isLoading);
+
+    }, [hrById?.password, isLoading]);
+
 
     if (!hrById) {
-        return <div>No company data found.</div>;
+        return (
+            <div>
+                <Header />
+                <br />
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className='pr-5'>Loading data</p>
+                                <l-tail-chase
+                                    size="30"
+                                    speed="1.75"
+                                    color="black"
+                                ></l-tail-chase>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <p className='pr-5'>Loading data</p>
+                            <l-tail-chase
+                                size="30"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (update) {
@@ -620,7 +783,6 @@ export default function DetailHr() {
                                         <select
                                             id="genderEdit"
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            //onChange={handleGender}
                                             value={hrById.gender ? hrById.gender : genderValue}
                                             onChange={(e) => setHrById({ ...hrById, gender: e.target.value })}
                                         >
@@ -752,48 +914,118 @@ export default function DetailHr() {
                                         <br />
                                         <p className="text-muted-foreground">รหัสผ่าน:</p>
                                         <input
-                                            onChange={(e) => setHrById({ ...hrById, password: e.target.value })}
+                                            // onChange={(e) => setHrById({ ...hrById, password: e.target.value })}
                                             value={hrById.password || ''}
-                                            type="text" id="passwordEdit"
+                                            type={showPass ? "text" : "password"}
+                                            id="passwordEdit"
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder={hrById.password} />
-                                        <br />
-                                        <br />
-                                        <p className="text-muted-foreground">รูปประจำตัวพนักงาน:</p>
-                                        <label>
-                                            <input
-                                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                                type="file"
-                                                id='selectImg'
-                                                onChange={handleFileChange}
-                                            />
+                                            placeholder={hrById.password}
+                                            onChange={handlePasswordChange} />
+                                        <label className="flex items-center pt-2 pl-2">
+                                            <input onClick={handleShowPassword} id="showpass" type="checkbox" className="mr-2" />
+                                            <span className="text-muted-foreground">Show Password</span>
                                         </label>
-                                        {imageData.showImage ? (
-                                            <div>
-                                                <img
-                                                    src={imageData.base64textString}
-                                                    alt={imageData.imageName}
-                                                    style={{ maxWidth: '100%' }}
+                                        <div id="message" style={{ paddingLeft: '0px' }}>
+                                            <br />
+                                            <p id="letter" className={validations.lowercase ? 'valid' : 'invalid'}>
+                                                <b>- ตัวพิมพ์เล็ก (a-z)</b>
+                                                {validations.lowercase && <i className="fas fa-check icon"></i>}
+                                                {!validations.lowercase && <i className="fas fa-times icon"></i>}
+                                            </p>
+                                            <p id="capital" className={validations.uppercase ? 'valid' : 'invalid'}>
+                                                <b>- ตัวพิมพ์ใหญ่ (A-Z)</b>
+                                                {validations.uppercase && <i className="fas fa-check icon"></i>}
+                                                {!validations.uppercase && <i className="fas fa-times icon"></i>}
+                                            </p>
+                                            <p id="number" className={validations.number ? 'valid' : 'invalid'}>
+                                                <b>- ตัวเลข (0-9)</b>
+                                                {validations.number && <i className="fas fa-check icon"></i>}
+                                                {!validations.number && <i className="fas fa-times icon"></i>}
+                                            </p>
+                                            <p id="length" className={validations.length ? 'valid' : 'invalid'}>
+                                                <b>- ความยาวรหัสผ่าน 8 ตัว</b>
+                                                {validations.length && <i className="fas fa-check icon"></i>}
+                                                {!validations.length && <i className="fas fa-times icon"></i>}
+                                            </p>
+                                            <br />
+                                            <br />
+                                            <p className="text-muted-foreground">รูปประจำตัวพนักงาน:</p>
+                                            <label>
+                                                <input
+                                                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                                    type="file"
+                                                    id='selectImg'
+                                                    onChange={handleFileChange}
+                                                    ref={backgroundInputRef}
                                                 />
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <br />
-                                                <p>รูปประจำตัวพนักงาน :</p>
-                                                <br />
-                                                <img src={hrById.profile || ''} alt="" />
-                                            </div>
-                                        )}
-                                        <br />
+                                            </label>
+
+                                            {imageData.showImage ? (
+
+                                                <div>
+                                                    <br />
+                                                    <p>รูปประจำตัวพนักงานใหม่ :</p>
+                                                    <br />
+                                                    <img src={imageData.base64textString} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+                                                    <div onClick={handleRemoveImage}>
+                                                        <Button variant="danger">Remove Image</Button>
+                                                    </div>
+                                                </div>
+
+                                            ) : (
+
+                                                <div>
+                                                    <br />
+                                                    <p>รูปประจำตัวพนักงานที่มีอยู่แล้ว :</p>
+                                                    <br />
+                                                    <img src={hrById.profile || ''} alt="" />
+                                                </div>
+
+                                            )}
+
+                                            <br />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                         <div className="flex justify-end mt-4">
-                            <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
+                            {!loadingData ? (
+                                <button
+                                    type="button"
+                                    onClick={() => nav('/ListHr')}
+                                    className="bg-gray-500 text-red-50 hover:bg-gray-600 py-2 px-4 rounded-lg"
+                                >
+                                    ยกเลิก
+                                </button>
+                            ) : (
+                                <div></div>
+                            )}
                             &nbsp;
-                            <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={editDetails}>ยกเลิก</button>
+                            <button
+                                id="submitButton"
+                                type="submit"
+                                disabled={loadingData}
+                                className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg"
+                            >
+                                ตกลง
+                            </button>
                         </div>
+                        <br />
+
+                        {loadingData ?
+                            <div className='flex justify-content-end'>
+                                <h1>กำลังตรวจสอบข้อมูล </h1>
+                                &nbsp;
+                                <l-tail-chase
+                                    size="15"
+                                    speed="1.75"
+                                    color="black"
+                                ></l-tail-chase>
+                            </div>
+                            : <div></div>}
+
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
                     </form>
                 </div>
@@ -862,16 +1094,36 @@ export default function DetailHr() {
                                     <br />
                                     <br />
                                     <p className="text-muted-foreground">นามบัตร:</p>
-                                    <img src={hrById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
+                                    {hrById.business_card ? (
+                                        <img src={hrById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
+                                    ) : (
+                                        <>
+                                            <div className='pl-3'>
+                                                <br />
+                                                <p className="text-muted-foreground">ยังไม่ได้สร้างนามบัตรหรือไม่ได้เลือกเทมเพลต</p>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="flex justify-end mt-4">
-                        <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteHrData}>ลบข้อมูล</button>
+                        <button id='deleteBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteHrData}>ลบข้อมูล</button>
                         &nbsp;
-                        <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={editDetails}>แก้ไขข้อมูล</button>
+                        <button id='editBtn' className="bg-yellow-500 text-red-50 hover:bg-yellow-600 py-2 px-4 rounded-lg" onClick={editDetails}>แก้ไขข้อมูล</button>
                     </div>
+                    {loadingData ?
+                        <div className='flex justify-content-end'>
+                            <h1>กำลังตรวจสอบข้อมูล </h1>
+                            &nbsp;
+                            <l-tail-chase
+                                size="15"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                        : <div></div>}
                 </div>
             </div>
         </>

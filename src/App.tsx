@@ -3,7 +3,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Route, Routes } from 'react-router-dom';
 import Login from '@/Components/Login/Login';
 import Register from '@/Components/Register/Register';
-
 import ListCompany from '@/Components/Admin/ListCompany'; // ตรวจสอบการ import
 import ListHr from '@/Components/Company/ListHr';
 import ListGeneralUser from '@/Components/Admin/ListGeneralUser';
@@ -21,7 +20,7 @@ import ApprovalCompany from './Components/Admin/ApprovalCompany';
 import DetailCompanyAppproval from './Components/Admin/DetailCompanyAppproval';
 import EditCompany from './Components/Employees/EditCompany';
 
-function App() {
+const App = () => {
 
   return (
     <>
@@ -44,8 +43,6 @@ function App() {
         <Route path="/ApprovalCompany" element={<ApprovalCompany />} />
         <Route path="/ApprovalCompany/:id" element={<DetailCompanyAppproval />} />
         <Route path="/EditCompany" element={<EditCompany />} />
-
-
       </Routes>
     </>
   )

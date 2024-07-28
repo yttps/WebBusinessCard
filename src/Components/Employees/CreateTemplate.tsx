@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, ChangeEvent, useCallback, useMemo }
 import '@/Components/Employees/CSS/createTemplate.css'
 import Header from "@/Components/Header/Header";
 
-import { Card, Form } from 'react-bootstrap';
+import { Card, Col, Form, Row } from 'react-bootstrap';
 import CIcon from '@coreui/icons-react';
 import * as icon from '@coreui/icons';
 import { TemplateApi } from "@/ApiEndpoints/TemplateApi";
@@ -22,12 +22,13 @@ const CreateTemplate: React.FC = () => {
   const [background, setBackground] = useState<File | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | ''>('');
   const [selectedColor, setSelectedColor] = useState("#000000");
-  const [fontSize, setFontSize] = useState('30');
+  const [fontSize, setFontSize] = useState('15');
   const [canvasHistory, setCanvasHistory] = useState<(CanvasOperation | null)[]>([]);
   const [nameTemplate, setNameTemplate] = useState<string>('');
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
 
   const setNameTem = (e: ChangeEvent<HTMLFormElement>) => {
     console.log(e.target.value);
@@ -69,17 +70,20 @@ const CreateTemplate: React.FC = () => {
     }
   }, [background]);
 
+  //add color for single text
   const [allPositions, setAllPositions] = useState<AllPosition>({
-    "fullname": { x: 0, y: 0 },
-    "companyName": { x: 0, y: 0 },
-    "companyAddress": { x: 0, y: 0 },
-    "position": { x: 0, y: 0 },
-    "email": { x: 0, y: 0 },
-    "phoneDepartment": { x: 0, y: 0 },
-    "phone": { x: 0, y: 0 },
-    "departmentName": { x: 0, y: 0 },
-    "logo": { x: 0, y: 0 }
+    "fullname": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "companyName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "companyAddress": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "position": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "email": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "phoneDepartment": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "phone": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "departmentName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+    "logo": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' }
   });
+
+
 
   interface CanvasOperation {
     type: 'text' | 'image';
@@ -90,6 +94,8 @@ const CreateTemplate: React.FC = () => {
   type TextPosition = {
     x: number;
     y: number;
+    fontSize: string;
+    fontColor: string;
   };
 
   type AllPosition = {
@@ -106,6 +112,8 @@ const CreateTemplate: React.FC = () => {
     "phone": "Phone personal",
     "departmentName": "Department Name"
   };
+
+
 
   //STEP 1 WHEN CLICK AND DRAGGING
   const handleDragStart = (event: React.DragEvent, item: string) => {
@@ -179,7 +187,6 @@ const CreateTemplate: React.FC = () => {
   //STEP 3 WHEN DROP OBJECT
   const handleDrop = (event: React.DragEvent) => {
     console.log('USE DRAG DROP');
-
     event.preventDefault();
 
     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
@@ -198,9 +205,7 @@ const CreateTemplate: React.FC = () => {
     const scaledY = y * scaleY;
 
     if (ctx) {
-
       if (textMappings[draggedItem]) {
-
         const draggedPosition = allPositions[draggedItem];
 
         if (draggedPosition && (draggedPosition.x !== 0 || draggedPosition.y !== 0)) {
@@ -213,20 +218,17 @@ const CreateTemplate: React.FC = () => {
         }
 
         const text = textMappings[draggedItem];
-        ctx.fillStyle = selectedColor;
+        ctx.fillStyle = selectedColor || draggedPosition.fontColor; // Use the color from the state
         ctx.textBaseline = 'middle';
-        ctx.font = fontSize + 'px Arial';
+        ctx.font = (fontSize || draggedPosition.fontSize) + 'px Bold'; // Use the size from the state
         ctx.fillText(text, scaledX + 30, scaledY + 33);
         addToCanvasHistory({ type: 'text', data: text, position: { x: scaledX + 30, y: scaledY + 33 } });
 
-
         setAllPositions(prevPositions => ({
           ...prevPositions,
-          [draggedItem]: { x: scaledX, y: scaledY + 40 },
+          [draggedItem]: { x: scaledX, y: scaledY + 40, fontSize: fontSize || draggedPosition.fontSize, fontColor: selectedColor || draggedPosition.fontColor },
         }));
-
-      } else if (draggedItem == 'image' && getLogoCompany) {
-
+      } else if (draggedItem === 'image' && getLogoCompany) {
         console.log('Image loaded, drawing at:', x, y);
 
         const draggedPosition = allPositions[draggedItem];
@@ -251,7 +253,7 @@ const CreateTemplate: React.FC = () => {
 
           setAllPositions(prevPositions => ({
             ...prevPositions,
-            ['logo']: { x: scaledX - 110, y: scaledY - 60 },
+            ['logo']: { x: scaledX - 110, y: scaledY - 60, fontSize: width.toString(), fontColor: '' },
           }));
 
           addToCanvasHistory({
@@ -263,7 +265,8 @@ const CreateTemplate: React.FC = () => {
       }
     }
     setDraggedItem('');
-  }
+  };
+
 
   // Function to add operation to canvas history
   const addToCanvasHistory = (operation: CanvasOperation) => {
@@ -278,21 +281,22 @@ const CreateTemplate: React.FC = () => {
     setBackground(null);
 
     setAllPositions({
-      "fullname": { x: 0, y: 0 },
-      "companyName": { x: 0, y: 0 },
-      "companyAddress": { x: 0, y: 0 },
-      "position": { x: 0, y: 0 },
-      "email": { x: 0, y: 0 },
-      "phoneDepartment": { x: 0, y: 0 },
-      "phone": { x: 0, y: 0 },
-      "departmentName": { x: 0, y: 0 },
-      "logo": { x: 0, y: 0 }
+      "fullname": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "companyName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "companyAddress": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "position": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "email": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "phoneDepartment": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "phone": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "departmentName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
+      "logo": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' }
     });
 
     setCanvasHistory([]);
     // Clear the canvas
     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
+
     if (ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
@@ -357,6 +361,7 @@ const CreateTemplate: React.FC = () => {
 
   const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedColor(event.target.value);
+    console.log('Color', selectedColor);
   }
 
   const handleImageBackgroundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -369,14 +374,14 @@ const CreateTemplate: React.FC = () => {
 
     if (file) {
 
-      if (file.size > 1 * 1024 * 1024) {
+      if (file.size > 5 * 1024 * 1024) {
 
         if (backgroundInputRef.current) {
 
           backgroundInputRef.current.value = "";
           Swal.fire({
             title: 'Error!',
-            text: 'โปรดเลือกไฟล์ไม่เกิน 1 MB!',
+            text: 'โปรดเลือกไฟล์ไม่เกิน 5 MB!',
             icon: 'error',
           });
 
@@ -390,6 +395,10 @@ const CreateTemplate: React.FC = () => {
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
     e.preventDefault();
+
+    const uploadBtn = document.getElementById('uploadBtn') as HTMLButtonElement;
+    const resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
+
 
     if (background && getLogoCompany) {
 
@@ -406,8 +415,12 @@ const CreateTemplate: React.FC = () => {
         return;
       }
 
+      uploadBtn.style.visibility = 'hidden';
+      resetBtn.style.visibility = 'hidden';
+      setLoading(true);
+
       const status = '0';
-      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status)
+      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor)
 
       if (uidTemplate) {
 
@@ -415,19 +428,23 @@ const CreateTemplate: React.FC = () => {
 
         if (resUrlTemplate) {
 
-          Swal.fire({
+          setLoading(false);
+          const res = await Swal.fire({
             title: 'Success!',
             text: 'สร้างเทมเพลตสำเร็จ!',
             icon: 'success',
           });
 
-          nav('/ListEmployees', { replace: true });
+          if (res) {
+            nav('/ListEmployees', { replace: true });
+            window.location.reload();
+          }
         }
-
-
       }
+
       if (!background && !logo) {
 
+        setLoading(false);
         Swal.fire({
           title: 'Error!',
           text: 'สร้างเทมเพลตล้มเหลว!',
@@ -437,6 +454,8 @@ const CreateTemplate: React.FC = () => {
       }
     }
     else {
+
+      setLoading(false);
       Swal.fire({
         title: 'Error!',
         text: 'โปรดเลือกพื้นหลัง!',
@@ -446,11 +465,12 @@ const CreateTemplate: React.FC = () => {
     }
   }
 
-  const uploadTemplateCompany = async (nameTemplate: string, getCompanyId: string, allPositions: AllPosition, status: string): Promise<string | undefined> => {
+  const uploadTemplateCompany = async (nameTemplate: string, getCompanyId: string, allPositions: AllPosition,
+    status: string, fontSize: string, selectedColor: string): Promise<string | undefined> => {
 
     try {
 
-      const res = await templateapi.uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status);
+      const res = await templateapi.uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor);
 
       return res;
 
@@ -504,10 +524,11 @@ const CreateTemplate: React.FC = () => {
   return (
     <>
       <Header />
-      <div className="container">
-        <div className="min-h-screen h-[160vh] rounded-lg px-3 p-6 py-4 overflow-y-hidden bg-card bg-gray-50 shadow-lg dark:bg-gray-800">
-          <div className="flex h-full w-full justify-center items-center">
-            <div className="w-1/4 h-max w-[50vh] p-4 bg-blue-500 text-white border border-solid border-gray-300">
+      <div>
+        {/* col-1*/}
+        <Row>
+          <Col>
+            <div className="bg-blue-500 text-white border border-solid border-gray-300 p-4 w-full h-full">
               <h2 className="text-lg font-bold mb-4">รายละเอียดข้อมูล</h2>
               <div className="mb-2">
                 <p className="text-muted-foreground">ชื่อเทมเพลต</p>
@@ -520,26 +541,60 @@ const CreateTemplate: React.FC = () => {
                   </Form.Group>
                 </Form>
               </div>
-              <div className="text-align-content-center md-4 grid grid-cols-2 gap-4">
+              <div className="md-4 grid grid-cols-2 gap-4">
                 {Object.keys(textMappings).map((item, index) => (
                   <div
-                    id="drag-with-colour"
                     key={index}
                     draggable
                     onDragStart={(e) => handleDragStart(e, item)}
                     className="mb-[-20px]"
                     style={{ backgroundColor: "transparent" }}>
-
                     <Card style={{ width: '12rem', textAlign: 'center', height: '5rem', margin: '0 auto' }}>
                       <Card.Body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                         <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
-                        <CIcon id='text-icon' icon={icon.cilText} size="xl" className="text-success" />
+                        <CIcon icon={icon.cilText} size="xl" className="text-success" />
                       </Card.Body>
                     </Card>
                     <br />
                   </div>
                 ))}
               </div>
+              <br />
+            </div>
+
+            {/* col-2*/}
+          </Col>
+          <Col xs={6}>
+            <div className="flex-1 bg-gray-100 border-l border-zinc-300 pl-4 pt-4 pb-5">
+              <h1 className="text-xl font-bold mb-4">Preview Template</h1>
+              <br />
+              <hr />
+              {background ? (
+                <div id="div-1">
+                  <canvas
+                    className="scroll-ml-20px ml-[20px]"
+                    id="imageCanvas"
+                    width="850px"
+                    height="410px"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}>
+                  </canvas>
+                </div>
+              ) : (
+                <div id="div-1" className="flex justify-center items-center">
+                  <img
+                    src="https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg"
+                    alt=""
+                    style={{ width: '31rem', height: '35rem', paddingTop: '5rem' }} />
+                </div>
+              )}
+            </div>
+
+
+            {/* col-3*/}
+          </Col>
+          <Col>
+            <div className="w-max bg-white border border-solid border-gray-300 p-4">
               <h2 className="text-lg font-bold mb-4">Font size & Pick Color</h2>
               <div className="md-4 grid grid-cols-2 gap-4">
                 <Card style={{ width: '12rem', textAlign: 'center' }}>
@@ -548,7 +603,7 @@ const CreateTemplate: React.FC = () => {
                     <input
                       type="range"
                       id="size-slider"
-                      min="30"
+                      min="15"
                       max="100"
                       value={fontSize}
                       onChange={handleSizeFonstChange} />
@@ -558,7 +613,8 @@ const CreateTemplate: React.FC = () => {
                 <Card style={{ width: '12rem', textAlign: 'center' }}>
                   <Card.Body>
                     <Card.Title style={{ fontSize: '15px' }}>Color</Card.Title>
-                    <input type="color"
+                    <input
+                      type="color"
                       id="colorpicker"
                       value={selectedColor}
                       onChange={handleColorChange} />
@@ -568,16 +624,13 @@ const CreateTemplate: React.FC = () => {
               <br />
               <h2 className="text-lg font-bold mb-4">Preview Logo</h2>
               <div className="flex justify-center items-center">
-                <div draggable
-                  onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
+                <div draggable onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
                   <Card style={{ width: '15rem', textAlign: 'center' }}>
                     <Card.Body>
                       <Card.Title style={{ fontSize: '15px' }}>Preview Logo</Card.Title>
                       <hr />
                       <div id="preview-logo">
-                        {getLogoCompany &&
-                          <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />
-                        }
+                        {getLogoCompany && <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />}
                       </div>
                     </Card.Body>
                   </Card>
@@ -603,40 +656,31 @@ const CreateTemplate: React.FC = () => {
                 </Card>
               </div>
               <br />
-              {/* <button onClick={handleUndo} className="bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Undo</button> */}
-              <button onClick={(e) => handleReset(e)} className="bg-danger text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Reset</button>
-              <button onClick={(e) => handleUploadTemplate(e)} className="bg-success text-primary-foreground hover:bg-primary/80 w-full py-2">Upload Template</button>
-            </div>
-            <div className="flex-1 bg-gray border-l border-zinc-300 pl-4">
-              <h1 className="text-xl font-bold mb-4">Preview Template</h1>
-              <br />
-              <hr />
-              {background ? (
-                <div id="div-1">
-                  <canvas
-                    className="scroll-ml-20px ml-[60px]"
-                    id="imageCanvas"
-                    width='850px' //850px
-                    height='410px' //410px
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}>
-                  </canvas>
+              <button id='resetBtn' onClick={handleReset} className="bg-danger text-secondary-foreground hover:bg-secondary/80 w-full py-2 mb-2">Reset</button>
+              <button id='uploadBtn' onClick={handleUploadTemplate} className="bg-success text-primary-foreground hover:bg-primary/80 w-full py-2">Upload Template</button>
+              {loading ?
+                <div className='flex justify-content-end'>
+                  <h1>กำลังตรวจสอบข้อมูล </h1>
+                  &nbsp;
+                  <l-tail-chase
+                    size="15"
+                    speed="1.75"
+                    color="black"
+                  ></l-tail-chase>
                 </div>
-              ) : (
-                <div id="div-1"
-                  className="flex justify-center items-center">
-                  <img
-                    src="https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg"
-                    alt=""
-                    style={{ width: '31rem', height: '35rem', paddingTop: '5rem' }} />
-                </div>
-              )}
+                : <div></div>}
             </div>
+          </Col>
+        </Row>
+
+
+
+        {/* <div className="min-h-screen h-[160vh] rounded-lg px-3 p-6 py-4 overflow-y-hidden bg-card bg-gray-50 shadow-lg dark:bg-gray-800">
+          <div className="grid grid-cols-3 gap-4 h-full">
           </div>
-        </div>
+        </div> */}
       </div>
     </>
-
   );
 }
 

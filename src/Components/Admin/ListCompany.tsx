@@ -1,23 +1,45 @@
-import { useState, useEffect } from 'react'
-import Header from '@/Components/Header/Header';
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import HeaderAdmin from '@/Components/Header/HeaderAdmin';
 import { Row, Col } from 'react-bootstrap';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { GetAllCompany } from '@/Model/GetAllCompany';
 import { Link, NavLink } from 'react-router-dom';
+
 
 export default function ListCompany() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [dataCompany, setDataCompany] = useState<GetAllCompany[]>([]);
     const [dataCompanyApproval, setDataCompanyApproval] = useState<GetAllCompany[]>([]);
-
+    const companyApi = useMemo(() => new CompanyApi(), []);
     const [dataFetched, setDataFetched] = useState(false);
 
     const [selectedDateRange, setSelectedDateRange] = useState<string>('Last 30 days');
     const [dropdownVisible, setDropdownVisible] = useState<boolean>(false);
-
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 5;
+
+    const getCompany = useCallback(async () => {
+        try {
+            const res = await companyApi.GetAllCompanyAccept();
+            setDataCompany(res);
+            setDataFetched(true);
+        } catch (error) {
+            console.error('Error fetching Company:', error);
+        }
+    }, [companyApi]);
+
+    const getCompanyApproval = useCallback(async () => {
+        try {
+            const res = await companyApi.GetAllCompanyNoAccept();
+            setDataCompanyApproval(res);
+            setDataFetched(true);
+        } catch (error) {
+            console.error('Error fetching Company Approval:', error);
+        }
+    }, [companyApi]);
+
+
 
     const toggleDropdown = () => {
         setDropdownVisible(!dropdownVisible);
@@ -28,56 +50,73 @@ export default function ListCompany() {
         setDropdownVisible(false);
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const companyApi = new CompanyApi();
+    const filteredData = useMemo(() => {
+        return dataCompany.filter((company) =>
+            company?.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [dataCompany, searchQuery]);
 
-    const getCompany = async () => {
-        try {
-            const res = await companyApi.GetAllCompanyAccept();
-            setDataCompany(res);
-            setDataFetched(true);
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
-        } catch (error) {
-            console.error('Error fetching Company:', error);
-        }
-    }
-
-    const getCompanyApproval = async () => {
-        try {
-            const res = await companyApi.GetAllCompanyNoAccept();
-            setDataCompanyApproval(res);
-            setDataFetched(true);
-
-        } catch (error) {
-            console.error('Error fetching Company Approval:', error);
-        }
-    }
+    const handleClick = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
 
     useEffect(() => {
         if (!dataFetched) {
             getCompany();
             getCompanyApproval();
         }
-    }, [dataFetched]);
+    }, [dataFetched, getCompany, getCompanyApproval]);
 
-    const filteredData = dataCompany.filter((company) =>
-        company?.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    if (!dataFetched) {
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
-    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-    console.log(currentItems);
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-    const handleClick = (pageNumber: number) => {
-        setCurrentPage(pageNumber);
-    };
+        return (
+            <>
+                <div>
+                    <HeaderAdmin />
+                    <br />
+                    <div>
+                        <Row>
+                            <Col xs={2} style={{ height: '100wh' }}>
+                                <div className="relative overflow-x-auto shadow-md sm:rounded-lg flex justify-center pt-2">
+                                    <div className='flex justify-content-center justify-content-around'>
+                                        <p className='text-xxl'>Loading data</p>
+                                        &nbsp;
+                                        <l-tail-chase
+                                            size="18"
+                                            speed="1.75"
+                                            color="black"
+                                        ></l-tail-chase>
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col xs={10}>
+                                <div className="relative overflow-x-auto shadow-md sm:rounded-lg flex justify-center pt-2">
+                                    <div className='flex justify-content-center justify-content-around'>
+                                        <p className='text-xxl'>Loading data</p>
+                                        &nbsp;
+                                        <l-tail-chase
+                                            size="20"
+                                            speed="1.75"
+                                            color="black"
+                                        ></l-tail-chase>
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
-            <Header />
+            <HeaderAdmin />
             <br />
             <div>
                 <Row>
@@ -195,13 +234,13 @@ export default function ListCompany() {
                                             type="text"
                                             id="table-search"
                                             className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Search for items"
+                                            placeholder="Search by name..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                         />
                                     </div>
                                 </div>
-                                {filteredData.length > 0 ? (
+                                {currentItems.length > 0 ? (
                                     <><table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                             <tr>
@@ -223,7 +262,7 @@ export default function ListCompany() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredData.map((item: GetAllCompany, index: number) => (
+                                            {currentItems.map((item: GetAllCompany, index: number) => (
                                                 <tr
                                                     key={index}
                                                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -242,7 +281,7 @@ export default function ListCompany() {
                                                 </tr>
                                             ))}
                                         </tbody>
-                                    </table><div>
+                                    </table>      <div>
                                             <nav className="flex items-center flex-column flex-wrap md:flex-row justify-between pt-4" aria-label="Table navigation">
                                                 <ul className="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
                                                     <li>
@@ -258,7 +297,8 @@ export default function ListCompany() {
                                                         <li key={i}>
                                                             <button
                                                                 onClick={() => handleClick(i + 1)}
-                                                                className={`flex items-center justify-center px-3 h-8 leading-tight ${currentPage === i + 1 ? 'text-blue-600 border border-gray-300 bg-blue-50' : 'text-gray-500 bg-white border border-gray-300'} hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white`}
+                                                                className={`flex items-center justify-center px-3 h-8 leading-tight ${currentPage === i + 1 ? 'text-blue-600 border border-gray-300 bg-blue-50' : 'text-gray-500 bg-white border border-gray-300'
+                                                                    } hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white`}
                                                             >
                                                                 {i + 1}
                                                             </button>
@@ -278,8 +318,10 @@ export default function ListCompany() {
                                             <br />
                                         </div></>
                                 ) : (
-                                    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                        <p>Not Found Data Company</p>
+                                    <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
+                                        <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
+                                        <br />
+                                        {/* <button>s</button> */}
                                     </div>
                                 )}
                             </div>

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
-import Header from '../Header/Header';
+import Header from '../Header/HeaderAdmin';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -10,12 +10,12 @@ import Swal from 'sweetalert2';
 export default function DetailCompanyAppproval() {
 
     const { id: companyId } = useParams();
-    const companyapi = new CompanyApi();
+    const companyapi = useMemo(() => new CompanyApi(), []);
     const [companyById, setCompanyById] = useState<GetDataCompanyById | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const nav = useNavigate();
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
 
             if (companyId) {
@@ -28,13 +28,12 @@ export default function DetailCompanyAppproval() {
                 setIsLoading(true);
                 console.log("Fetched response:", resGetdataDetail);
 
-
             }
         } catch (error) {
             console.error('Error fetching company data:', error);
             setIsLoading(false);
         }
-    };
+    }, [companyapi, companyId]);
 
     const AcceptCompanyData = async (companyid: string) => {
 
@@ -53,13 +52,16 @@ export default function DetailCompanyAppproval() {
             const res = await companyapi.AcceptCompanyData(companyid);
 
             if (res == 200) {
-                Swal.fire({
+
+                const confirm = await Swal.fire({
                     title: 'Success!',
                     text: 'อนุมัติข้อมูลสำเร็จ!',
                     icon: 'success',
                 });
-                nav('/ApprovalCompany', { replace: true });
 
+                if (confirm) {
+                    nav('/ApprovalCompany', { replace: true });
+                }
             }
             else {
                 Swal.fire({
@@ -93,12 +95,16 @@ export default function DetailCompanyAppproval() {
                 const response = await companyapi.DeleteCompany(companyById.id);
 
                 if (response == 200) {
-                    await Swal.fire({
+                    const res = await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
                         icon: 'success',
                     });
-                    nav('/ListCompany', { replace: true });
+
+                    if (res) {
+                        nav('/ListCompany', { replace: true });
+                    }
+
                 }
             }
         } catch (error) {
@@ -117,11 +123,39 @@ export default function DetailCompanyAppproval() {
             fetchData();
         }
 
-    }, [companyId]);
+    }, [companyId, fetchData, isLoading]);
 
 
     if (!companyById) {
-        return <div>No company data found.</div>;
+        return (
+            <div>
+                <Header />
+                <br />
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className='pr-5'>Loading data</p>
+                                <l-tail-chase
+                                    size="30"
+                                    speed="1.75"
+                                    color="black"
+                                ></l-tail-chase>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <p className='pr-5'>Loading data</p>
+                            <l-tail-chase
+                                size="30"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -163,11 +197,12 @@ export default function DetailCompanyAppproval() {
                                     <p>{companyById.password}</p>
                                 </div>
                             </div>
+                            <div className="flex justify-end mt-[15rem]">
+                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteCompanyData}>ลบข้อมูล</button>
+                                &nbsp;
+                                <button className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" onClick={() => AcceptCompanyData(companyById.id)}>อนุมัติบริษัท</button>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex justify-end mt-4">
-                        <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteCompanyData}>ลบข้อมูล</button>
-                        <button className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" onClick={() => AcceptCompanyData(companyById.id)}>อนุมัติบริษัท</button>
                     </div>
                 </div>
             </div>

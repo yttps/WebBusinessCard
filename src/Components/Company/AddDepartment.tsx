@@ -10,6 +10,7 @@ function AddDepartment() {
   const [KeepDepartments, setKeepDepartments] = useState<{ name: string; phone: string }[]>([{ name: '', phone: '' }]);
   const companyapi = new CompanyApi();
   const nav = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
     setShow(false);
@@ -40,7 +41,10 @@ function AddDepartment() {
   const uploadData = async (e: React.FormEvent<HTMLFormElement>) => {
 
     e.preventDefault();
-    //Njw9AgE4nAcRHNuNMz3Y
+
+    const cancleBtn = document.getElementById("cancleBtn") as HTMLButtonElement;
+    const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement;
+    const addDepart = document.getElementById("addDepart") as HTMLButtonElement;
 
     const phoneRegex = /^\d+$/;
     const textOnlyRegex = /^[a-zA-Z\s]+$/;
@@ -75,37 +79,58 @@ function AddDepartment() {
       return;
     }
 
-    if (KeepDepartments.length > 0) {
+    try {
 
-      const resUploadData = await addData();
+      if (KeepDepartments.length > 0) {
 
-      if (resUploadData?.every((res) => res === 200)) {
+        cancleBtn.style.visibility = 'hidden';
+        submitBtn.style.visibility = 'hidden';
+        addDepart.style.visibility = 'hidden';
+        setLoading(true);
 
+        const resUploadData = await addData();
+
+        if (resUploadData?.every((res) => res === 200)) {
+
+          setLoading(false);
+          const res = await Swal.fire({
+            title: 'Success!',
+            text: 'เพิ่มข้อมูลแผนกสำเร็จ!',
+            icon: 'success',
+          });
+
+          if (res) {
+
+            handleClose();
+            nav('/ListDetailBranchAndDepartment', { replace: true });
+            window.location.reload();
+          }
+
+        }  //แผนกซ้ำ
+        else if (resUploadData?.every((res) => res === 400)) {
+          setLoading(false);
+          Swal.fire({
+            title: 'Error!',
+            text: 'เพิ่มข้อมูลแผนกล้มเหลว!',
+            icon: 'error',
+          });
+        }
+      } else {
+        setLoading(false);
         Swal.fire({
-          title: 'Success!',
-          text: 'เพิ่มข้อมูลแผนกสำเร็จ!',
-          icon: 'success',
-        }).then(() => {
-          handleClose();
-          nav('/ListDetailBranchAndDepartment');
-          window.location.reload();
-        });
-
-      }  //เหลือเช็คกรณีไม่ซ้ำบางตัว
-      else if (resUploadData?.every((res) => res === 400)) {
-        Swal.fire({
-          title: 'Error!',
-          text: 'เพิ่มข้อมูลแผนกล้มเหลว!',
+          title: 'Upload Error!',
+          text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
           icon: 'error',
         });
       }
-    } else {
-      Swal.fire({
-        title: 'Upload Error!',
-        text: 'โปรดใส่ข้อมูลให้ครบและถูกต้อง',
-        icon: 'error',
-      });
+
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
+
+
   };
 
   const addData = async (): Promise<number[] | undefined> => {
@@ -172,19 +197,30 @@ function AddDepartment() {
                   <br />
                 </div>
               ))}
-              <Button variant="success" onClick={handleAddDepartment}>กรอกแผนกเพิ่ม</Button>
+              <Button id='addDepart' variant="success" onClick={handleAddDepartment}>กรอกแผนกเพิ่ม</Button>
             </div>
             <br />
             <hr />
             <div className="flex justify-end mt-4">
-              <Button variant="secondary" onClick={handleClose}>
+              <Button id='cancleBtn' variant="secondary" onClick={handleClose}>
                 ยกเลิก
               </Button>
               &nbsp;
-              <Button variant="primary" type="submit">
+              <Button id='submitBtn' variant="primary" type="submit">
                 ตกลง
               </Button>
             </div>
+            {loading ?
+              <div className='flex justify-content-end'>
+                <h1>กำลังตรวจสอบข้อมูล </h1>
+                &nbsp;
+                <l-tail-chase
+                  size="15"
+                  speed="1.75"
+                  color="black"
+                ></l-tail-chase>
+              </div>
+              : <div></div>}
           </form>
         </Modal.Body>
       </Modal>
