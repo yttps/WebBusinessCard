@@ -13,6 +13,7 @@ export default function DetailCompany() {
     const [companyById, setCompanyById] = useState<GetDataCompanyById | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const nav = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -37,6 +38,8 @@ export default function DetailCompany() {
 
     const DeleteCompanyData = async () => {
 
+        const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
+
         if (!companyById) return;
 
         try {
@@ -53,9 +56,13 @@ export default function DetailCompany() {
 
             if (result.isConfirmed) {
 
+                setLoading(true);
+                deleteBtn.style.visibility = 'hidden';
+
                 const response = await companyapi.DeleteCompany(companyById.id);
 
                 if (response == 200) {
+                    setLoading(false);
                     const res = await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
@@ -68,6 +75,7 @@ export default function DetailCompany() {
                 }
             }
         } catch (error) {
+            setLoading(false);
             console.error('Error deleting general user:', error);
             await Swal.fire({
                 title: 'Error!',
@@ -86,7 +94,7 @@ export default function DetailCompany() {
     }, [companyId, fetchData, isLoading]);
 
 
-    if (!companyById) {
+    if (!isLoading) {
         return (
             <div>
                 <Header />
@@ -117,6 +125,26 @@ export default function DetailCompany() {
             </div>
         );
     }
+
+    if (!companyById) {
+        return (
+            <>
+                <Header />
+                <br />
+                <div className="flex">
+                    <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className="text-black-500">ไม่พบข้อมูลบริษัท</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </>
+
+        );
+    }
+
 
     return (
         <>
@@ -160,8 +188,20 @@ export default function DetailCompany() {
                         </div>
                     </div>
                     <div className="flex justify-end mt-4">
-                        <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteCompanyData}>ลบข้อมูล</button>
+                        <button id='deleteBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteCompanyData}>ลบข้อมูล</button>
                     </div>
+                    {loading ?
+                        <div className='flex justify-content-end'>
+                            <h1>กำลังตรวจสอบข้อมูล </h1>
+                            &nbsp;
+                            <l-tail-chase
+                                size="15"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                        : <div>
+                        </div>}
                 </div>
             </div>
         </>

@@ -99,6 +99,20 @@ function ListGeneralUser() {
         );
     }
 
+    // if (!dataGeneralUsers) {
+    //     return (
+    //         <>
+    //             <HeaderAdmin />
+    //             <br />
+    //             <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
+    //                 <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
+    //                 <br />
+    //                 <p className='text-xl'>ไม่พบข้อมูลบุคคลทั่วไป</p>
+    //             </div>
+    //         </>
+    //     );
+    // }
+
 
     return (
         <>
@@ -295,10 +309,12 @@ function ListGeneralUser() {
                                         </div></>
                                 ) : (
                                     <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
-                                        <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{width: '50%'}}/>
+                                        <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
                                         <br />
+                                        <p className='text-xl'>ไม่พบข้อมูลบุคคลทั่วไป</p>
                                         {/* <button>s</button> */}
                                     </div>
+
                                 )}
                             </div>
                         </div>

@@ -28,7 +28,7 @@ export default function ApprovalCompany() {
         setDropdownVisible(false);
     };
 
-    const getCompany = useCallback(async () => { 
+    const getCompany = useCallback(async () => {
         try {
             const res = await companyApi.GetAllCompanyNoAccept();
             setDataCompany(res);
@@ -37,7 +37,7 @@ export default function ApprovalCompany() {
         } catch (error) {
             console.error('Error fetching general users:', error);
         }
-    },[companyApi]);
+    }, [companyApi]);
 
     const filteredData = dataCompany.filter((company) =>
         company?.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -60,7 +60,7 @@ export default function ApprovalCompany() {
         }
     }, [dataFetched, getCompany]);
 
-    if(!dataFetched){
+    if (!dataFetched) {
         return (
             <>
                 <div>
@@ -100,6 +100,10 @@ export default function ApprovalCompany() {
             </>
         );
     }
+
+    // if(){
+
+    // }
 
     return (
         <>
@@ -305,8 +309,9 @@ export default function ApprovalCompany() {
                                         </div></>
                                 ) : (
                                     <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
-                                        <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{width: '50%'}}/>
+                                        <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
                                         <br />
+                                        <p className='text-xl'>ไม่พบข้อมูลบริษัทที่รออนุมัติ</p>
                                         {/* <button>s</button> */}
                                     </div>
                                 )}
@@ -372,7 +377,11 @@ export default function ApprovalCompany() {
                             </tbody>
                         </Table>
                     ) : (
-                        <p>Not found data company</p>
+                        <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
+                            <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
+                            <br />
+                            <p className='text-xl'>ไม่พบข้อมูลบริษัทที่รออนุมัติ</p>
+                        </div>
                     )}
                 </div>
             </div>

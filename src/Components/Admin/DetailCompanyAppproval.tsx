@@ -13,6 +13,7 @@ export default function DetailCompanyAppproval() {
     const companyapi = useMemo(() => new CompanyApi(), []);
     const [companyById, setCompanyById] = useState<GetDataCompanyById | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const nav = useNavigate();
 
     const fetchData = useCallback(async () => {
@@ -37,6 +38,9 @@ export default function DetailCompanyAppproval() {
 
     const AcceptCompanyData = async (companyid: string) => {
 
+        const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
+        const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+
         const result = await Swal.fire({
             title: 'อนุมัติข้อมูล?',
             text: 'ยืนยันเพื่อทำการลบข้อมูล!',
@@ -47,36 +51,54 @@ export default function DetailCompanyAppproval() {
             confirmButtonText: 'Yes, delete it!'
         });
 
-        if (result.isConfirmed) {
+        try {
 
-            const res = await companyapi.AcceptCompanyData(companyid);
+            if (result.isConfirmed) {
 
-            if (res == 200) {
+                deleteBtn.style.visibility = 'hidden';
+                submitBtn.style.visibility = 'hidden';
+                setLoading(true);
 
-                const confirm = await Swal.fire({
-                    title: 'Success!',
-                    text: 'อนุมัติข้อมูลสำเร็จ!',
-                    icon: 'success',
-                });
+                const res = await companyapi.AcceptCompanyData(companyid);
 
-                if (confirm) {
-                    nav('/ApprovalCompany', { replace: true });
+                if (res == 200) {
+
+                    setLoading(false);
+                    const confirm = await Swal.fire({
+                        title: 'Success!',
+                        text: 'อนุมัติข้อมูลสำเร็จ!',
+                        icon: 'success',
+                    });
+
+                    if (confirm) {
+                        nav('/ApprovalCompany', { replace: true });
+                    }
+                }
+                else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'เกิดข้อผิดพลาดในการอนุมัติข้อมูล!',
+                        icon: 'error',
+                    });
+                    return;
                 }
             }
-            else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'เกิดข้อผิดพลาดในการอนุมัติข้อมูล!',
-                    icon: 'error',
-                });
-                return;
-            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
+
+
     }
 
     const DeleteCompanyData = async () => {
 
         if (!companyById) return;
+
+
+        const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
+        const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
 
         try {
 
@@ -92,9 +114,14 @@ export default function DetailCompanyAppproval() {
 
             if (result.isConfirmed) {
 
+                deleteBtn.style.visibility = 'hidden';
+                submitBtn.style.visibility = 'hidden';
+                setLoading(true);
                 const response = await companyapi.DeleteCompany(companyById.id);
 
                 if (response == 200) {
+
+                    setLoading(false);
                     const res = await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
@@ -108,6 +135,8 @@ export default function DetailCompanyAppproval() {
                 }
             }
         } catch (error) {
+
+            setLoading(false);
             console.error('Error deleting general user:', error);
             await Swal.fire({
                 title: 'Error!',
@@ -126,7 +155,7 @@ export default function DetailCompanyAppproval() {
     }, [companyId, fetchData, isLoading]);
 
 
-    if (!companyById) {
+    if (!isLoading) {
         return (
             <div>
                 <Header />
@@ -155,6 +184,25 @@ export default function DetailCompanyAppproval() {
                     </div>
                 </div>
             </div>
+        );
+    }
+
+    if (!companyById) {
+        return (
+            <>
+                <Header />
+                <br />
+                <div className="flex">
+                    <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className="text-black-500">ไม่พบข้อมูลบริษัท</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </>
+
         );
     }
 
@@ -198,10 +246,22 @@ export default function DetailCompanyAppproval() {
                                 </div>
                             </div>
                             <div className="flex justify-end mt-[15rem]">
-                                <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteCompanyData}>ลบข้อมูล</button>
+                                <button id='deleteBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteCompanyData}>ลบข้อมูล</button>
                                 &nbsp;
-                                <button className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" onClick={() => AcceptCompanyData(companyById.id)}>อนุมัติบริษัท</button>
+                                <button id='submitBtn' className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" onClick={() => AcceptCompanyData(companyById.id)}>อนุมัติบริษัท</button>
                             </div>
+                            {loading ?
+                                <div className='flex justify-content-end'>
+                                    <h1>กำลังตรวจสอบข้อมูล </h1>
+                                    &nbsp;
+                                    <l-tail-chase
+                                        size="15"
+                                        speed="1.75"
+                                        color="black"
+                                    ></l-tail-chase>
+                                </div>
+                                : <div>
+                                </div>}
                         </div>
                     </div>
                 </div>

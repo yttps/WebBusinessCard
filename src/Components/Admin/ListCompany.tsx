@@ -114,6 +114,20 @@ export default function ListCompany() {
         );
     }
 
+    // if (!dataCompany) {
+    //     return (
+    //         <>
+    //             <HeaderAdmin />
+    //             <br />
+    //             <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
+    //                 <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
+    //                 <br />
+    //                 <p className='text-xl'>ไม่พบข้อมูลพนักงานฝ่ายบุคคล</p>
+    //             </div>
+    //         </>
+    //     );
+    // }
+
     return (
         <>
             <HeaderAdmin />
@@ -321,6 +335,7 @@ export default function ListCompany() {
                                     <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
                                         <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
                                         <br />
+                                        <p className='text-xl'>ไม่พบข้อมูลบริษัท</p>
                                         {/* <button>s</button> */}
                                     </div>
                                 )}

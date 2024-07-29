@@ -12,6 +12,7 @@ export default function DetailGeneralUser() {
     const generaluserapi = useMemo(() => new GeneralUserApi(), []);
     const [GeneralUserById, setGeneralUserById] = useState<GetDataGeneralUserById | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [loading , setLoading] = useState(false);
     const nav = useNavigate();
 
     const fetchData = useCallback(async () => {
@@ -31,6 +32,8 @@ export default function DetailGeneralUser() {
 
         if (!GeneralUserById) return;
 
+        const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
+
         try {
             const result = await Swal.fire({
                 title: 'ลบข้อมูล?',
@@ -43,9 +46,13 @@ export default function DetailGeneralUser() {
             });
 
             if (result.isConfirmed) {
+
+                deleteBtn.style.visibility = 'hidden';
+                setLoading(true);
                 const response = await generaluserapi.DeleteGeneralUser(GeneralUserById?.id); //bug origin
 
                 if (response == 200) {
+                    setLoading(false);
                     const res = await Swal.fire({
                         title: 'Success!',
                         text: 'ลบข้อมูลสำเร็จ!',
@@ -59,6 +66,7 @@ export default function DetailGeneralUser() {
                 }
             }
         } catch (error) {
+            setLoading(false);
             console.error('Error deleting general user:', error);
             await Swal.fire({
                 title: 'Error!',
@@ -105,7 +113,21 @@ export default function DetailGeneralUser() {
     }
 
     if (!GeneralUserById) {
-        return <div>Not Found Data General user</div>;
+        return (
+            <>
+                <HeaderAdmin />
+                <br />
+                <div className="flex">
+                    <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-center items-center">
+                                <p className="text-black-500">ไม่พบข้อมูลบุคคลทั่วไป</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
     }
 
     return (
@@ -161,8 +183,20 @@ export default function DetailGeneralUser() {
                     </div>
                 </div>
                 <div className="flex justify-end mt-4">
-                    <button className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteGeneralUserData}>ลบข้อมูล</button>
+                    <button id = 'deleteBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteGeneralUserData}>ลบข้อมูล</button>
                 </div>
+                {loading ?
+                        <div className='flex justify-content-end'>
+                            <h1>กำลังตรวจสอบข้อมูล </h1>
+                            &nbsp;
+                            <l-tail-chase
+                                size="15"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                        : <div>
+                        </div>}
             </div>
         </>
     );
