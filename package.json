@@ -40,7 +40,7 @@
     "react-konva": "^18.2.10",
     "react-loader-spinner": "^6.1.6",
     "react-router-dom": "^6.23.1",
-    "react-sweetalert2": "^0.5.2",
+    "react-sweetalert2": "^0.6.0",
     "save-dev": "^0.0.1-security",
     "select2": "^4.1.0-rc.0",
     "sha256": "^0.2.0",
