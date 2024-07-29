@@ -170,7 +170,7 @@ export default function CreateCard() {
     setLoading(true);
 
     const temId = template.id;
-    const position = {
+    const positions = {
       companyAddress: { x: template.companyAddress.x, y: template.companyAddress.y, fontSize: template.companyAddress.fontSize, fontColor: template.companyAddress.fontColor },
       companyName: { x: template.companyName.x, y: template.companyName.y, fontSize: template.companyName.fontSize, fontColor: template.companyName.fontColor },
       departmentName: { x: template.departmentName.x, y: template.departmentName.y, fontSize: template.departmentName.fontSize, fontColor: template.departmentName.fontColor },
@@ -181,7 +181,7 @@ export default function CreateCard() {
       phoneDepartment: { x: template.phoneDepartment.x, y: template.phoneDepartment.y, fontSize: template.phoneDepartment.fontSize, fontColor: template.phoneDepartment.fontColor },
       position: { x: template.position.x, y: template.position.y, fontSize: template.position.fontSize, fontColor: template.position.fontColor },
     };
-    console.log('positionsssss:', position);
+    console.log('positionsssss:', positions);
 
     if (getUserByCompanies) {
       const newGeneratedFiles: { file: File; uid: string }[] = [];
@@ -202,7 +202,7 @@ export default function CreateCard() {
         };
 
         try {
-          const imageUrl = await drawImage(template.background, textMappings, position, UrlLogocompany);
+          const imageUrl = await drawImage(template.background, textMappings, positions, UrlLogocompany);
 
           const response = await fetch(imageUrl);
           const blob = await response.blob();

@@ -184,6 +184,10 @@ export default function Register() {
   const uploadData = async (event: React.FormEvent) => {
 
     event.preventDefault();
+
+    const removeBtn  = document.getElementById('removeBtn') as HTMLButtonElement;
+
+
     const emailValue = getEmailValue();
     const phoneNumberValue = getPhoneNumberValue();
     const websiteValue = getWebsiteValue();
@@ -243,6 +247,7 @@ export default function Register() {
       return;
     }
 
+    removeBtn.style.visibility = 'hidden';
     setLoading(true);
 
     try {
@@ -478,7 +483,7 @@ export default function Register() {
                       </div>
                     </Card.Body>
                   </Card><div onClick={handleRemoveImage}>
-                      <Button variant="danger">Remove Image</Button>
+                      <Button id='removeBtn' variant="danger">Remove Image</Button>
                     </div></>
                 ) : (
                   <p></p>

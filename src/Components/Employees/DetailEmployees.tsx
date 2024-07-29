@@ -18,7 +18,7 @@ import { Button } from 'react-bootstrap';
 export default function DetailEmployees() {
 
     const { id: employeesId } = useParams();
-    const employeesapi = useMemo(() => new EmployeesApi(),[]) ;
+    const employeesapi = useMemo(() => new EmployeesApi(), []);
     const [dataemployeesById, setDataEmployeesById] = useState<GetEmployeeById | null>(null);
     const [dataBranchesById, setDataBranchesById] = useState<GetCompanyBranchesById[]>([]);
     const [dataDepartmentById, setDataDepartmentById] = useState<GetDepartmentByComId[]>([]);
@@ -26,7 +26,7 @@ export default function DetailEmployees() {
     const [getDataCompanyById, setGetDataCompanyById] = useState<GetDataCompanyById | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
-    const templateapi = useMemo(() => new TemplateApi(),[]);  
+    const templateapi = useMemo(() => new TemplateApi(), []);
     const nav = useNavigate();
     const [update, setUpdate] = useState(false);
     const [branchValue, setBranchValue] = useState('');
@@ -34,7 +34,7 @@ export default function DetailEmployees() {
     const hrapi = new HrApi();
     const [isFetch, setIsFetch] = useState(false);
     const companyapi = useMemo(() => new CompanyApi(), []);
-    
+
     const employeeapi = new EmployeesApi();
     const [genderValue, setGenderValue] = useState('');
     const [departmentValue, setDepartmentValue] = useState('');
@@ -526,15 +526,15 @@ export default function DetailEmployees() {
         const newGeneratedFiles: { file: File; uid: string }[] = [];
         const temId = TemplateBycompanyId[0].id;
         const positions = {
-            companyAddress: { x: TemplateBycompanyId[0].companyAddress.x, y: TemplateBycompanyId[0].companyAddress.y },
-            companyName: { x: TemplateBycompanyId[0].companyName.x, y: TemplateBycompanyId[0].companyName.y },
-            departmentName: { x: TemplateBycompanyId[0].departmentName.x, y: TemplateBycompanyId[0].departmentName.y },
-            email: { x: TemplateBycompanyId[0].email.x, y: TemplateBycompanyId[0].email.y },
-            fullname: { x: TemplateBycompanyId[0].fullname.x, y: TemplateBycompanyId[0].fullname.y },
-            logo: { x: TemplateBycompanyId[0].logo.x, y: TemplateBycompanyId[0].logo.y },
-            phone: { x: TemplateBycompanyId[0].phone.x, y: TemplateBycompanyId[0].phone.y },
-            phoneDepartment: { x: TemplateBycompanyId[0].phoneDepartment.x, y: TemplateBycompanyId[0].phoneDepartment.y },
-            position: { x: TemplateBycompanyId[0].position.x, y: TemplateBycompanyId[0].position.y }
+            companyAddress: { x: TemplateBycompanyId[0].companyAddress.x, y: TemplateBycompanyId[0].companyAddress.y, fontSize: TemplateBycompanyId[0].companyAddress.fontSize, fontColor: TemplateBycompanyId[0].companyAddress.fontColor },
+            companyName: { x: TemplateBycompanyId[0].companyName.x, y: TemplateBycompanyId[0].companyName.y, fontSize: TemplateBycompanyId[0].companyName.fontSize, fontColor: TemplateBycompanyId[0].companyName.fontColor },
+            departmentName: { x: TemplateBycompanyId[0].departmentName.x, y: TemplateBycompanyId[0].departmentName.y, fontSize: TemplateBycompanyId[0].departmentName.fontSize, fontColor: TemplateBycompanyId[0].departmentName.fontColor },
+            email: { x: TemplateBycompanyId[0].email.x, y: TemplateBycompanyId[0].email.y, fontSize: TemplateBycompanyId[0].email.fontSize, fontColor: TemplateBycompanyId[0].email.fontColor },
+            fullname: { x: TemplateBycompanyId[0].fullname.x, y: TemplateBycompanyId[0].fullname.y, fontSize: TemplateBycompanyId[0].fullname.fontSize, fontColor: TemplateBycompanyId[0].fullname.fontColor },
+            logo: { x: TemplateBycompanyId[0].logo.x, y: TemplateBycompanyId[0].logo.y, fontSize: TemplateBycompanyId[0].logo.fontSize, fontColor: TemplateBycompanyId[0].logo.fontColor },
+            phone: { x: TemplateBycompanyId[0].phone.x, y: TemplateBycompanyId[0].phone.y, fontSize: TemplateBycompanyId[0].phone.fontSize, fontColor: TemplateBycompanyId[0].phone.fontColor },
+            phoneDepartment: { x: TemplateBycompanyId[0].phoneDepartment.x, y: TemplateBycompanyId[0].phoneDepartment.y, fontSize: TemplateBycompanyId[0].phoneDepartment.fontSize, fontColor: TemplateBycompanyId[0].phoneDepartment.fontColor },
+            position: { x: TemplateBycompanyId[0].position.x, y: TemplateBycompanyId[0].position.y, fontSize: TemplateBycompanyId[0].position.fontSize, fontColor: TemplateBycompanyId[0].position.fontColor },
         };
 
         console.log('positions', positions);
@@ -580,14 +580,15 @@ export default function DetailEmployees() {
 
     }
 
-    const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number } }, logo: string) => {
+    const drawImage = (background: string, textMappings: { [key: string]: string }, 
+        positions: { [key: string]: { x: number; y: number, fontSize: string, fontColor: string } }, logo: string) => {
         return new Promise<string>((resolve, reject) => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext('2d');
 
             if (canvas && ctx) {
-                canvas.width = 900;
-                canvas.height = 600;
+                canvas.width = 950;
+                canvas.height = 550;
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.src = `${background}`;
@@ -598,9 +599,9 @@ export default function DetailEmployees() {
 
                     Object.keys(textMappings).forEach((key) => {
                         if (positions[key]) {
-                            const { x, y } = positions[key];
-                            ctx.font = '30px Bold';
-                            ctx.fillStyle = 'black';
+                            const { x, y, fontSize, fontColor } = positions[key];
+                            ctx.font = `${fontSize}px Bold`;
+                            ctx.fillStyle = `${fontColor}`;
                             ctx.fillText(textMappings[key], x, y);
                         } else {
                             console.log(`Position for key ${key} not found`);
