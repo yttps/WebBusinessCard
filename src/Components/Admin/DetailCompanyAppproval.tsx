@@ -48,7 +48,8 @@ export default function DetailCompanyAppproval() {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'ตกลง',
+            cancelButtonText: 'ยกเลิก'
         });
 
         try {
@@ -109,7 +110,8 @@ export default function DetailCompanyAppproval() {
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonText: 'ตกลง',
+                cancelButtonText: 'ยกเลิก'
             });
 
             if (result.isConfirmed) {

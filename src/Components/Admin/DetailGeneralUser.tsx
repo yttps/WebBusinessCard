@@ -12,7 +12,7 @@ export default function DetailGeneralUser() {
     const generaluserapi = useMemo(() => new GeneralUserApi(), []);
     const [GeneralUserById, setGeneralUserById] = useState<GetDataGeneralUserById | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [loading , setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const nav = useNavigate();
 
     const fetchData = useCallback(async () => {
@@ -42,7 +42,8 @@ export default function DetailGeneralUser() {
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonText: 'ตกลง',
+                cancelButtonText: 'ยกเลิก'
             });
 
             if (result.isConfirmed) {
@@ -183,20 +184,20 @@ export default function DetailGeneralUser() {
                     </div>
                 </div>
                 <div className="flex justify-end mt-4">
-                    <button id = 'deleteBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteGeneralUserData}>ลบข้อมูล</button>
+                    <button id='deleteBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={DeleteGeneralUserData}>ลบข้อมูล</button>
                 </div>
                 {loading ?
-                        <div className='flex justify-content-end'>
-                            <h1>กำลังตรวจสอบข้อมูล </h1>
-                            &nbsp;
-                            <l-tail-chase
-                                size="15"
-                                speed="1.75"
-                                color="black"
-                            ></l-tail-chase>
-                        </div>
-                        : <div>
-                        </div>}
+                    <div className='flex justify-content-end'>
+                        <h1>กำลังตรวจสอบข้อมูล </h1>
+                        &nbsp;
+                        <l-tail-chase
+                            size="15"
+                            speed="1.75"
+                            color="black"
+                        ></l-tail-chase>
+                    </div>
+                    : <div>
+                    </div>}
             </div>
         </>
     );

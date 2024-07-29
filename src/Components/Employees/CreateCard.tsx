@@ -128,7 +128,8 @@ export default function CreateCard() {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'ตกลง',
+      cancelButtonText: 'ยกเลิก'
     });
 
     if (result.isConfirmed) {
@@ -475,16 +476,16 @@ export default function CreateCard() {
                                   className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg">ลบเทมเพลต</Button>
                               </div>
                               {loading ?
-                              <div className='flex justify-content-end'>
-                                <h1>กำลังตรวจสอบข้อมูล </h1>
-                                &nbsp;
-                                <l-tail-chase
-                                  size="15"
-                                  speed="1.75"
-                                  color="black"
-                                ></l-tail-chase>
-                              </div>
-                              : <div></div>}
+                                <div className='flex justify-content-end'>
+                                  <h1>กำลังตรวจสอบข้อมูล </h1>
+                                  &nbsp;
+                                  <l-tail-chase
+                                    size="15"
+                                    speed="1.75"
+                                    color="black"
+                                  ></l-tail-chase>
+                                </div>
+                                : <div></div>}
                             </Card.Body>
                           </Card>
                         </div>

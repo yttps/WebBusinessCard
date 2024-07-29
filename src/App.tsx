@@ -18,7 +18,7 @@ import DetailGeneralUser from './Components/Admin/DetailGeneralUser';
 import ListDetailBranchAndDepartment from './Components/Company/ListDetailBranchAndDepartment';
 import ApprovalCompany from './Components/Admin/ApprovalCompany';
 import DetailCompanyAppproval from './Components/Admin/DetailCompanyAppproval';
-import EditCompany from './Components/Employees/EditCompany';
+import EditCompany from './Components/Company/EditCompany';
 
 const App = () => {
 

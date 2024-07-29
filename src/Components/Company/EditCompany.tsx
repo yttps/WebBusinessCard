@@ -139,7 +139,7 @@ export default function EditCompany() {
                             });
 
                             if (res) {
-                                nav('/ListEmployees', { replace: true });
+                                nav('/ListHr', { replace: true });
                                 window.location.reload();
                             }
                         }
@@ -177,7 +177,7 @@ export default function EditCompany() {
                             });
 
                             if (res) {
-                                nav('/ListEmployees', { replace: true });
+                                nav('/ListHr', { replace: true });
                                 window.location.reload();
                             }
                         }
@@ -374,12 +374,9 @@ export default function EditCompany() {
 
     }
 
-
-
-    function toListEmployees() {
-        nav('/ListEmployees');
+    function toListHr() {
+        nav('/ListHr');
     }
-
 
     const getDataCompanyById = useCallback(async (CompanyId: string) => {
         try {
@@ -427,7 +424,7 @@ export default function EditCompany() {
             if (loggedInData) {
 
                 const parsedData = JSON.parse(loggedInData);
-                const CompanyId = parsedData.companyId;
+                const CompanyId = parsedData.id;
 
                 if (CompanyId) {
                     setLoading(true);
@@ -441,6 +438,8 @@ export default function EditCompany() {
 
         console.log('data em',);
     }, [companyapi, isFetch, getDataCompanyById, dataCompanyById, getAllEmployeesByCompany, getTemplateByCompanyId]);
+
+    console.log('chkk'  , dataCompanyById);
 
 
     if (loading) {
@@ -517,7 +516,7 @@ export default function EditCompany() {
                                             <p className="text-muted-foreground">ปีที่ก่อตั้ง:</p>
                                             <input
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                type='datetime-local'
+                                                type='date'
                                                 id="yearfoundedEdit"
                                                 value={dataCompanyById.yearFounded ? dataCompanyById.yearFounded : ''}
                                                 onChange={(e) => setDataCompanyById({ ...dataCompanyById, yearFounded: e.target.value })}
@@ -581,7 +580,7 @@ export default function EditCompany() {
                                 </div>
                             </div>
                             <div className="flex justify-end mt-4">
-                                <button id='cancleBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={toListEmployees}>ยกเลิก</button>
+                                <button id='cancleBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={toListHr}>ยกเลิก</button>
                                 &nbsp;
                                 <button id='submitBtn' className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
                             </div>

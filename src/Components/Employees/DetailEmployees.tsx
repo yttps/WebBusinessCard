@@ -260,7 +260,8 @@ export default function DetailEmployees() {
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonText: 'ตกลง',
+                cancelButtonText: 'ยกเลิก'
             });
 
             if (result.isConfirmed) {
@@ -580,7 +581,7 @@ export default function DetailEmployees() {
 
     }
 
-    const drawImage = (background: string, textMappings: { [key: string]: string }, 
+    const drawImage = (background: string, textMappings: { [key: string]: string },
         positions: { [key: string]: { x: number; y: number, fontSize: string, fontColor: string } }, logo: string) => {
         return new Promise<string>((resolve, reject) => {
             const canvas = canvasRef.current;

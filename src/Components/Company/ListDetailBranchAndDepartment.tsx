@@ -57,10 +57,22 @@ export default function ListDetailBranchAndDepartment() {
 
   }, [companyapi]);
 
-  async function handleDeleteDepartment(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, departmentId: string) {
-    e.preventDefault();
-    console.log('departmentId', departmentId);
+  async function handleDeleteDepartment(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, departmentId: string, departname: string) {
 
+    e.preventDefault();
+
+    const checkDepartmentName = departname.toUpperCase();
+
+    if (checkDepartmentName == 'HR') {
+
+      Swal.fire({
+        title: 'Error!',
+        text: 'ไม่สามารถลบแผนก HR ได้!',
+        icon: 'error',
+      });
+      return;
+
+    }
 
     const result = await Swal.fire({
       title: 'ลบข้อมูล?',
@@ -69,7 +81,8 @@ export default function ListDetailBranchAndDepartment() {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'ตกลง',
+      cancelButtonText: 'ยกเลิก'
     });
 
     try {
@@ -128,7 +141,8 @@ export default function ListDetailBranchAndDepartment() {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'ตกลง',
+      cancelButtonText: 'ยกเลิก'
     });
 
     try {
@@ -267,7 +281,7 @@ export default function ListDetailBranchAndDepartment() {
                             {!loading ? (
                               <button
                                 className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
-                                onClick={(e) => handleDeleteDepartment(e, department.id)}
+                                onClick={(e) => handleDeleteDepartment(e, department.id, department.name)}
                                 type="submit"
                                 id="deleteDepartBtn"
                                 disabled={loadingDepartmentId === department.id}

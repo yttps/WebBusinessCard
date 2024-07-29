@@ -26,13 +26,31 @@ const CreateTemplate: React.FC = () => {
   const [canvasHistory, setCanvasHistory] = useState<(CanvasOperation | null)[]>([]);
   const [nameTemplate, setNameTemplate] = useState<string>('');
 
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
+  const [selectedFont, setSelectedFont] = useState('');
+  const [uploadedFonts, setUploadedFonts] = useState<{ name: string, url: string }[]>([]);
+
   const setNameTem = (e: ChangeEvent<HTMLFormElement>) => {
     console.log(e.target.value);
     setNameTemplate(e.target.value);
+  };
+
+  const handleIncrement = () => {
+    setFontSize((prevSize) => {
+      const newSize = Math.min(parseInt(prevSize) + 1, 100);
+      return newSize.toString();
+    });
+  };
+
+  const handleDecrement = () => {
+    setFontSize((prevSize) => {
+      const newSize = Math.max(parseInt(prevSize) - 1, 15);
+      return newSize.toString();
+    });
   };
 
   useEffect(() => {
@@ -70,7 +88,6 @@ const CreateTemplate: React.FC = () => {
     }
   }, [background]);
 
-  //add color for single text
   const [allPositions, setAllPositions] = useState<AllPosition>({
     "fullname": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
     "companyName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
@@ -82,8 +99,6 @@ const CreateTemplate: React.FC = () => {
     "departmentName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
     "logo": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' }
   });
-
-
 
   interface CanvasOperation {
     type: 'text' | 'image';
@@ -113,6 +128,33 @@ const CreateTemplate: React.FC = () => {
     "departmentName": "Department Name"
   };
 
+
+  const handleFontUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const fontUrl = reader.result as string;
+        const fontName = file.name.split('.').slice(0, -1).join('.');
+        const newFont = { name: fontName, url: fontUrl };
+
+        // Adding the new font to the list of uploaded fonts
+        setUploadedFonts((prevFonts) => [...prevFonts, newFont]);
+
+        // Creating a new style element for the uploaded font
+        const newFontStyle = new FontFace(fontName, `url(${fontUrl})`);
+        newFontStyle.load().then((loadedFont) => {
+          document.fonts.add(loadedFont);
+          setSelectedFont(fontName);
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFontChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedFont(event.target.value);
+  };
 
 
   //STEP 1 WHEN CLICK AND DRAGGING
@@ -220,7 +262,7 @@ const CreateTemplate: React.FC = () => {
         const text = textMappings[draggedItem];
         ctx.fillStyle = selectedColor || draggedPosition.fontColor; // Use the color from the state
         ctx.textBaseline = 'middle';
-        ctx.font = (fontSize || draggedPosition.fontSize) + 'px Bold'; // Use the size from the state
+        ctx.font = `${fontSize || draggedPosition.fontSize}px ${selectedFont}`; // Use the selected font
         ctx.fillText(text, scaledX + 30, scaledY + 33);
         addToCanvasHistory({ type: 'text', data: text, position: { x: scaledX + 30, y: scaledY + 33 } });
 
@@ -369,28 +411,63 @@ const CreateTemplate: React.FC = () => {
     event.preventDefault();
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-
     if (!file) return;
 
-    if (file) {
+    const fileSize = file.size;
 
-      if (file.size > 5 * 1024 * 1024) {
+    if (backgroundInputRef.current) {
 
+      if (fileSize > 2 * 1024 * 1024) {
+
+        backgroundInputRef.current.value = "";
+        Swal.fire({
+          title: 'Error!',
+          text: 'โปรดเลือกไฟล์ไม่เกิน 2 MB!',
+          icon: 'error',
+        });
+
+        return;
+      }
+
+      checkImageDimensions(file);
+    }
+  }
+
+  const checkImageDimensions = (file: File) => {
+    const reader = new FileReader();
+    const img = new Image();
+
+
+
+    reader.onload = (e) => {
+      img.src = e.target?.result as string;
+    };
+
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+
+      console.log('width', width);
+      console.log('height', width);
+
+
+      if (width === 1000 && height === 600) {
+        setBackground(file);
+      } else {
         if (backgroundInputRef.current) {
-
           backgroundInputRef.current.value = "";
           Swal.fire({
             title: 'Error!',
-            text: 'โปรดเลือกไฟล์ไม่เกิน 5 MB!',
+            text: 'กรุณาเลือกรูปขนาด 1000x600 พิกเซล.',
             icon: 'error',
           });
-
           return;
         }
       }
-      setBackground(file);
     }
-  }
+    reader.readAsDataURL(file);
+  };
+
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
@@ -528,12 +605,12 @@ const CreateTemplate: React.FC = () => {
         {/* col-1*/}
         <Row>
           <Col>
-            <div className="bg-blue-500 text-white border border-solid border-gray-300 p-4 w-full h-full">
+            <div className="bg-blue-500 text-white border border-solid border-gray-300 p-4 w-full h-full items-center">
               <h2 className="text-lg font-bold mb-4">รายละเอียดข้อมูล</h2>
-              <div className="mb-2">
-                <p className="text-muted-foreground">ชื่อเทมเพลต</p>
+              <div className="flex-row justify-center">
+                <p className="text-lg font-bold">ชื่อเทมเพลต</p>
                 <Form onChange={setNameTem}>
-                  <Form.Group className="mb-0">
+                  <Form.Group className="">
                     <Form.Control
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                       type="text"
@@ -541,25 +618,64 @@ const CreateTemplate: React.FC = () => {
                   </Form.Group>
                 </Form>
               </div>
+              <br />
+              <p className="text-lg font-bold mb-2">เลือก Font</p>
+              <div className="mb-4 w-full flex-row items-center justify-center pl-20">
+                <Card style={{ width: '15rem', textAlign: 'center' }}>
+                  <Card.Body>
+                    <Card.Title style={{ fontSize: '15px' }}>Selected Font</Card.Title>
+                    <hr />
+                    <select value={selectedFont} onChange={handleFontChange}>
+                      {uploadedFonts.map((font, index) => (
+                        <option key={index} value={font.name}>
+                          {font.name}
+                        </option>
+                      ))}
+                    </select>
+                  </Card.Body>
+                </Card>
+              </div>
+              <p className="text-lg font-bold">รายละเอียดนามบัตร</p>
               <div className="md-4 grid grid-cols-2 gap-4">
-                {Object.keys(textMappings).map((item, index) => (
-                  <div
-                    key={index}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, item)}
-                    className="mb-[-20px]"
-                    style={{ backgroundColor: "transparent" }}>
-                    <Card style={{ width: '12rem', textAlign: 'center', height: '5rem', margin: '0 auto' }}>
-                      <Card.Body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
-                        <CIcon icon={icon.cilText} size="xl" className="text-success" />
-                      </Card.Body>
-                    </Card>
-                    <br />
-                  </div>
-                ))}
+                {Object.keys(textMappings).map((item, index) => {
+
+                  const isPositionSet = allPositions[item].x !== 0 &&
+                    allPositions[item].y !== 0;
+
+                  return (
+                    <div
+                      key={index}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, item)}
+                      className="mb-[-20px]"
+                      style={{ backgroundColor: "transparent" }}>
+                      <Card
+                        style={{
+                          width: '12rem', textAlign: 'center',
+                          height: '5rem', margin: '0 auto', backgroundColor: isPositionSet ? 'gray' : 'white'
+                        }}>
+                        <Card.Body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                          <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
+                          <CIcon icon={icon.cilText} size="xl" className="text-success" />
+                        </Card.Body>
+                      </Card>
+                      <br />
+                    </div>
+                  );
+
+                })}
               </div>
               <br />
+              <Card>
+                <Card.Body>
+                  <Card.Title style={{ fontSize: '15px' }}>อัปโหลด Font</Card.Title>
+                  <hr />
+                  <br />
+                  <input type="file" accept=".ttf" onChange={handleFontUpload} />
+                  <br />
+                  <p className="text-x font-bold text-red-500 pt-2">* เลือกไฟล์ .ttf เท่านั้น</p>
+                </Card.Body>
+              </Card>
             </div>
 
             {/* col-2*/}
@@ -576,6 +692,7 @@ const CreateTemplate: React.FC = () => {
                     id="imageCanvas"
                     width="850px"
                     height="410px"
+                    ref={canvasRef}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}>
                   </canvas>
@@ -606,8 +723,50 @@ const CreateTemplate: React.FC = () => {
                       min="15"
                       max="100"
                       value={fontSize}
-                      onChange={handleSizeFonstChange} />
-                    <h6>{fontSize}</h6>
+                      onChange={handleSizeFonstChange}
+                    />
+                    <div className="relative flex items-center max-w-[10rem]">
+                      <button
+                        type="button"
+                        id="decrement-button"
+                        onClick={handleDecrement}
+                        className="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                      >
+                        <svg
+                          className="w-3 h-3 text-gray-900 dark:text-white"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 18 2"
+                        >
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 1h16" />
+                        </svg>
+                      </button>
+                      <input
+                        type="text"
+                        id="quantity-input"
+                        value={fontSize}
+                        readOnly
+                        className="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      />
+                      <button
+                        type="button"
+                        id="increment-button"
+                        onClick={handleIncrement}
+                        className="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                      >
+                        <svg
+                          className="w-3 h-3 text-gray-900 dark:text-white"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 18 18"
+                        >
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
+                        </svg>
+                      </button>
+                    </div>
+
                   </Card.Body>
                 </Card>
                 <Card style={{ width: '12rem', textAlign: 'center' }}>
@@ -649,9 +808,11 @@ const CreateTemplate: React.FC = () => {
                         id="img"
                         ref={backgroundInputRef}
                         className="w-[12rem]"
-                        accept="image/*"
+                        accept=".jpg, .jpeg, .png"
                         onChange={handleImageBackgroundChange} />
                     </form>
+                    <br />
+                    <p className="text-x font-bold text-red-500">* เลือกไฟล์ .jpg .jpeg .png เท่านั้น</p>
                   </Card.Body>
                 </Card>
               </div>
