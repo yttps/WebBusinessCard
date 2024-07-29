@@ -29,6 +29,8 @@ const CreateTemplate: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const uploadFontRef = useRef<HTMLInputElement>(null);
+
   const [loading, setLoading] = useState(false);
 
   const [selectedFont, setSelectedFont] = useState('');
@@ -130,25 +132,32 @@ const CreateTemplate: React.FC = () => {
 
 
   const handleFontUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const fontUrl = reader.result as string;
-        const fontName = file.name.split('.').slice(0, -1).join('.');
-        const newFont = { name: fontName, url: fontUrl };
 
-        // Adding the new font to the list of uploaded fonts
-        setUploadedFonts((prevFonts) => [...prevFonts, newFont]);
+    if (uploadFontRef.current) {
 
-        // Creating a new style element for the uploaded font
-        const newFontStyle = new FontFace(fontName, `url(${fontUrl})`);
-        newFontStyle.load().then((loadedFont) => {
-          document.fonts.add(loadedFont);
-          setSelectedFont(fontName);
-        });
-      };
-      reader.readAsDataURL(file);
+      uploadFontRef.current.value = "";
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const fontUrl = reader.result as string;
+          const fontName = file.name.split('.').slice(0, -1).join('.');
+          const newFont = { name: fontName, url: fontUrl };
+
+          // Adding the new font to the list of uploaded fonts
+          setUploadedFonts((prevFonts) => [...prevFonts, newFont]);
+
+          // Creating a new style element for the uploaded font
+          const newFontStyle = new FontFace(fontName, `url(${fontUrl})`);
+          newFontStyle.load().then((loadedFont) => {
+            document.fonts.add(loadedFont);
+            setSelectedFont(fontName);
+          });
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -247,7 +256,9 @@ const CreateTemplate: React.FC = () => {
     const scaledY = y * scaleY;
 
     if (ctx) {
+
       if (textMappings[draggedItem]) {
+
         const draggedPosition = allPositions[draggedItem];
 
         if (draggedPosition && (draggedPosition.x !== 0 || draggedPosition.y !== 0)) {
@@ -260,9 +271,9 @@ const CreateTemplate: React.FC = () => {
         }
 
         const text = textMappings[draggedItem];
-        ctx.fillStyle = selectedColor || draggedPosition.fontColor; // Use the color from the state
+        ctx.fillStyle = selectedColor || draggedPosition.fontColor;
         ctx.textBaseline = 'middle';
-        ctx.font = `${fontSize || draggedPosition.fontSize}px ${selectedFont}`; // Use the selected font
+        ctx.font = `${fontSize || draggedPosition.fontSize}px ${selectedFont}`;
         ctx.fillText(text, scaledX + 30, scaledY + 33);
         addToCanvasHistory({ type: 'text', data: text, position: { x: scaledX + 30, y: scaledY + 33 } });
 
@@ -610,7 +621,7 @@ const CreateTemplate: React.FC = () => {
               <div className="flex-row justify-center">
                 <p className="text-lg font-bold">ชื่อเทมเพลต</p>
                 <Form onChange={setNameTem}>
-                  <Form.Group className="">
+                  <Form.Group>
                     <Form.Control
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                       type="text"
@@ -624,8 +635,12 @@ const CreateTemplate: React.FC = () => {
                 <Card style={{ width: '15rem', textAlign: 'center' }}>
                   <Card.Body>
                     <Card.Title style={{ fontSize: '15px' }}>Selected Font</Card.Title>
-                    <hr />
+                    <hr className="pb-2" />
                     <select value={selectedFont} onChange={handleFontChange}>
+                      <option value="Arial">Arial</option>
+                      <option value="Times New Roman">Times New Roman</option>
+                      <option value="Courier New">Courier New</option>
+                      <option value="serif">serif</option>
                       {uploadedFonts.map((font, index) => (
                         <option key={index} value={font.name}>
                           {font.name}
@@ -671,7 +686,11 @@ const CreateTemplate: React.FC = () => {
                   <Card.Title style={{ fontSize: '15px' }}>อัปโหลด Font</Card.Title>
                   <hr />
                   <br />
-                  <input type="file" accept=".ttf" onChange={handleFontUpload} />
+                  <input 
+                  ref={uploadFontRef} 
+                  type="file" 
+                  accept=".ttf" 
+                  onChange={handleFontUpload} />
                   <br />
                   <p className="text-x font-bold text-red-500 pt-2">* เลือกไฟล์ .ttf เท่านั้น</p>
                 </Card.Body>
