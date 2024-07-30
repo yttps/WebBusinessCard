@@ -41,19 +41,27 @@ const CreateTemplate: React.FC = () => {
     setNameTemplate(e.target.value);
   };
 
+
+
   const handleIncrement = () => {
     setFontSize((prevSize) => {
-      const newSize = Math.min(parseInt(prevSize) + 1, 100);
+      const newSize = Math.min(parseInt(prevSize) + 1, 100); // +step 1 max 100
+      console.log('up size', newSize);
       return newSize.toString();
     });
   };
 
   const handleDecrement = () => {
     setFontSize((prevSize) => {
-      const newSize = Math.max(parseInt(prevSize) - 1, 15);
+      const newSize = Math.max(parseInt(prevSize) - 1, 15); // -step 1 min 15
+      console.log('down size', newSize);
       return newSize.toString();
     });
   };
+
+
+
+  console.log('update size', fontSize);
 
   useEffect(() => {
 
@@ -169,6 +177,15 @@ const CreateTemplate: React.FC = () => {
   //STEP 1 WHEN CLICK AND DRAGGING
   const handleDragStart = (event: React.DragEvent, item: string) => {
 
+    if (selectedFont == '') {
+      Swal.fire({
+        title: 'Error!',
+        text: 'เลือกรูปแบบฟอนต์!',
+        icon: 'error',
+      });
+      return;
+    }
+
     //add check positions alls value 
     const allPositionsNotNull = Object.values(allPositions).every(
       position => position.x !== 0 && position.y !== 0
@@ -192,6 +209,8 @@ const CreateTemplate: React.FC = () => {
     dragText.style.top = "-99999px";
     dragText.style.fontSize = `${fontSize}px`;
     dragText.style.color = selectedColor;
+
+    //check if textmapping 
     dragText.innerText = textMappings[item];
     document.body.appendChild(dragText);
     event.dataTransfer.setDragImage(dragText, 0, 0);
@@ -240,8 +259,12 @@ const CreateTemplate: React.FC = () => {
     console.log('USE DRAG DROP');
     event.preventDefault();
 
+    console.log('font size handle drop', fontSize);
+
+
     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+
 
     const canvasTarget = event.currentTarget as HTMLCanvasElement;
     const rect = canvasTarget.getBoundingClientRect();
@@ -333,6 +356,7 @@ const CreateTemplate: React.FC = () => {
     setLogo(null);
     setBackground(null);
 
+    //add fontstyle
     setAllPositions({
       "fullname": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
       "companyName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
@@ -346,6 +370,8 @@ const CreateTemplate: React.FC = () => {
     });
 
     setCanvasHistory([]);
+    setFontSize('0');
+    setSelectedColor('#000000');
     // Clear the canvas
     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
@@ -606,6 +632,10 @@ const CreateTemplate: React.FC = () => {
     }
   }, [allPositions, getDataCompanyById])
 
+  useEffect(() => {
+    console.log('Font size Update', fontSize);
+  }, [fontSize])
+
   console.log(allPositions);
 
 
@@ -637,6 +667,7 @@ const CreateTemplate: React.FC = () => {
                     <Card.Title style={{ fontSize: '15px' }}>Selected Font</Card.Title>
                     <hr className="pb-2" />
                     <select value={selectedFont} onChange={handleFontChange}>
+                      <option value="">เลือกแบบ Font</option>
                       <option value="Arial">Arial</option>
                       <option value="Times New Roman">Times New Roman</option>
                       <option value="Courier New">Courier New</option>
@@ -686,11 +717,11 @@ const CreateTemplate: React.FC = () => {
                   <Card.Title style={{ fontSize: '15px' }}>อัปโหลด Font</Card.Title>
                   <hr />
                   <br />
-                  <input 
-                  ref={uploadFontRef} 
-                  type="file" 
-                  accept=".ttf" 
-                  onChange={handleFontUpload} />
+                  <input
+                    ref={uploadFontRef}
+                    type="file"
+                    accept=".ttf"
+                    onChange={handleFontUpload} />
                   <br />
                   <p className="text-x font-bold text-red-500 pt-2">* เลือกไฟล์ .ttf เท่านั้น</p>
                 </Card.Body>
