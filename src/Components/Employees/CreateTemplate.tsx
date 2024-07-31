@@ -82,6 +82,8 @@ const CreateTemplate: React.FC = () => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | null>(null);
+  const [logoPosition, setLogoPosition] = useState<{ x: number; y: number } | null>(null);
+  const [logoImage, setLogoImage] = useState<HTMLImageElement | null>(null);
 
   const setNameTem = (e: ChangeEvent<HTMLFormElement>) => {
     console.log(e.target.value);
@@ -142,6 +144,14 @@ const CreateTemplate: React.FC = () => {
       }
     }
   }, [background]);
+
+  useEffect(() => {
+    if (getLogoCompany) {
+      const img = new Image();
+      img.onload = () => setLogoImage(img);
+      img.src = getLogoCompany;
+    }
+  }, [getLogoCompany]);
 
 
 
@@ -534,6 +544,7 @@ const CreateTemplate: React.FC = () => {
     const scaledX = x * scaleX;
     const scaledY = y * scaleY;
 
+    // Check for text objects
     for (const key in allPositions) {
       const position = allPositions[key];
       const { x: posX, y: posY, fontSize, fontColor, fontStyle } = position;
@@ -553,7 +564,24 @@ const CreateTemplate: React.FC = () => {
         setDraggedItem(key);
         setDragOffset({ x: scaledX - posX, y: scaledY - posY });
         setIsDragging(true);
-        break;
+        return;
+      }
+    }
+
+    // Check for logo
+    if (logoPosition && logoImage) {
+      const logoWidth = logoImage.width;
+      const logoHeight = logoImage.height;
+
+      if (
+        scaledX >= logoPosition.x &&
+        scaledX <= logoPosition.x + logoWidth &&
+        scaledY >= logoPosition.y &&
+        scaledY <= logoPosition.y + logoHeight
+      ) {
+        setDraggedItem('logo');
+        setDragOffset({ x: scaledX - logoPosition.x, y: scaledY - logoPosition.y });
+        setIsDragging(true);
       }
     }
   };
@@ -574,10 +602,14 @@ const CreateTemplate: React.FC = () => {
     const scaledX = x * scaleX - dragOffset.x;
     const scaledY = y * scaleY - dragOffset.y;
 
-    setAllPositions((prevPositions) => ({
-      ...prevPositions,
-      [draggedItem]: { ...prevPositions[draggedItem], x: scaledX, y: scaledY },
-    }));
+    if (draggedItem === 'logo') {
+      setLogoPosition({ x: scaledX, y: scaledY });
+    } else {
+      setAllPositions((prevPositions) => ({
+        ...prevPositions,
+        [draggedItem]: { ...prevPositions[draggedItem], x: scaledX, y: scaledY },
+      }));
+    }
 
     redrawCanvas(backgroundImage);
   };
@@ -598,8 +630,6 @@ const CreateTemplate: React.FC = () => {
 
     if (bgImage) {
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-
-
     } else {
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -616,7 +646,13 @@ const CreateTemplate: React.FC = () => {
         ctx.font = `${fontSize}px ${fontStyle}`;
         ctx.fillText(text, x, y);
       }
+
+      if (logoImage && logoPosition) {
+        ctx.drawImage(logoImage, logoPosition.x, logoPosition.y, 200, 100);
+      }
     }
+
+
   };
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -645,7 +681,7 @@ const CreateTemplate: React.FC = () => {
       if (nameTemplate == '') {
         Swal.fire({
           title: 'Error!',
-          text: 'กรุณาเลือกพื้นหลัง!',
+          text: 'กรุณากำหนดชื่อเทมเพลต!',
           icon: 'error',
         });
         return;
