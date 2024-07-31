@@ -527,15 +527,69 @@ export default function DetailEmployees() {
         const newGeneratedFiles: { file: File; uid: string }[] = [];
         const temId = TemplateBycompanyId[0].id;
         const positions = {
-            companyAddress: { x: TemplateBycompanyId[0].companyAddress.x, y: TemplateBycompanyId[0].companyAddress.y, fontSize: TemplateBycompanyId[0].companyAddress.fontSize, fontColor: TemplateBycompanyId[0].companyAddress.fontColor },
-            companyName: { x: TemplateBycompanyId[0].companyName.x, y: TemplateBycompanyId[0].companyName.y, fontSize: TemplateBycompanyId[0].companyName.fontSize, fontColor: TemplateBycompanyId[0].companyName.fontColor },
-            departmentName: { x: TemplateBycompanyId[0].departmentName.x, y: TemplateBycompanyId[0].departmentName.y, fontSize: TemplateBycompanyId[0].departmentName.fontSize, fontColor: TemplateBycompanyId[0].departmentName.fontColor },
-            email: { x: TemplateBycompanyId[0].email.x, y: TemplateBycompanyId[0].email.y, fontSize: TemplateBycompanyId[0].email.fontSize, fontColor: TemplateBycompanyId[0].email.fontColor },
-            fullname: { x: TemplateBycompanyId[0].fullname.x, y: TemplateBycompanyId[0].fullname.y, fontSize: TemplateBycompanyId[0].fullname.fontSize, fontColor: TemplateBycompanyId[0].fullname.fontColor },
-            logo: { x: TemplateBycompanyId[0].logo.x, y: TemplateBycompanyId[0].logo.y, fontSize: TemplateBycompanyId[0].logo.fontSize, fontColor: TemplateBycompanyId[0].logo.fontColor },
-            phone: { x: TemplateBycompanyId[0].phone.x, y: TemplateBycompanyId[0].phone.y, fontSize: TemplateBycompanyId[0].phone.fontSize, fontColor: TemplateBycompanyId[0].phone.fontColor },
-            phoneDepartment: { x: TemplateBycompanyId[0].phoneDepartment.x, y: TemplateBycompanyId[0].phoneDepartment.y, fontSize: TemplateBycompanyId[0].phoneDepartment.fontSize, fontColor: TemplateBycompanyId[0].phoneDepartment.fontColor },
-            position: { x: TemplateBycompanyId[0].position.x, y: TemplateBycompanyId[0].position.y, fontSize: TemplateBycompanyId[0].position.fontSize, fontColor: TemplateBycompanyId[0].position.fontColor },
+            companyAddress: {
+                x: TemplateBycompanyId[0].companyAddress.x,
+                y: TemplateBycompanyId[0].companyAddress.y,
+                fontSize: TemplateBycompanyId[0].companyAddress.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].companyAddress.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].companyAddress.fontStyle || 'Bold',
+            },
+            companyName: {
+                x: TemplateBycompanyId[0].companyName.x,
+                y: TemplateBycompanyId[0].companyName.y,
+                fontSize: TemplateBycompanyId[0].companyName.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].companyName.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].companyName.fontStyle || 'Bold',
+            },
+            departmentName: {
+                x: TemplateBycompanyId[0].departmentName.x,
+                y: TemplateBycompanyId[0].departmentName.y,
+                fontSize: TemplateBycompanyId[0].departmentName.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].departmentName.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].departmentName.fontStyle || 'Bold',
+            },
+            email: {
+                x: TemplateBycompanyId[0].email.x,
+                y: TemplateBycompanyId[0].email.y,
+                fontSize: TemplateBycompanyId[0].email.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].email.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].email.fontStyle || 'Bold',
+            },
+            fullname: {
+                x: TemplateBycompanyId[0].fullname.x,
+                y: TemplateBycompanyId[0].fullname.y,
+                fontSize: TemplateBycompanyId[0].fullname.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].fullname.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].fullname.fontStyle || 'Bold',
+            },
+            logo: {
+                x: TemplateBycompanyId[0].logo.x,
+                y: TemplateBycompanyId[0].logo.y,
+                fontSize: TemplateBycompanyId[0].logo.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].logo.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].logo.fontStyle || 'Bold',
+            },
+            phone: {
+                x: TemplateBycompanyId[0].phone.x,
+                y: TemplateBycompanyId[0].phone.y,
+                fontSize: TemplateBycompanyId[0].phone.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].phone.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].phone.fontStyle || 'Bold',
+            },
+            phoneDepartment: {
+                x: TemplateBycompanyId[0].phoneDepartment.x,
+                y: TemplateBycompanyId[0].phoneDepartment.y,
+                fontSize: TemplateBycompanyId[0].phoneDepartment.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].phoneDepartment.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].phoneDepartment.fontStyle || 'Bold',
+            },
+            position: {
+                x: TemplateBycompanyId[0].position.x,
+                y: TemplateBycompanyId[0].position.y,
+                fontSize: TemplateBycompanyId[0].position.fontSize || '0',
+                fontColor: TemplateBycompanyId[0].position.fontColor || '#000000',
+                fontStyle: TemplateBycompanyId[0].position.fontStyle || 'Bold',
+            },
         };
 
         console.log('positions', positions);
@@ -582,7 +636,7 @@ export default function DetailEmployees() {
     }
 
     const drawImage = (background: string, textMappings: { [key: string]: string },
-        positions: { [key: string]: { x: number; y: number, fontSize: string, fontColor: string } }, logo: string) => {
+        positions: { [key: string]: { x: number; y: number, fontSize: string, fontColor: string, fontStyle: string } }, logo: string) => {
         return new Promise<string>((resolve, reject) => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext('2d');
@@ -600,8 +654,8 @@ export default function DetailEmployees() {
 
                     Object.keys(textMappings).forEach((key) => {
                         if (positions[key]) {
-                            const { x, y, fontSize, fontColor } = positions[key];
-                            ctx.font = `${fontSize}px Bold`;
+                            const { x, y, fontSize, fontColor, fontStyle } = positions[key];
+                            ctx.font = `${fontSize}px ${fontStyle}`;
                             ctx.fillStyle = `${fontColor}`;
                             ctx.fillText(textMappings[key], x, y);
                         } else {
@@ -616,7 +670,8 @@ export default function DetailEmployees() {
                     logoImg.onload = () => {
                         if (positions.logo) {
                             const { x, y } = positions.logo;
-                            ctx.drawImage(logoImg, x, y, 180, 100);
+                            //ctx.drawImage(logoImg, x, y, 200, 100);
+                            drawLogo(ctx, logoImg, x, y, 200, 100);
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -643,6 +698,31 @@ export default function DetailEmployees() {
             }
         });
     };
+
+    const drawLogo = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, maxWidth: number, maxHeight: number) => {
+    
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+      
+        const aspectRatio = imgWidth / imgHeight;
+      
+        let drawWidth = maxWidth;
+        let drawHeight = maxHeight;
+      
+        if (imgWidth > imgHeight) {
+          drawHeight = maxWidth / aspectRatio;
+        } else {
+          drawWidth = maxHeight * aspectRatio;
+        }
+      
+        if (drawHeight > maxHeight) {
+          drawHeight = maxHeight;
+          drawWidth = maxHeight * aspectRatio;
+        }
+      
+        ctx.drawImage(img, x, y, drawWidth, drawHeight);
+    
+      };
 
     async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
 

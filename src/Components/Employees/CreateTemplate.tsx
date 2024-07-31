@@ -10,7 +10,50 @@ import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { CompanyApi } from "@/ApiEndpoints/CompanyApi";
 
+interface CanvasOperation {
+  type: 'text' | 'image';
+  data: string;
+  position: { x: number; y: number };
+}
+
+type TextPosition = {
+  x: number;
+  y: number;
+  fontSize: string;
+  fontColor: string;
+  fontStyle: string;
+};
+
+type AllPosition = {
+  [key: string]: TextPosition;
+};
+
+const textMappings: { [key: string]: string } = {
+  "fullname": "Firstname Lastname",
+  "companyName": "Company",
+  "companyAddress": "Company Address",
+  "position": "Position",
+  "email": "Personal email",
+  "phoneDepartment": "Phone Department",
+  "phone": "Phone personal",
+  "departmentName": "Department Name"
+};
+
 const CreateTemplate: React.FC = () => {
+
+
+  const [allPositions, setAllPositions] = useState<AllPosition>({
+    fullname: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    companyName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    companyAddress: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    position: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    email: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    phoneDepartment: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    phone: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    departmentName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    logo: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' }
+  });
+
 
   const templateapi = new TemplateApi();
 
@@ -34,14 +77,16 @@ const CreateTemplate: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const [selectedFont, setSelectedFont] = useState('');
-  const [uploadedFonts, setUploadedFonts] = useState<{ name: string, url: string }[]>([]);
+  // const [uploadedFonts, setUploadedFonts] = useState<{ name: string, url: string }[]>([]);
+
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | null>(null);
 
   const setNameTem = (e: ChangeEvent<HTMLFormElement>) => {
     console.log(e.target.value);
     setNameTemplate(e.target.value);
   };
-
-
 
   const handleIncrement = () => {
     setFontSize((prevSize) => {
@@ -59,10 +104,6 @@ const CreateTemplate: React.FC = () => {
     });
   };
 
-
-
-  console.log('update size', fontSize);
-
   useEffect(() => {
 
     if (background) {
@@ -74,7 +115,7 @@ const CreateTemplate: React.FC = () => {
 
         const ctx = canvas.getContext('2d');
 
-        if (ctx) {
+        if (ctx && background) {
 
           const reader = new FileReader();
 
@@ -83,6 +124,8 @@ const CreateTemplate: React.FC = () => {
             const img = new Image();
 
             img.onload = () => {
+              setBackgroundImage(img);
+              redrawCanvas(img);
               canvas.width = img.width;
               canvas.height = img.height;
               ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -93,81 +136,46 @@ const CreateTemplate: React.FC = () => {
           reader.readAsDataURL(background);
         } else {
           console.error('Failed to get 2D context from canvas');
+          setBackgroundImage(null);
+          redrawCanvas(null);
         }
       }
     }
   }, [background]);
 
-  const [allPositions, setAllPositions] = useState<AllPosition>({
-    "fullname": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "companyName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "companyAddress": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "position": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "email": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "phoneDepartment": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "phone": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "departmentName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-    "logo": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' }
-  });
-
-  interface CanvasOperation {
-    type: 'text' | 'image';
-    data: string;
-    position: { x: number; y: number };
-  }
-
-  type TextPosition = {
-    x: number;
-    y: number;
-    fontSize: string;
-    fontColor: string;
-  };
-
-  type AllPosition = {
-    [key: string]: TextPosition;
-  };
-
-  const textMappings: { [key: string]: string } = {
-    "fullname": "Firstname Lastname",
-    "companyName": "Company",
-    "companyAddress": "Company Address",
-    "position": "Position",
-    "email": "Personal email",
-    "phoneDepartment": "Phone Department",
-    "phone": "Phone personal",
-    "departmentName": "Department Name"
-  };
 
 
-  const handleFontUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 
-    const file = event.target.files?.[0];
+  // const handleFontUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 
-    if (uploadFontRef.current) {
+  //   const file = event.target.files?.[0];
 
-      uploadFontRef.current.value = "";
+  //   if (uploadFontRef.current) {
 
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const fontUrl = reader.result as string;
-          const fontName = file.name.split('.').slice(0, -1).join('.');
-          const newFont = { name: fontName, url: fontUrl };
+  //     uploadFontRef.current.value = "";
 
-          // Adding the new font to the list of uploaded fonts
-          setUploadedFonts((prevFonts) => [...prevFonts, newFont]);
+  //     if (file) {
+  //       const reader = new FileReader();
 
-          // Creating a new style element for the uploaded font
-          const newFontStyle = new FontFace(fontName, `url(${fontUrl})`);
-          newFontStyle.load().then((loadedFont) => {
-            document.fonts.add(loadedFont);
-            setSelectedFont(fontName);
-          });
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-  };
+  //       reader.onload = () => {
+  //         const fontUrl = reader.result as string;
+  //         const fontName = file.name.split('.').slice(0, -1).join('.');
+  //         const newFont = { name: fontName, url: fontUrl };
+
+  //         setUploadedFonts((prevFonts) => [...prevFonts, newFont]);
+
+  //         const newFontStyle = new FontFace(fontName, `url(${fontUrl})`);
+  //         newFontStyle.load().then((loadedFont) => {
+  //           console.log('fontUrl' ,fontUrl );
+  //           console.log('fontName' ,fontName );
+  //           document.fonts.add(loadedFont);
+  //           setSelectedFont(fontName);
+  //         });
+  //       };
+  //       reader.readAsDataURL(file);
+  //     }
+  //   }
+  // };
 
   const handleFontChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedFont(event.target.value);
@@ -302,7 +310,10 @@ const CreateTemplate: React.FC = () => {
 
         setAllPositions(prevPositions => ({
           ...prevPositions,
-          [draggedItem]: { x: scaledX, y: scaledY + 40, fontSize: fontSize || draggedPosition.fontSize, fontColor: selectedColor || draggedPosition.fontColor },
+          [draggedItem]: {
+            x: scaledX, y: scaledY + 40, fontSize: fontSize || draggedPosition.fontSize, fontColor: selectedColor || draggedPosition.fontColor,
+            fontStyle: selectedFont || draggedPosition.fontStyle
+          },
         }));
       } else if (draggedItem === 'image' && getLogoCompany) {
         console.log('Image loaded, drawing at:', x, y);
@@ -329,7 +340,7 @@ const CreateTemplate: React.FC = () => {
 
           setAllPositions(prevPositions => ({
             ...prevPositions,
-            ['logo']: { x: scaledX - 110, y: scaledY - 60, fontSize: width.toString(), fontColor: '' },
+            ['logo']: { x: scaledX - 110, y: scaledY - 60, fontSize: width.toString(), fontColor: '', fontStyle: '' },
           }));
 
           addToCanvasHistory({
@@ -358,20 +369,21 @@ const CreateTemplate: React.FC = () => {
 
     //add fontstyle
     setAllPositions({
-      "fullname": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "companyName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "companyAddress": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "position": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "email": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "phoneDepartment": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "phone": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "departmentName": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' },
-      "logo": { x: 0, y: 0, fontSize: '0', fontColor: '#000000' }
+      fullname: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      companyName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      companyAddress: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      position: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      email: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      phoneDepartment: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      phone: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      departmentName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+      logo: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' }
     });
 
     setCanvasHistory([]);
     setFontSize('0');
     setSelectedColor('#000000');
+    setSelectedFont('');
     // Clear the canvas
     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
@@ -505,6 +517,107 @@ const CreateTemplate: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleMouseDown = (event: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const scaledX = x * scaleX;
+    const scaledY = y * scaleY;
+
+    for (const key in allPositions) {
+      const position = allPositions[key];
+      const { x: posX, y: posY, fontSize, fontColor, fontStyle } = position;
+
+      ctx.font = `${fontSize}px ${fontStyle}`;
+      ctx.fillStyle = fontColor;
+
+      const parsedFontSize = parseInt(fontSize);
+      const textWidth = ctx.measureText(textMappings[key]).width;
+
+      if (
+        scaledX >= posX &&
+        scaledX <= posX + textWidth &&
+        scaledY >= posY - parsedFontSize / 2 &&
+        scaledY <= posY + parsedFontSize / 2
+      ) {
+        setDraggedItem(key);
+        setDragOffset({ x: scaledX - posX, y: scaledY - posY });
+        setIsDragging(true);
+        break;
+      }
+    }
+  };
+
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (!isDragging || !draggedItem) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const scaledX = x * scaleX - dragOffset.x;
+    const scaledY = y * scaleY - dragOffset.y;
+
+    setAllPositions((prevPositions) => ({
+      ...prevPositions,
+      [draggedItem]: { ...prevPositions[draggedItem], x: scaledX, y: scaledY },
+    }));
+
+    redrawCanvas(backgroundImage);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setDraggedItem('');
+  };
+
+  const redrawCanvas = (bgImage: HTMLImageElement | null) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (bgImage) {
+      ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+
+    } else {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    for (const key in allPositions) {
+      const position = allPositions[key];
+      const text = textMappings[key];
+      const { x, y, fontSize, fontColor, fontStyle } = position;
+
+      if (x !== 0 && y !== 0 && text) {
+        ctx.fillStyle = fontColor;
+        ctx.textBaseline = 'middle';
+        ctx.font = `${fontSize}px ${fontStyle}`;
+        ctx.fillText(text, x, y);
+      }
+    }
+  };
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
@@ -520,10 +633,19 @@ const CreateTemplate: React.FC = () => {
         position => position.x !== 0 && position.y !== 0
       );
 
-      if (!allPositionsNotNull || nameTemplate == '') {
+      if (!allPositionsNotNull) {
         Swal.fire({
           title: 'Error!',
           text: 'กรุณากำหนดค่าให้ครบ!',
+          icon: 'error',
+        });
+        return;
+      }
+
+      if (nameTemplate == '') {
+        Swal.fire({
+          title: 'Error!',
+          text: 'กรุณาเลือกพื้นหลัง!',
           icon: 'error',
         });
         return;
@@ -534,7 +656,7 @@ const CreateTemplate: React.FC = () => {
       setLoading(true);
 
       const status = '0';
-      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor)
+      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor, selectedFont)
 
       if (uidTemplate) {
 
@@ -580,11 +702,11 @@ const CreateTemplate: React.FC = () => {
   }
 
   const uploadTemplateCompany = async (nameTemplate: string, getCompanyId: string, allPositions: AllPosition,
-    status: string, fontSize: string, selectedColor: string): Promise<string | undefined> => {
+    status: string, fontSize: string, selectedColor: string, fontStyle: string): Promise<string | undefined> => {
 
     try {
 
-      const res = await templateapi.uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor);
+      const res = await templateapi.uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor, fontStyle);
 
       return res;
 
@@ -668,15 +790,36 @@ const CreateTemplate: React.FC = () => {
                     <hr className="pb-2" />
                     <select value={selectedFont} onChange={handleFontChange}>
                       <option value="">เลือกแบบ Font</option>
-                      <option value="Arial">Arial</option>
-                      <option value="Times New Roman">Times New Roman</option>
-                      <option value="Courier New">Courier New</option>
-                      <option value="serif">serif</option>
-                      {uploadedFonts.map((font, index) => (
+                      <option value="Arial" style={{ fontFamily: 'Arial' }}>Arial</option>
+                      <option value="Arial Black" style={{ fontFamily: 'Arial Black' }}>Arial Black</option>
+                      <option value="Arial Narrow" style={{ fontFamily: 'Arial Narrow' }}>Arial Narrow</option>
+                      <option value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</option>
+                      <option value="Tahoma" style={{ fontFamily: 'Tahoma' }}>Tahoma</option>
+                      <option value="Trebuchet MS" style={{ fontFamily: 'Trebuchet MS' }}>Trebuchet MS</option>
+                      <option value="Impact" style={{ fontFamily: 'Impact' }}>Impact</option>
+                      <option value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</option>
+                      <option value="Times" style={{ fontFamily: 'Times' }}>Times</option>
+                      <option value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</option>
+                      <option value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</option>
+                      <option value="Courier" style={{ fontFamily: 'Courier' }}>Courier</option>
+                      <option value="Brush Script MT" style={{ fontFamily: 'Brush Script MT' }}>Brush Script MT</option>
+                      <option value="Lucida Sans" style={{ fontFamily: 'Lucida Sans' }}>Lucida Sans</option>
+                      <option value="Lucida Bright" style={{ fontFamily: 'Lucida Bright' }}>Lucida Bright</option>
+                      <option value="Lucida Console" style={{ fontFamily: 'Lucida Console' }}>Lucida Console</option>
+                      <option value="Garamond" style={{ fontFamily: 'Garamond' }}>Garamond</option>
+                      <option value="Perpetua" style={{ fontFamily: 'Perpetua' }}>Perpetua</option>
+                      <option value="Palatino" style={{ fontFamily: 'Palatino' }}>Palatino</option>
+                      <option value="Century Gothic" style={{ fontFamily: 'Century Gothic' }}>Century Gothic</option>
+                      <option value="Bookman" style={{ fontFamily: 'Bookman' }}>Bookman</option>
+                      <option value="Comic Sans MS" style={{ fontFamily: 'Comic Sans MS' }}>Comic Sans MS</option>
+                      <option value="Papyrus" style={{ fontFamily: 'Papyrus' }}>Papyrus</option>
+                      <option value="Cursive" style={{ fontFamily: 'Cursive' }}>Cursive</option>
+                      <option value="Fantasy" style={{ fontFamily: 'Fantasy' }}>Fantasy</option>
+                      {/* {uploadedFonts.map((font, index) => (
                         <option key={index} value={font.name}>
                           {font.name}
                         </option>
-                      ))}
+                      ))} */}
                     </select>
                   </Card.Body>
                 </Card>
@@ -721,7 +864,8 @@ const CreateTemplate: React.FC = () => {
                     ref={uploadFontRef}
                     type="file"
                     accept=".ttf"
-                    onChange={handleFontUpload} />
+                  // onChange={handleFontUpload} 
+                  />
                   <br />
                   <p className="text-x font-bold text-red-500 pt-2">* เลือกไฟล์ .ttf เท่านั้น</p>
                 </Card.Body>
@@ -744,7 +888,12 @@ const CreateTemplate: React.FC = () => {
                     height="410px"
                     ref={canvasRef}
                     onDragOver={handleDragOver}
-                    onDrop={handleDrop}>
+                    onDrop={handleDrop}
+                    // onClick={handleClick}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    style={{ border: '1px solid #000000' }}>
                   </canvas>
                 </div>
               ) : (

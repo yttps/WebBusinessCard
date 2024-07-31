@@ -11,13 +11,14 @@ import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import '@/Components/Employees/CSS/CreactCard.css';
 
+
 export default function CreateCard() {
   const templateapi = useMemo(() => new TemplateApi(), []);
   const companyapi = useMemo(() => new CompanyApi(), []);
   const [TemplateBycompanyId, setTemplateBycompanyId] = useState<GetTemplateCompanyId[]>([]);
   const [UrlLogocompany, setUrlLogocompany] = useState('');
   const [isFetch, setIsFetch] = useState(false);
-  const [positions, setPositions] = useState<{ [key: string]: { x: number; y: number; fontSize: string; fontColor: string } }[]>([]);
+  const [positions, setPositions] = useState<{ [key: string]: { x: number; y: number; fontSize: string; fontColor: string; fontStyle: string } }[]>([]);
   const [index, setIndex] = useState(0);
   const [getUserByCompanies, setGetUserByCompanies] = useState<GetUsersByCompany[] | null>(null);
   const [companyId, setCompanyId] = useState('');
@@ -42,7 +43,7 @@ export default function CreateCard() {
 
 
   const drawImage = (background: string, textMappings: { [key: string]: string },
-    positions: { [key: string]: { x: number; y: number; fontSize: string; fontColor: string } }, logo: string
+    positions: { [key: string]: { x: number; y: number; fontSize: string; fontColor: string; fontStyle: string } }, logo: string
   ) => {
     return new Promise<string>((resolve, reject) => {
       const canvas = canvasRef.current;
@@ -62,8 +63,8 @@ export default function CreateCard() {
 
           Object.keys(textMappings).forEach((key) => {
             if (positions[key]) {
-              const { x, y, fontSize, fontColor } = positions[key];
-              ctx.font = `${fontSize}px Bold`;
+              const { x, y, fontSize, fontColor, fontStyle } = positions[key];
+              ctx.font = `${fontSize}px ${fontStyle}`;
               ctx.fillStyle = `${fontColor}`;
               ctx.fillText(textMappings[key], x, y);
             } else {
@@ -78,7 +79,8 @@ export default function CreateCard() {
           logoImg.onload = () => {
             if (positions.logo) {
               const { x, y } = positions.logo;
-              ctx.drawImage(logoImg, x, y, 200, 100);
+              // ctx.drawImage(logoImg, x, y, 200, 100);
+              drawLogo(ctx, logoImg, x, y, 200, 100);
 
               canvas.toBlob((blob) => {
                 if (blob) {
@@ -107,10 +109,45 @@ export default function CreateCard() {
     });
   };
 
+  const drawLogo = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, maxWidth: number, maxHeight: number) => {
 
-  const handleDeleteTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, templateId: string) => {
+    const imgWidth = img.width;
+    const imgHeight = img.height;
+
+    const aspectRatio = imgWidth / imgHeight;
+
+    let drawWidth = maxWidth;
+    let drawHeight = maxHeight;
+
+    if (imgWidth > imgHeight) {
+      drawHeight = maxWidth / aspectRatio;
+    } else {
+      drawWidth = maxHeight * aspectRatio;
+    }
+
+    if (drawHeight > maxHeight) {
+      drawHeight = maxHeight;
+      drawWidth = maxHeight * aspectRatio;
+    }
+
+    ctx.drawImage(img, x, y, drawWidth, drawHeight);
+
+  };
+
+  const handleDeleteTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, templateId: string, templateStatus: number) => {
 
     e.preventDefault();
+
+    if(templateStatus == 1){
+      Swal.fire({
+        title: 'เทมเพลตนี้ใช้อยู่',
+        text: 'โปรดเลือกเทมเพลตใหม่หรือสร้างเทมเพลตใหม่!',
+        icon: 'error',
+      });
+      return;
+    }
+
+
 
     const deleteTemplate = document.getElementById('deleteTemplate') as HTMLButtonElement;
     const addTemplate = document.getElementById('addTemplate') as HTMLButtonElement;
@@ -161,6 +198,16 @@ export default function CreateCard() {
 
     e.preventDefault();
 
+    if (template.status == 1) {
+
+      Swal.fire({
+        title: 'Error!',
+        text: 'ใช้เทมเพลตอยู่แล้ว!',
+        icon: 'warning',
+      });
+      return;
+    }
+
     const deleteTemplate = document.getElementById('deleteTemplate') as HTMLButtonElement;
     const addTemplate = document.getElementById('addTemplate') as HTMLButtonElement;
     const selectedTemplate = document.getElementById('selectedTemplate') as HTMLButtonElement;
@@ -172,15 +219,69 @@ export default function CreateCard() {
 
     const temId = template.id;
     const positions = {
-      companyAddress: { x: template.companyAddress.x, y: template.companyAddress.y, fontSize: template.companyAddress.fontSize, fontColor: template.companyAddress.fontColor },
-      companyName: { x: template.companyName.x, y: template.companyName.y, fontSize: template.companyName.fontSize, fontColor: template.companyName.fontColor },
-      departmentName: { x: template.departmentName.x, y: template.departmentName.y, fontSize: template.departmentName.fontSize, fontColor: template.departmentName.fontColor },
-      email: { x: template.email.x, y: template.email.y, fontSize: template.email.fontSize, fontColor: template.email.fontColor },
-      fullname: { x: template.fullname.x, y: template.fullname.y, fontSize: template.fullname.fontSize, fontColor: template.fullname.fontColor },
-      logo: { x: template.logo.x, y: template.logo.y, fontSize: template.logo.fontSize, fontColor: template.logo.fontColor },
-      phone: { x: template.phone.x, y: template.phone.y, fontSize: template.phone.fontSize, fontColor: template.phone.fontColor },
-      phoneDepartment: { x: template.phoneDepartment.x, y: template.phoneDepartment.y, fontSize: template.phoneDepartment.fontSize, fontColor: template.phoneDepartment.fontColor },
-      position: { x: template.position.x, y: template.position.y, fontSize: template.position.fontSize, fontColor: template.position.fontColor },
+      companyAddress: {
+        x: template.companyAddress.x,
+        y: template.companyAddress.y,
+        fontSize: template.companyAddress.fontSize,
+        fontColor: template.companyAddress.fontColor,
+        fontStyle: template.companyAddress.fontStyle,
+      },
+      companyName: {
+        x: template.companyName.x,
+        y: template.companyName.y,
+        fontSize: template.companyName.fontSize,
+        fontColor: template.companyName.fontColor,
+        fontStyle: template.companyName.fontStyle,
+      },
+      departmentName: {
+        x: template.departmentName.x,
+        y: template.departmentName.y,
+        fontSize: template.departmentName.fontSize,
+        fontColor: template.departmentName.fontColor,
+        fontStyle: template.departmentName.fontStyle,
+      },
+      email: {
+        x: template.email.x,
+        y: template.email.y,
+        fontSize: template.email.fontSize,
+        fontColor: template.email.fontColor,
+        fontStyle: template.email.fontStyle,
+      },
+      fullname: {
+        x: template.fullname.x,
+        y: template.fullname.y,
+        fontSize: template.fullname.fontSize,
+        fontColor: template.fullname.fontColor,
+        fontStyle: template.fullname.fontStyle,
+      },
+      logo: {
+        x: template.logo.x,
+        y: template.logo.y,
+        fontSize: template.logo.fontSize,
+        fontColor: template.logo.fontColor,
+        fontStyle: template.logo.fontStyle,
+      },
+      phone: {
+        x: template.phone.x,
+        y: template.phone.y,
+        fontSize: template.phone.fontSize,
+        fontColor: template.phone.fontColor,
+        fontStyle: template.phone.fontStyle,
+      },
+      phoneDepartment: {
+        x: template.phoneDepartment.x,
+        y: template.phoneDepartment.y,
+        fontSize: template.phoneDepartment.fontSize,
+        fontColor: template.phoneDepartment.fontColor,
+        fontStyle: template.phoneDepartment.fontStyle,
+      },
+      position: {
+        x: template.position.x,
+        y: template.position.y,
+        fontSize: template.position.fontSize,
+        fontColor: template.position.fontColor,
+        fontStyle: template.position.fontStyle,
+      },
     };
     console.log('positionsssss:', positions);
 
@@ -312,61 +413,71 @@ export default function CreateCard() {
     if (TemplateBycompanyId?.length > 0) {
 
       const newPositions = TemplateBycompanyId.map((template) => ({
-        fullname: {
-          x: template.fullname.x,
-          y: template.fullname.y,
-          fontSize: template.fullname.fontSize,
-          fontColor: template.fullname.fontColor,
+        companyAddress: {
+          x: template.companyAddress.x,
+          y: template.companyAddress.y,
+          fontSize: template.companyAddress.fontSize,
+          fontColor: template.companyAddress.fontColor,
+          fontStyle: template.companyAddress.fontStyle,
         },
         companyName: {
           x: template.companyName.x,
           y: template.companyName.y,
           fontSize: template.companyName.fontSize,
           fontColor: template.companyName.fontColor,
-        },
-        companyAddress: {
-          x: template.companyAddress.x,
-          y: template.companyAddress.y,
-          fontSize: template.companyAddress.fontSize,
-          fontColor: template.companyAddress.fontColor,
-        },
-        position: {
-          x: template.position.x,
-          y: template.position.y,
-          fontSize: template.position.fontSize,
-          fontColor: template.position.fontColor,
-        },
-        email: {
-          x: template.email.x,
-          y: template.email.y,
-          fontSize: template.email.fontSize,
-          fontColor: template.email.fontColor,
-        },
-        phoneDepartment: {
-          x: template.phoneDepartment.x,
-          y: template.phoneDepartment.y,
-          fontSize: template.phoneDepartment.fontSize,
-          fontColor: template.phoneDepartment.fontColor,
-        },
-        phone: {
-          x: template.phone.x,
-          y: template.phone.y,
-          fontSize: template.phone.fontSize,
-          fontColor: template.phone.fontColor,
+          fontStyle: template.companyName.fontStyle,
         },
         departmentName: {
           x: template.departmentName.x,
           y: template.departmentName.y,
           fontSize: template.departmentName.fontSize,
           fontColor: template.departmentName.fontColor,
+          fontStyle: template.departmentName.fontStyle,
+        },
+        email: {
+          x: template.email.x,
+          y: template.email.y,
+          fontSize: template.email.fontSize,
+          fontColor: template.email.fontColor,
+          fontStyle: template.email.fontStyle,
+        },
+        fullname: {
+          x: template.fullname.x,
+          y: template.fullname.y,
+          fontSize: template.fullname.fontSize,
+          fontColor: template.fullname.fontColor,
+          fontStyle: template.fullname.fontStyle,
         },
         logo: {
           x: template.logo.x,
           y: template.logo.y,
           fontSize: template.logo.fontSize,
           fontColor: template.logo.fontColor,
+          fontStyle: template.logo.fontStyle,
+        },
+        phone: {
+          x: template.phone.x,
+          y: template.phone.y,
+          fontSize: template.phone.fontSize,
+          fontColor: template.phone.fontColor,
+          fontStyle: template.phone.fontStyle,
+        },
+        phoneDepartment: {
+          x: template.phoneDepartment.x,
+          y: template.phoneDepartment.y,
+          fontSize: template.phoneDepartment.fontSize,
+          fontColor: template.phoneDepartment.fontColor,
+          fontStyle: template.phoneDepartment.fontStyle,
+        },
+        position: {
+          x: template.position.x,
+          y: template.position.y,
+          fontSize: template.position.fontSize,
+          fontColor: template.position.fontColor,
+          fontStyle: template.position.fontStyle,
         },
       }));
+
       setPositions(newPositions);
     }
   }, [TemplateBycompanyId]);
@@ -472,7 +583,7 @@ export default function CreateCard() {
                                   className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg">เลือกเทมเพลต</Button>
                                 <Button
                                   id="deleteTemplate"
-                                  onClick={(e) => handleDeleteTemplate(e, template.id)}
+                                  onClick={(e) => handleDeleteTemplate(e, template.id, template.status)}
                                   className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg">ลบเทมเพลต</Button>
                               </div>
                               {loading ?
