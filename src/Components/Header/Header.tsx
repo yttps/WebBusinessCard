@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './Header.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { FaUser } from 'react-icons/fa';
+import { FaAngleDown } from 'react-icons/fa';
 
 export default function Header() {
 
@@ -16,9 +16,10 @@ export default function Header() {
             text: 'ต้องการออกจากระบบหรือไม่!',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ออกจากระบบ',
+            cancelButtonText: 'อยู่ในระบบ'
         });
 
         if (result.isConfirmed) {
@@ -56,26 +57,14 @@ export default function Header() {
                             type="button"
                             onClick={() => setDropdownVisible(!dropdownVisible)}
                         >
-                            <FaUser size={20} />
+                            <FaAngleDown size={20} />
                         </button>
                         <br />
                         <div id="multi-dropdown" className={`${dropdownVisible ? 'block' : 'hidden'} absolute right-0 z-10 mt-2 bg-white divide-y divide-gray-100 rounded-lg shadow w-80 dark:bg-gray-700`}>
                             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="multiLevelDropdownButton">
                                 <li>
-                                    <div className="w-full max-w-sm bg-white rounded-lg pt-10">
-                                        <div className="flex flex-col items-center pb-20">
-                                            <img className="w-24 h-24 mb-3 rounded-full shadow-lg" src="https://t4.ftcdn.net/jpg/02/29/75/83/360_F_229758328_7x8jwCwjtBMmC6rgFzLFhZoEpLobB6L8.jpg" alt="Bonnie image" />
-                                            <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">Bonnie Green</h5>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">Visual Designer</span>
-                                        </div>
-                                    </div>
-
-                                </li>
-                                <li>
-                                    <hr style={{ width: '20rem', textAlign: 'center' }} />
                                     <a href="#" onClick={handleLogOut} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">ออกจากระบบ</a>
                                 </li>
-                                <p>Accout ปลอมยังทำไม่เสร็จ</p>
                             </ul>
                         </div>
                     </div>

@@ -156,6 +156,8 @@ const AddEmployees = () => {
 
     event.preventDefault();
 
+    const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+
     const formData: FormData = {
       firstname: getInputValue('firstname'),
       lastname: getInputValue('lastname'),
@@ -225,6 +227,12 @@ const AddEmployees = () => {
       return;
     }
 
+    if (selectedImage.showImage) {
+      const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+      removeBtn.style.visibility = 'hidden';
+    }
+
+    submitBtn.style.visibility = 'hidden';
     setLoading(true);
 
     try {
@@ -488,7 +496,7 @@ const AddEmployees = () => {
             if (positions.logo) {
               const { x, y } = positions.logo;
               //ctx.drawImage(logoImg, x, y, 200, 100);
-              drawLogo(ctx, logoImg, x, y, 200, 100);
+              drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
 
               canvas.toBlob((blob) => {
                 if (blob) {
@@ -516,29 +524,18 @@ const AddEmployees = () => {
     });
   };
 
-  const drawLogo = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, maxWidth: number, maxHeight: number) => {
-
-    const imgWidth = img.width;
-    const imgHeight = img.height;
-
-    const aspectRatio = imgWidth / imgHeight;
-
-    let drawWidth = maxWidth;
-    let drawHeight = maxHeight;
-
-    if (imgWidth > imgHeight) {
-      drawHeight = maxWidth / aspectRatio;
-    } else {
-      drawWidth = maxHeight * aspectRatio;
+  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+    const aspectRatio = image.width / image.height;
+    let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
+    let logoHeight = logoWidth / aspectRatio;
+  
+    // Ensure the logo fits within the canvas height
+    if (logoHeight > canvasHeight * 0.5) {
+      logoHeight = canvasHeight * 0.5;
+      logoWidth = logoHeight * aspectRatio;
     }
-
-    if (drawHeight > maxHeight) {
-      drawHeight = maxHeight;
-      drawWidth = maxHeight * aspectRatio;
-    }
-
-    ctx.drawImage(img, x, y, drawWidth, drawHeight);
-
+  
+    ctx.drawImage(image, x, y, logoWidth, logoHeight);
   };
 
   async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
@@ -949,7 +946,7 @@ const AddEmployees = () => {
                       </div>
                     </Card.Body>
                   </Card><div onClick={handleRemoveImage}>
-                      <Button disabled={loading} variant="danger">Remove Image</Button>
+                      <Button id='removeBtn' disabled={loading} variant="danger">Remove Image</Button>
                     </div></>
                 ) : (
                   <p></p>
@@ -959,9 +956,9 @@ const AddEmployees = () => {
 
             <div className="md:col-span-2 flex justify-end mt-6">
               <Button
-                id='submitButton'
+                id='submitBtn'
                 variant="success"
-                type="submit" disabled={loading}>ตกลง</Button>
+                type="submit" >ตกลง</Button>
             </div>
             <br />
             {loading ?

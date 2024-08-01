@@ -16,19 +16,9 @@ export default function ListEmployees() {
     const [loading, setLoading] = useState(false);
     const [hasData, setHasData] = useState(false);
 
-    const [selectedDateRange, setSelectedDateRange] = useState<string>('Last 30 days');
-    const [dropdownVisible, setDropdownVisible] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 5;
 
-    const toggleDropdown = () => {
-        setDropdownVisible(!dropdownVisible);
-    };
-
-    const handleDateRangeChange = (range: string) => {
-        setSelectedDateRange(range);
-        setDropdownVisible(false);
-    };
 
     const filteredData = dataEmployees.filter((dataEmployees) =>
         dataEmployees.firstname.toLowerCase().includes(searchQuery.toLowerCase())
@@ -237,76 +227,6 @@ export default function ListEmployees() {
                                 <br />
                                 <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
                                     <div className="flex flex-col sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
-                                        <div>
-                                            <button
-                                                id="dropdownRadioButton"
-                                                onClick={toggleDropdown}
-                                                className="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
-                                                type="button"
-                                            >
-                                                <svg
-                                                    className="w-3 h-3 text-gray-500 dark:text-gray-400 me-3"
-                                                    aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.982 13.982a1 1 0 0 1-1.414 0l-3.274-3.274A1.012 1.012 0 0 1 9 10V6a1 1 0 0 1 2 0v3.586l2.982 2.982a1 1 0 0 1 0 1.414Z" />
-                                                </svg>
-                                                {selectedDateRange}
-                                                <svg
-                                                    className="w-2.5 h-2.5 ms-2.5"
-                                                    aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 10 6"
-                                                >
-                                                    <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="m1 1 4 4 4-4"
-                                                    />
-                                                </svg>
-                                            </button>
-                                            {dropdownVisible && (
-                                                <div
-                                                    id="dropdownRadio"
-                                                    className="z-10 w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
-                                                >
-                                                    <ul
-                                                        className="p-3 space-y-1 text-sm text-gray-700 dark:text-gray-200"
-                                                        aria-labelledby="dropdownRadioButton"
-                                                    >
-                                                        {['Last day', 'Last 7 days', 'Last 30 days', 'Last month', 'Last year'].map(
-                                                            (range) => (
-                                                                <li key={range}>
-                                                                    <div
-                                                                        className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
-                                                                        onClick={() => handleDateRangeChange(range)}
-                                                                    >
-                                                                        <input
-                                                                            type="radio"
-                                                                            value={range}
-                                                                            name="filter-radio"
-                                                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                                                            checked={selectedDateRange === range}
-                                                                            readOnly
-                                                                        />
-                                                                        <label
-                                                                            className="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300"
-                                                                        >
-                                                                            {range}
-                                                                        </label>
-                                                                    </div>
-                                                                </li>
-                                                            )
-                                                        )}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
                                         <label htmlFor="table-search" className="sr-only">
                                             Search
                                         </label>
@@ -338,7 +258,7 @@ export default function ListEmployees() {
                                                         วันที่เริ่มงาน
                                                     </th>
                                                     <th scope="col" className="px-6 py-3">
-                                                        Action
+                                                        แก้ไขข้อมูล
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -401,6 +321,7 @@ export default function ListEmployees() {
                                         <div className="flex flex-column items-center relative overflow-x-auto shadow-md sm:rounded-lg">
                                             <img src="https://www.gokaidosports.in/Images/nodata.jpg" alt="" style={{ width: '50%' }} />
                                             <br />
+                                            <p className='text-xl'>ไม่พบข้อมูลพนักงาน</p>
                                         </div>
                                     )}
                                 </div>

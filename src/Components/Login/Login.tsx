@@ -14,7 +14,7 @@ export default function Login() {
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const [detailHrLogin, setDetailHrLogin] = useState<GetDetailHRLogin[]>([]);
-    const [showPass , setShowPass] = useState(false);
+    const [showPass, setShowPass] = useState(false);
 
 
     async function loginUserData(e: React.MouseEvent<HTMLFormElement>) {
@@ -48,7 +48,7 @@ export default function Login() {
                     else {
                         Swal.fire({
                             title: 'Login Error!',
-                            text: 'รออนุมติจากระบบ',
+                            text: 'รออนุมัติจากระบบ',
                             icon: 'error',
                         });
                         return;
@@ -62,7 +62,6 @@ export default function Login() {
                     const response = await loginapi.GetDetailHRlogin();
 
                     if (response) {
-
 
                         setDetailHrLogin(response);
 
@@ -99,7 +98,7 @@ export default function Login() {
         }
     }
 
-    function handleShowPassword(){
+    function handleShowPassword() {
 
         setShowPass(!showPass);
 
@@ -133,44 +132,44 @@ export default function Login() {
             </nav>
             <hr />
             <div className="flex items-center justify-center min-h-max bg-background mt-[5rem]">
-              <div className="bg-card p-8 rounded-lg shadow-lg w-full max-w-sm">
-                <h1 className="text-2xl font-bold text-foreground">Login</h1>
-                <br />
-                <p className="text-muted-foreground">Hi, Welcome back 👋</p>
-        
-                <form className="mt-6" onSubmit={loginUserData}>
-                  <label className="block text-muted-foreground" htmlFor="email">
-                    Email
-                  </label>
-                  <input ref={emailRef} type="email" id="email" className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" placeholder="you@example.com" required />
-        
-                  <label className="block text-muted-foreground mt-4" htmlFor="password">
-                    Password
-                  </label>
-                  <input  type={showPass ? "text" : "password"}  ref={passwordRef} id="password" className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" placeholder="Enter your password" required />
-        
-                  <div className="flex items-center justify-between mt-4">
-                    <label className="flex items-center pt-2">
-                      <input onClick={handleShowPassword} id="showpass" type="checkbox" className="mr-2" />
-                      <span className="text-muted-foreground">Show Password</span>
-                    </label>
-                    <a href="#" className="text-primary hover:underline">
-                      Forgot Password?
-                    </a>
-                  </div>
-        
-                  <button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/80 w-full mt-6 p-2 rounded-lg">
-                    Login
-                  </button>
-                </form>
-        
-                <p className="text-muted-foreground mt-4">
-                  Not registered yet?{' '}
-                  <Link to="/Register" className="text-primary hover:underline">
-                    Create an account
-                  </Link>
-                </p>
-              </div>
+                <div className="bg-card p-8 rounded-lg shadow-lg w-full max-w-sm">
+                    <h1 className="text-2xl font-bold text-foreground">Login</h1>
+                    <br />
+                    <p className="text-muted-foreground">Hi, Welcome back 👋</p>
+
+                    <form className="mt-6" onSubmit={loginUserData}>
+                        <label className="block text-muted-foreground" htmlFor="email">
+                            Email
+                        </label>
+                        <input ref={emailRef} type="email" id="email" className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" placeholder="you@example.com" required />
+
+                        <label className="block text-muted-foreground mt-4" htmlFor="password">
+                            Password
+                        </label>
+                        <input type={showPass ? "text" : "password"} ref={passwordRef} id="password" className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" placeholder="Enter your password" required />
+
+                        <div className="flex items-center justify-between mt-4">
+                            <label className="flex items-center pt-2">
+                                <input onClick={handleShowPassword} id="showpass" type="checkbox" className="mr-2" />
+                                <span className="text-muted-foreground">Show Password</span>
+                            </label>
+                            <a href="#" className="text-primary hover:underline">
+                                Forgot Password?
+                            </a>
+                        </div>
+
+                        <button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/80 w-full mt-6 p-2 rounded-lg">
+                            Login
+                        </button>
+                    </form>
+
+                    <p className="text-muted-foreground mt-4">
+                        Not registered yet?{' '}
+                        <Link to="/Register" className="text-primary hover:underline">
+                            Create an account
+                        </Link>
+                    </p>
+                </div>
             </div>
         </>
     );

@@ -50,36 +50,12 @@ export default function DetailEmployees() {
 
     const [loading, setLoading] = useState(false);
     const backgroundInputRef = useRef<HTMLInputElement>(null);
-    const [password, setPassword] = useState('');
-    const [validations, setValidations] = useState({
-        lowercase: false,
-        uppercase: false,
-        number: false,
-        length: false,
-    });
-    const [showPass, setShowPass] = useState(false);
-
-    console.log('new pass', password);
 
     const [imageData, setImageData] = useState({
         base64textString: '',
         imageName: '',
         showImage: false,
     });
-
-
-    const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-
-        const newPassword = event.target.value;
-
-
-        if (dataemployeesById?.password) {
-
-            setPassword(newPassword);
-            validatePassword(newPassword || dataemployeesById.password);
-            setDataEmployeesById({ ...dataemployeesById, password: event.target.value });
-        }
-    };
 
     function handleRemoveImage() {
         setImageData({
@@ -92,28 +68,6 @@ export default function DetailEmployees() {
         if (backgroundInputRef.current) {
             backgroundInputRef.current.value = "";
         }
-    }
-
-    const validatePassword = (password: string) => {
-
-
-        const lowerCaseRegex = /[a-z]/;
-        const upperCaseRegex = /[A-Z]/;
-        const numberRegex = /\d/;
-        const lengthRegex = /.{8,}/;
-
-        setValidations({
-            lowercase: lowerCaseRegex.test(password),
-            uppercase: upperCaseRegex.test(password),
-            number: numberRegex.test(password),
-            length: lengthRegex.test(password),
-        });
-    };
-
-    function handleShowPassword() {
-
-        setShowPass(!showPass);
-
     }
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -135,17 +89,6 @@ export default function DetailEmployees() {
         };
         reader.readAsDataURL(file);
     }
-
-    useEffect(() => {
-
-        if (dataemployeesById?.password) {
-            validatePassword(dataemployeesById.password);
-        }
-        console.log('is loading', isLoading);
-
-    }, [dataemployeesById?.password, isLoading]);
-
-
 
     const getCompanyBranchById = useCallback(async (CompanyId: string) => {
         try {
@@ -258,8 +201,8 @@ export default function DetailEmployees() {
                 text: 'ยืนยันเพื่อทำการลบข้อมูล!',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
                 confirmButtonText: 'ตกลง',
                 cancelButtonText: 'ยกเลิก'
             });
@@ -320,7 +263,6 @@ export default function DetailEmployees() {
             const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
             const telElement = document.getElementById('telEdit') as HTMLInputElement;
             const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
-            const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
 
             const formEdit = {
                 firstname: firstnameElement.value !== '' ? firstnameElement.value : dataemployeesById?.firstname ?? '',
@@ -335,7 +277,7 @@ export default function DetailEmployees() {
                 country: countryElement.value !== '' ? countryElement.value : country ?? '',
                 phone: telElement.value !== '' ? telElement.value : dataemployeesById?.phone ?? '',
                 email: emailElement.value !== '' ? emailElement.value : dataemployeesById?.email ?? '',
-                password: passwordElement.value !== '' ? passwordElement.value : dataemployeesById?.password ?? '',
+                password: dataemployeesById?.password ?? '',
                 branch: branchValue !== '' ? branchValue : dataemployeesById?.companybranch?.id ?? '',
                 department: departmentValue !== '' ? departmentValue : dataemployeesById?.department.id ?? ''
             }
@@ -353,14 +295,6 @@ export default function DetailEmployees() {
                 return;
             }
 
-            if (passwordElement.value.length < 6) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'กำหนดรหัสผ่านอย่างน้อย 6 ตัว!',
-                    icon: 'error',
-                });
-                return;
-            }
             if (!emailRegex.test(emailElement.value)) {
                 Swal.fire({
                     title: 'Add Data Error!',
@@ -504,7 +438,6 @@ export default function DetailEmployees() {
         const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
         const telElement = document.getElementById('telEdit') as HTMLInputElement;
         const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
-        const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
 
         const formEdit = {
             firstname: firstnameElement.value !== '' ? firstnameElement.value : dataemployeesById?.firstname ?? '',
@@ -519,7 +452,7 @@ export default function DetailEmployees() {
             country: countryElement.value !== '' ? countryElement.value : country ?? '',
             phone: telElement.value !== '' ? telElement.value : dataemployeesById?.phone ?? '',
             email: emailElement.value !== '' ? emailElement.value : dataemployeesById?.email ?? '',
-            password: passwordElement.value !== '' ? passwordElement.value : dataemployeesById?.password ?? '',
+            password: dataemployeesById?.password ?? '',
             branch: branchValue !== '' ? branchValue : dataemployeesById?.companybranch?.id ?? '',
             department: departmentValue !== '' ? departmentValue : dataemployeesById?.department.id ?? ''
         }
@@ -671,7 +604,7 @@ export default function DetailEmployees() {
                         if (positions.logo) {
                             const { x, y } = positions.logo;
                             //ctx.drawImage(logoImg, x, y, 200, 100);
-                            drawLogo(ctx, logoImg, x, y, 200, 100);
+                            drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -699,29 +632,18 @@ export default function DetailEmployees() {
         });
     };
 
-    const drawLogo = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, maxWidth: number, maxHeight: number) => {
-    
-        const imgWidth = img.width;
-        const imgHeight = img.height;
+    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+        const aspectRatio = image.width / image.height;
+        let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
+        let logoHeight = logoWidth / aspectRatio;
       
-        const aspectRatio = imgWidth / imgHeight;
-      
-        let drawWidth = maxWidth;
-        let drawHeight = maxHeight;
-      
-        if (imgWidth > imgHeight) {
-          drawHeight = maxWidth / aspectRatio;
-        } else {
-          drawWidth = maxHeight * aspectRatio;
+        // Ensure the logo fits within the canvas height
+        if (logoHeight > canvasHeight * 0.5) {
+          logoHeight = canvasHeight * 0.5;
+          logoWidth = logoHeight * aspectRatio;
         }
       
-        if (drawHeight > maxHeight) {
-          drawHeight = maxHeight;
-          drawWidth = maxHeight * aspectRatio;
-        }
-      
-        ctx.drawImage(img, x, y, drawWidth, drawHeight);
-    
+        ctx.drawImage(image, x, y, logoWidth, logoHeight);
       };
 
     async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
@@ -982,39 +904,7 @@ export default function DetailEmployees() {
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder={dataemployeesById.email} />
                                             <br />
-                                            <p className="text-muted-foreground">รหัสผ่าน:</p>
-                                            <input
-                                                onChange={handlePasswordChange}
-                                                value={dataemployeesById.password || ''}
-                                                type="text" id="passwordEdit"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder={dataemployeesById.password} />
-                                            <label className="flex items-center pt-2 pl-2">
-                                                <input onClick={handleShowPassword} id="showpass" type="checkbox" className="mr-2" />
-                                                <span className="text-muted-foreground">Show Password</span>
-                                            </label>
                                             <div id="message" style={{ paddingLeft: '0px' }}>
-                                                <br />
-                                                <p id="letter" className={validations.lowercase ? 'valid' : 'invalid'}>
-                                                    <b>- ตัวพิมพ์เล็ก (a-z)</b>
-                                                    {validations.lowercase && <i className="fas fa-check icon"></i>}
-                                                    {!validations.lowercase && <i className="fas fa-times icon"></i>}
-                                                </p>
-                                                <p id="capital" className={validations.uppercase ? 'valid' : 'invalid'}>
-                                                    <b>- ตัวพิมพ์ใหญ่ (A-Z)</b>
-                                                    {validations.uppercase && <i className="fas fa-check icon"></i>}
-                                                    {!validations.uppercase && <i className="fas fa-times icon"></i>}
-                                                </p>
-                                                <p id="number" className={validations.number ? 'valid' : 'invalid'}>
-                                                    <b>- ตัวเลข (0-9)</b>
-                                                    {validations.number && <i className="fas fa-check icon"></i>}
-                                                    {!validations.number && <i className="fas fa-times icon"></i>}
-                                                </p>
-                                                <p id="length" className={validations.length ? 'valid' : 'invalid'}>
-                                                    <b>- ความยาวรหัสผ่าน 8 ตัว</b>
-                                                    {validations.length && <i className="fas fa-check icon"></i>}
-                                                    {!validations.length && <i className="fas fa-times icon"></i>}
-                                                </p>
                                                 <br />
                                                 <br />
                                                 <p className="text-muted-foreground">รูปประจำตัวพนักงาน:</p>
@@ -1102,7 +992,6 @@ export default function DetailEmployees() {
             <div>
                 <Header />
                 <br />
-                //check loading 10 sec to not found data
                 <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
                     <div className="flex">
                         <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
@@ -1134,112 +1023,134 @@ export default function DetailEmployees() {
         <div>
             <Header />
             <br />
-            <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
-                <div className="flex">
-                    <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
-                        <div className="flex flex-col items-center">
-                            <img src={dataemployeesById.profile} alt="Profile Picture" className="w-70 h-24 object-cover rounded-lg mb-5" />
-                            <h2 className="text-lg font-semibold mb-2">Profile</h2>
+            {dataemployeesById ? (
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                    <div className="flex">
+                        <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                            <div className="flex flex-col items-center">
+                                <img src={dataemployeesById.profile} alt="Profile Picture" className="w-70 h-24 object-cover rounded-lg mb-5" />
+                                <h2 className="text-lg font-semibold mb-2">Profile</h2>
+                                <br />
+                                <div className="text-center">
+                                    <p className="text-muted-foreground">ชื่อ:</p>
+                                    <p>{dataemployeesById.firstname}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">นามสกุล:</p>
+                                    <p>{dataemployeesById.lastname}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">ตำแหน่ง:</p>
+                                    <p>{dataemployeesById.position}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                            <h2 className="text-lg font-semibold mb-4">รายละเอียดพนักงานฝ่ายบุคคล</h2>
                             <br />
-                            <div className="text-center">
-                                <p className="text-muted-foreground">ชื่อ:</p>
-                                <p>{dataemployeesById.firstname}</p>
-                                <br />
-                                <p className="text-muted-foreground">นามสกุล:</p>
-                                <p>{dataemployeesById.lastname}</p>
-                                <br />
-                                <p className="text-muted-foreground">ตำแหน่ง:</p>
-                                <p>{dataemployeesById.position}</p>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <p className="text-muted-foreground">เพศ:</p>
+                                    <p>{dataemployeesById.gender}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">วันเกิด:</p>
+                                    <p>{dataemployeesById.birthdate}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">วันที่เริ่มงาน:</p>
+                                    <p>{dataemployeesById.startwork}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">ที่อยู่:</p>
+                                    <p>{dataemployeesById.address}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">เบอร์โทร:</p>
+                                    <p>{dataemployeesById.phone}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">สาขาบริษัท:</p>
+                                    <p>{dataemployeesById.companybranch.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground">แผนก:</p>
+                                    <p>{dataemployeesById.department.name}</p>
+                                    <br />
+                                    <p className="text-muted-foreground">อีเมล:</p>
+                                    <p>{dataemployeesById.email}</p>
+
+                                    <br />
+                                    <br />
+                                    <p className="text-muted-foreground">นามบัตร:</p>
+                                    {dataemployeesById.business_card ? (
+                                        <img src={dataemployeesById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
+                                    ) : (
+                                        <>
+                                            <div className='pl-3'>
+                                                <br />
+                                                <p className="text-muted-foreground">ยังไม่ได้สร้างนามบัตรหรือไม่ได้เลือกเทมเพลต</p>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
-                        <h2 className="text-lg font-semibold mb-4">รายละเอียดพนักงานฝ่ายบุคคล</h2>
-                        <br />
-                        <div className="grid grid-cols-3 gap-4">
-                            <div>
-                                <p className="text-muted-foreground">เพศ:</p>
-                                <p>{dataemployeesById.gender}</p>
-                                <br />
-                                <p className="text-muted-foreground">วันเกิด:</p>
-                                <p>{dataemployeesById.birthdate}</p>
-                                <br />
-                                <p className="text-muted-foreground">วันที่เริ่มงาน:</p>
-                                <p>{dataemployeesById.startwork}</p>
-                                <br />
-                                <p className="text-muted-foreground">ที่อยู่:</p>
-                                <p>{dataemployeesById.address}</p>
-                                <br />
-                                <p className="text-muted-foreground">เบอร์โทร:</p>
-                                <p>{dataemployeesById.phone}</p>
-                                <br />
-                                <p className="text-muted-foreground">สาขาบริษัท:</p>
-                                <p>{dataemployeesById.companybranch.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground">แผนก:</p>
-                                <p>{dataemployeesById.department.name}</p>
-                                <br />
-                                <p className="text-muted-foreground">อีเมล:</p>
-                                <p>{dataemployeesById.email}</p>
-                                <br />
-                                <p className="text-muted-foreground">รหัสผ่าน:</p>
-                                <p>{dataemployeesById.password}</p>
+                    <div className="flex justify-end mt-4">
 
-                                <br />
-                                <br />
-                                <p className="text-muted-foreground">นามบัตร:</p>
-                                {dataemployeesById.business_card ? (
-                                    <img src={dataemployeesById.business_card} alt="Profile Picture" className="w-35 h-30 object-cover rounded-lg mb-5" />
-                                ) : (
-                                    <>
-                                        <div className='pl-3'>
-                                            <br />
-                                            <p className="text-muted-foreground">ยังไม่ได้สร้างนามบัตรหรือไม่ได้เลือกเทมเพลต</p>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex justify-end mt-4">
-
-                    <button
-                        id='deleteButton'
-                        type="button"
-                        onClick={DeleteEmployeeData}
-                        className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
-                    >
-                        ลบข้อมูล
-                    </button>
-                    &nbsp;
-                    <button
-                        id="editButton"
-                        disabled={loading}
-                        onClick={handleUpdate}
-                        className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg"
-                    >
-                        แก้ไขข้อมูล
-                    </button>
-                </div>
-                <br />
-
-                {loading ?
-                    <div className='flex justify-content-end'>
-                        <h1>กำลังตรวจสอบข้อมูล </h1>
+                        <button
+                            id='deleteButton'
+                            type="button"
+                            onClick={DeleteEmployeeData}
+                            className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg"
+                        >
+                            ลบข้อมูล
+                        </button>
                         &nbsp;
-                        <l-tail-chase
-                            size="15"
-                            speed="1.75"
-                            color="black"
-                        ></l-tail-chase>
+                        <button
+                            id="editButton"
+                            disabled={loading}
+                            onClick={handleUpdate}
+                            className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg"
+                        >
+                            แก้ไขข้อมูล
+                        </button>
                     </div>
-                    : <div></div>}
+                    <br />
 
-            </div>
+                    {loading ?
+                        <div className='flex justify-content-end'>
+                            <h1>กำลังตรวจสอบข้อมูล </h1>
+                            &nbsp;
+                            <l-tail-chase
+                                size="15"
+                                speed="1.75"
+                                color="black"
+                            ></l-tail-chase>
+                        </div>
+                        : <div></div>}
+
+                </div>
+            ) : (
+
+                <div>
+                    <Header />
+                    <br />
+                    <div className="bg-card p-6 rounded-lg shadow-lg max-w-7xl mx-auto">
+                        <div className="flex">
+                            <div className="w-1/3 bg-gray-50 p-4 rounded-lg">
+                                <div className="flex justify-center items-center">
+                                    <h5>Not Found Data</h5>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-center w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                                <img src="https://lh6.googleusercontent.com/Bu-pRqU_tWZV7O3rJ5nV1P6NjqFnnAs8kVLC5VGz_Kf7ws0nDUXoGTc7pP87tyUCfu8VyXi0YviIm7CxAISDr2lJSwWwXQxxz98qxVfMcKTJfLPqbcfhn-QEeOowjrlwX1LYDFJN"
+                                    alt=""
+                                    style={{ width: '50%' }}
+                                />
+                                <h5>Not Found Data</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

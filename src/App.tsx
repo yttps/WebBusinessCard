@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Route, Routes } from 'react-router-dom';
 import Login from '@/Components/Login/Login';
 import Register from '@/Components/Register/Register';
-import ListCompany from '@/Components/Admin/ListCompany'; // ตรวจสอบการ import
+import ListCompany from '@/Components/Admin/ListCompany';
 import ListHr from '@/Components/Company/ListHr';
 import ListGeneralUser from '@/Components/Admin/ListGeneralUser';
 import ListEmployees from '@/Components/Employees/ListEmployees'

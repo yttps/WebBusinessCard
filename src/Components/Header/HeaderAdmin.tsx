@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './Header.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { FaAngleDown } from 'react-icons/fa';
 
 export default function HeaderAdmin() {
 
@@ -15,9 +16,10 @@ export default function HeaderAdmin() {
             text: 'ต้องการออกจากระบบหรือไม่!',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ออกจากระบบ',
+            cancelButtonText: 'อยู่ในระบบ'
         });
 
         if (result.isConfirmed) {
@@ -49,34 +51,23 @@ export default function HeaderAdmin() {
                         </svg>
                     </button>
                     <div className="w-full md:block md:w-auto relative">
-                        <button
-                            id="multiLevelDropdownButton"
-                            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                            type="button"
-                            onClick={() => setDropdownVisible(!dropdownVisible)}
-                        >
-                            Accout
-                            <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
-                            </svg>
-                        </button>
-                        <div id="multi-dropdown" className={`${dropdownVisible ? 'block' : 'hidden'} absolute right-0 z-10 mt-2 bg-white divide-y divide-gray-100 rounded-lg shadow w-80 dark:bg-gray-700`}>
-                            <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="multiLevelDropdownButton">
-                                <li>
-                                    <div className="w-full max-w-sm bg-white rounded-lg pt-10">
-                                        <div className="flex flex-col items-center pb-20">
-                                            <img className="w-24 h-24 mb-3 rounded-full shadow-lg" src="https://t4.ftcdn.net/jpg/02/29/75/83/360_F_229758328_7x8jwCwjtBMmC6rgFzLFhZoEpLobB6L8.jpg" alt="Bonnie image" />
-                                            <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">Bonnie Green</h5>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">Visual Designer</span>
-                                        </div>
-                                    </div>
-
-                                </li>
-                                <li>
-                                    <hr style={{width:'20rem' , textAlign:'center'}}/>
-                                    <a href="#" onClick={handleLogOut} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">ออกจากระบบ</a>
-                                </li>
-                            </ul>
+                        <div className="w-full md:block md:w-auto relative pr-3">
+                            <button
+                                id="multiLevelDropdownButton"
+                                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                type="button"
+                                onClick={() => setDropdownVisible(!dropdownVisible)}
+                            >
+                                <FaAngleDown size={20} />
+                            </button>
+                            <br />
+                            <div id="multi-dropdown" className={`${dropdownVisible ? 'block' : 'hidden'} absolute right-0 z-10 mt-2 bg-white divide-y divide-gray-100 rounded-lg shadow w-80 dark:bg-white-700`}>
+                                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200 bg-white" aria-labelledby="multiLevelDropdownButton">
+                                    <li>
+                                        <a href="#" onClick={handleLogOut} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">ออกจากระบบ</a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>

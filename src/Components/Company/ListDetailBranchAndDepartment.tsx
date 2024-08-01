@@ -79,9 +79,9 @@ export default function ListDetailBranchAndDepartment() {
       text: 'ยืนยันเพื่อทำการลบข้อมูล!',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'ลบข้อมูล',
       cancelButtonText: 'ยกเลิก'
     });
 
@@ -139,9 +139,9 @@ export default function ListDetailBranchAndDepartment() {
       text: 'ยืนยันเพื่อทำการลบข้อมูล!',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'ลบข้อมูล',
       cancelButtonText: 'ยกเลิก'
     });
 
@@ -265,7 +265,7 @@ export default function ListDetailBranchAndDepartment() {
                           Department phone
                         </th>
                         <th scope="col" className="px-6 py-3">
-                          Action
+                          แก้ไขข้อมูล
                         </th>
                       </tr>
                     </thead>
@@ -366,7 +366,7 @@ export default function ListDetailBranchAndDepartment() {
                           Address name
                         </th>
                         <th scope="col" className="px-6 py-3">
-                          Action
+                          แก้ไขข้อมูล
                         </th>
                       </tr>
                     </thead>

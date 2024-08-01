@@ -80,7 +80,7 @@ export default function CreateCard() {
             if (positions.logo) {
               const { x, y } = positions.logo;
               // ctx.drawImage(logoImg, x, y, 200, 100);
-              drawLogo(ctx, logoImg, x, y, 200, 100);
+              drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
 
               canvas.toBlob((blob) => {
                 if (blob) {
@@ -109,30 +109,18 @@ export default function CreateCard() {
     });
   };
 
-  const drawLogo = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, maxWidth: number, maxHeight: number) => {
+  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+    const aspectRatio = image.width / image.height;
+    let logoWidth = canvasWidth * 0.5;
+    let logoHeight = logoWidth / aspectRatio;
 
-    const imgWidth = img.width;
-    const imgHeight = img.height;
-
-    const aspectRatio = imgWidth / imgHeight;
-
-    let drawWidth = maxWidth;
-    let drawHeight = maxHeight;
-
-    if (imgWidth > imgHeight) {
-      drawHeight = maxWidth / aspectRatio;
-    } else {
-      drawWidth = maxHeight * aspectRatio;
+    if (logoHeight > canvasHeight * 0.5) {
+        logoHeight = canvasHeight * 0.5;
+        logoWidth = logoHeight * aspectRatio;
     }
 
-    if (drawHeight > maxHeight) {
-      drawHeight = maxHeight;
-      drawWidth = maxHeight * aspectRatio;
-    }
-
-    ctx.drawImage(img, x, y, drawWidth, drawHeight);
-
-  };
+    ctx.drawImage(image, x, y, logoWidth, logoHeight);
+};
 
   const handleDeleteTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, templateId: string, templateStatus: number) => {
 
@@ -163,8 +151,8 @@ export default function CreateCard() {
       text: 'ยืนยันเพื่อทำการลบข้อมูล!',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
       confirmButtonText: 'ตกลง',
       cancelButtonText: 'ยกเลิก'
     });
@@ -392,6 +380,8 @@ export default function CreateCard() {
     nav('/CreateTemplate');
   }
 
+  
+
   useEffect(() => {
     if (!isFetch) {
       const loggedInData = localStorage.getItem("LoggedIn");
@@ -576,6 +566,7 @@ export default function CreateCard() {
                                 />
                               </div>
                               <Card.Title className="pt-2">Name Template : {template.name}</Card.Title>
+                              {template.status == 0 ? (
                               <div className="flex justify-center space-x-4">
                                 <Button
                                   id="selectedTemplate"
@@ -586,6 +577,9 @@ export default function CreateCard() {
                                   onClick={(e) => handleDeleteTemplate(e, template.id, template.status)}
                                   className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg">ลบเทมเพลต</Button>
                               </div>
+                              ) : (
+                                null
+                              )}
                               {loading ?
                                 <div className='flex justify-content-end'>
                                   <h1>กำลังตรวจสอบข้อมูล </h1>

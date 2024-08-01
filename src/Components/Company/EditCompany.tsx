@@ -77,15 +77,15 @@ export default function EditCompany() {
 
         e.preventDefault();
 
+
+
         const cancleBtn = document.getElementById('cancleBtn') as HTMLButtonElement;
         const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
-        // const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
 
         console.log('company id', CompanyId);
 
         const nameElement = document.getElementById('nameEdit') as HTMLInputElement;
         const websiteElement = document.getElementById('websiteEdit') as HTMLInputElement;
-        const passwordElement = document.getElementById('passwordEdit') as HTMLInputElement;
         const businesstypeElement = document.getElementById('businesstypeEdit') as HTMLInputElement;
         const yearFoundedElement = document.getElementById('yearfoundedEdit') as HTMLInputElement;
         const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
@@ -93,7 +93,7 @@ export default function EditCompany() {
         const formEdit = {
             name: nameElement.value !== '' ? nameElement.value : dataCompanyById?.name ?? '',
             website: websiteElement.value !== '' ? websiteElement.value : dataCompanyById?.website ?? '',
-            password: passwordElement.value !== '' ? passwordElement.value : dataCompanyById?.password ?? '',
+            password: dataCompanyById?.password ?? '',
             businessType: businesstypeElement.value !== '' ? businesstypeElement.value : dataCompanyById?.businessType ?? '',
             yearFounded: yearFoundedElement.value !== '' ? yearFoundedElement.value : dataCompanyById?.yearFounded ?? '',
             email: emailElement.value !== '' ? emailElement.value : dataCompanyById?.email ?? '',
@@ -102,6 +102,10 @@ export default function EditCompany() {
 
         cancleBtn.style.visibility = 'hidden';
         submitBtn.style.visibility = 'hidden';
+        if (imageData.showImage) {
+            const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+            removeBtn.style.visibility = 'hidden';
+        }
         setCheckLoading(true);
 
         try {
@@ -142,6 +146,18 @@ export default function EditCompany() {
                                 nav('/ListHr', { replace: true });
                                 window.location.reload();
                             }
+                        } else {
+                            setCheckLoading(false);
+                            const res = await Swal.fire({
+                                title: 'Success!',
+                                text: 'Update ข้อมูลสำเร็จ',
+                                icon: 'success',
+                            });
+
+                            if (res) {
+                                nav('/ListHr', { replace: true });
+                                window.location.reload();
+                            }
                         }
                     }
 
@@ -152,10 +168,8 @@ export default function EditCompany() {
 
                 if (dataCompanyById?.logo) {
 
-                    setCheckLoading(false);
+                    // setCheckLoading(false);
                     // removeBtn.style.visibility = 'hidden';
-
-
                     const resUpdateDataCompany = await companyapi.updateDataCompany(
                         formEdit.name, formEdit.website, formEdit.password, formEdit.businessType, formEdit.yearFounded,
                         formEdit.email, dataCompanyById?.logo, formEdit.status, CompanyId
@@ -182,11 +196,23 @@ export default function EditCompany() {
                             }
                         }
                     }
+                    else {
+                        setCheckLoading(false);
+                        const res = await Swal.fire({
+                            title: 'Success!',
+                            text: 'Update ข้อมูลสำเร็จ',
+                            icon: 'success',
+                        });
 
+                        if (res) {
+                            nav('/ListHr', { replace: true });
+                            window.location.reload();
+                        }
+                    }
                 }
                 else {
                     setCheckLoading(false);
-                    console.error('formEdit.logo not found!');
+                    console.error('logo not found!');
                     return;
                 }
             }
@@ -202,7 +228,7 @@ export default function EditCompany() {
 
     async function updateDetailCard(urlLogo: string, nameCompany: string) {
 
-        if (!TemplateBycompanyId[0]) {
+        if (!TemplateBycompanyId) {
             return 400;
         }
 
@@ -369,7 +395,7 @@ export default function EditCompany() {
                         if (positions.logo) {
                             const { x, y } = positions.logo;
                             //ctx.drawImage(logoImg, x, y, 200, 100);
-                            drawLogo(ctx, logoImg, x, y, 200, 100);
+                            drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -397,29 +423,18 @@ export default function EditCompany() {
         });
     };
 
-    const drawLogo = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, maxWidth: number, maxHeight: number) => {
-    
-        const imgWidth = img.width;
-        const imgHeight = img.height;
+    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+        const aspectRatio = image.width / image.height;
+        let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
+        let logoHeight = logoWidth / aspectRatio;
       
-        const aspectRatio = imgWidth / imgHeight;
-      
-        let drawWidth = maxWidth;
-        let drawHeight = maxHeight;
-      
-        if (imgWidth > imgHeight) {
-          drawHeight = maxWidth / aspectRatio;
-        } else {
-          drawWidth = maxHeight * aspectRatio;
+        // Ensure the logo fits within the canvas height
+        if (logoHeight > canvasHeight * 0.5) {
+          logoHeight = canvasHeight * 0.5;
+          logoWidth = logoHeight * aspectRatio;
         }
       
-        if (drawHeight > maxHeight) {
-          drawHeight = maxHeight;
-          drawWidth = maxHeight * aspectRatio;
-        }
-      
-        ctx.drawImage(img, x, y, drawWidth, drawHeight);
-    
+        ctx.drawImage(image, x, y, logoWidth, logoHeight);
       };
 
     async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
@@ -612,15 +627,6 @@ export default function EditCompany() {
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder={dataCompanyById.email} />
                                             <br />
-                                            <p className="text-muted-foreground">รหัสผ่าน:</p>
-                                            <input
-                                                onChange={(e) => setDataCompanyById({ ...dataCompanyById, password: e.target.value })}
-                                                value={dataCompanyById.password || ''}
-                                                type="text"
-                                                id="passwordEdit"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder={dataCompanyById.password} />
-                                            <br />
                                             <br />
                                             <p className="text-muted-foreground">Logo บริษัท:</p>
                                             <label>
@@ -660,7 +666,7 @@ export default function EditCompany() {
                                 </div>
                             </div>
                             <div className="flex justify-end mt-4">
-                                <button id='cancleBtn' className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg" onClick={toListHr}>ยกเลิก</button>
+                                <button id='cancleBtn' className="bg-gray-500 text-red-50 hover:bg-gray-600 py-2 px-4 rounded-lg" onClick={toListHr}>ยกเลิก</button>
                                 &nbsp;
                                 <button id='submitBtn' className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg" type='submit'>ตกลง</button>
                             </div>

@@ -65,14 +65,14 @@ const CreateTemplate: React.FC = () => {
   const [background, setBackground] = useState<File | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | ''>('');
   const [selectedColor, setSelectedColor] = useState("#000000");
-  const [fontSize, setFontSize] = useState('15');
+  const [fontSize, setFontSize] = useState('20');
   const [canvasHistory, setCanvasHistory] = useState<(CanvasOperation | null)[]>([]);
   const [nameTemplate, setNameTemplate] = useState<string>('');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
-  const uploadFontRef = useRef<HTMLInputElement>(null);
+  // const uploadFontRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -106,44 +106,7 @@ const CreateTemplate: React.FC = () => {
     });
   };
 
-  useEffect(() => {
 
-    if (background) {
-
-      console.log('check file', background.size);
-      const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
-
-      if (canvas) {
-
-        const ctx = canvas.getContext('2d');
-
-        if (ctx && background) {
-
-          const reader = new FileReader();
-
-          reader.onload = (e) => {
-
-            const img = new Image();
-
-            img.onload = () => {
-              setBackgroundImage(img);
-              redrawCanvas(img);
-              canvas.width = img.width;
-              canvas.height = img.height;
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            };
-            img.src = e.target?.result as string;
-          };
-          reader.readAsDataURL(background);
-        } else {
-          console.error('Failed to get 2D context from canvas');
-          setBackgroundImage(null);
-          redrawCanvas(null);
-        }
-      }
-    }
-  }, [background]);
 
   useEffect(() => {
     if (getLogoCompany) {
@@ -227,6 +190,7 @@ const CreateTemplate: React.FC = () => {
     dragText.style.top = "-99999px";
     dragText.style.fontSize = `${fontSize}px`;
     dragText.style.color = selectedColor;
+    dragText.style.fontFamily = `${selectedFont}`;
 
     //check if textmapping 
     dragText.innerText = textMappings[item];
@@ -241,6 +205,19 @@ const CreateTemplate: React.FC = () => {
 
   const handleDragStartLogo = (event: React.DragEvent, item: string) => {
 
+    const checkMoveLogo = Object.values(allPositions).every(
+      position => position.x == 0 && position.y == 0
+    );
+
+    if (checkMoveLogo) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'กำหนดค่า Text ก่อน',
+        icon: 'error',
+      });
+      return;
+    }
+
     const allPositionsNotNull = Object.values(allPositions).every(
       position => position.x !== 0 && position.y !== 0
     );
@@ -248,7 +225,7 @@ const CreateTemplate: React.FC = () => {
     if (allPositionsNotNull) {
       Swal.fire({
         title: 'Error!',
-        text: 'กำหนดค่าครบแล้ว!',
+        text: 'กำหนดค่าครบแล้ว',
         icon: 'error',
       });
       return;
@@ -343,10 +320,12 @@ const CreateTemplate: React.FC = () => {
         image.src = getLogoCompany;
 
         const width = 220;
-        const height = 120;
+        //const height = 120;
 
         image.onload = () => {
-          ctx.drawImage(image, scaledX - 110, scaledY - 60, width, height);
+          
+          drawLogo(ctx, image, x, y, canvas.width, canvas.height);
+          //ctx.drawImage(image, scaledX - 110, scaledY - 60, width, height);
 
           setAllPositions(prevPositions => ({
             ...prevPositions,
@@ -544,7 +523,6 @@ const CreateTemplate: React.FC = () => {
     const scaledX = x * scaleX;
     const scaledY = y * scaleY;
 
-    // Check for text objects
     for (const key in allPositions) {
       const position = allPositions[key];
       const { x: posX, y: posY, fontSize, fontColor, fontStyle } = position;
@@ -568,10 +546,11 @@ const CreateTemplate: React.FC = () => {
       }
     }
 
-    // Check for logo
     if (logoPosition && logoImage) {
       const logoWidth = logoImage.width;
       const logoHeight = logoImage.height;
+
+      console.log('position logo', scaledX - logoPosition.x);
 
       if (
         scaledX >= logoPosition.x &&
@@ -582,11 +561,13 @@ const CreateTemplate: React.FC = () => {
         setDraggedItem('logo');
         setDragOffset({ x: scaledX - logoPosition.x, y: scaledY - logoPosition.y });
         setIsDragging(true);
+
       }
     }
   };
 
   const handleMouseMove = (event: React.MouseEvent) => {
+
     if (!isDragging || !draggedItem) return;
 
     const canvas = canvasRef.current;
@@ -604,7 +585,7 @@ const CreateTemplate: React.FC = () => {
 
     if (draggedItem === 'logo') {
       setLogoPosition({ x: scaledX, y: scaledY });
-    } else {
+    } else { 
       setAllPositions((prevPositions) => ({
         ...prevPositions,
         [draggedItem]: { ...prevPositions[draggedItem], x: scaledX, y: scaledY },
@@ -646,14 +627,29 @@ const CreateTemplate: React.FC = () => {
         ctx.font = `${fontSize}px ${fontStyle}`;
         ctx.fillText(text, x, y);
       }
-
-      if (logoImage && logoPosition) {
-        ctx.drawImage(logoImage, logoPosition.x, logoPosition.y, 200, 100);
-      }
     }
+    if (logoImage && logoPosition) {
 
-
+      drawLogo(ctx, logoImage, logoPosition.x, logoPosition.y, canvas.width, canvas.height);
+      //ctx.drawImage(logoImage, logoPosition.x, logoPosition.y, logoImage.width, logoImage.height);
+      setAllPositions(prevPositions => ({
+        ...prevPositions,
+        ['logo']: { x: logoPosition.x, y: logoPosition.y, fontSize: fontSize, fontColor: '', fontStyle: '' },
+      }));
+    }
   };
+
+  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+    const aspectRatio = image.width / image.height;
+    let logoWidth = canvasWidth * 0.5;
+    let logoHeight = logoWidth / aspectRatio;
+
+    if (logoHeight > canvasHeight * 0.5) {
+        logoHeight = canvasHeight * 0.5;
+        logoWidth = logoHeight * aspectRatio;
+    }
+    ctx.drawImage(image, x, y, logoWidth, logoHeight);
+};
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
@@ -774,6 +770,8 @@ const CreateTemplate: React.FC = () => {
     }
   }, [companyapi]);
 
+
+
   useEffect(() => {
 
     const loggedInData = localStorage.getItem("LoggedIn");
@@ -792,7 +790,46 @@ const CreateTemplate: React.FC = () => {
 
   useEffect(() => {
     console.log('Font size Update', fontSize);
-  }, [fontSize])
+  }, [fontSize]);
+
+  useEffect(() => {
+
+    if (background) {
+
+      console.log('check file', background.size);
+      const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
+
+      if (canvas) {
+
+        const ctx = canvas.getContext('2d');
+
+        if (ctx && background) {
+
+          const reader = new FileReader();
+
+          reader.onload = (e) => {
+
+            const img = new Image();
+
+            img.onload = () => {
+              setBackgroundImage(img);
+              redrawCanvas(img);
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = e.target?.result as string;
+          };
+          reader.readAsDataURL(background);
+        } else {
+          console.error('Failed to get 2D context from canvas');
+          setBackgroundImage(null);
+          redrawCanvas(null);
+        }
+      }
+    }
+  }, [background]);
 
   console.log(allPositions);
 
@@ -890,7 +927,7 @@ const CreateTemplate: React.FC = () => {
 
                 })}
               </div>
-              <br />
+              {/* <br />
               <Card>
                 <Card.Body>
                   <Card.Title style={{ fontSize: '15px' }}>อัปโหลด Font</Card.Title>
@@ -900,12 +937,12 @@ const CreateTemplate: React.FC = () => {
                     ref={uploadFontRef}
                     type="file"
                     accept=".ttf"
-                  // onChange={handleFontUpload} 
+                    onChange={handleFontUpload} 
                   />
                   <br />
                   <p className="text-x font-bold text-red-500 pt-2">* เลือกไฟล์ .ttf เท่านั้น</p>
                 </Card.Body>
-              </Card>
+              </Card> */}
             </div>
 
             {/* col-2*/}
@@ -925,7 +962,6 @@ const CreateTemplate: React.FC = () => {
                     ref={canvasRef}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    // onClick={handleClick}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
@@ -955,7 +991,7 @@ const CreateTemplate: React.FC = () => {
                     <input
                       type="range"
                       id="size-slider"
-                      min="15"
+                      min="20"
                       max="100"
                       value={fontSize}
                       onChange={handleSizeFonstChange}
@@ -1048,6 +1084,7 @@ const CreateTemplate: React.FC = () => {
                     </form>
                     <br />
                     <p className="text-x font-bold text-red-500">* เลือกไฟล์ .jpg .jpeg .png เท่านั้น</p>
+                    <p className="text-x font-bold text-red-500">* เลือกไฟล์ที่มี่ขนาด 1000*600px</p>
                   </Card.Body>
                 </Card>
               </div>

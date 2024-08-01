@@ -492,7 +492,7 @@ export default function Register() {
             </div>
             <div className="md:col-span-2 flex justify-end mt-6">
               {!loading ?
-                <Link to="/">
+                <Link to="/Login">
                   <Button
                     variant="outline-secondary"
                   >ยกเลิก</Button>

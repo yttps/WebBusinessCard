@@ -9,7 +9,7 @@ interface CanvasTemplateProps {
 }
 
 const CanvasTemplate: React.FC<CanvasTemplateProps> = ({ background, textMappings, positions, logo }) => {
-    
+
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -38,38 +38,26 @@ const CanvasTemplate: React.FC<CanvasTemplateProps> = ({ background, textMapping
                 logoImg.onload = () => {
                     if (positions.logo) {
                         const { x, y } = positions.logo;
-                        //ctx.drawImage(logoImg, x, y, 200, 100);
-                        drawLogo(ctx, logoImg, x, y, 200, 100);
+                        //ctx.drawImage(logoImg, x, y, 200, 180);
+                        drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
                     }
                 }
             };
         }
     }, [background, textMappings, positions, logo]);
 
-    const drawLogo = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, maxWidth: number, maxHeight: number) => {
-    
-        const imgWidth = img.width;
-        const imgHeight = img.height;
-      
-        const aspectRatio = imgWidth / imgHeight;
-      
-        let drawWidth = maxWidth;
-        let drawHeight = maxHeight;
-      
-        if (imgWidth > imgHeight) {
-          drawHeight = maxWidth / aspectRatio;
-        } else {
-          drawWidth = maxHeight * aspectRatio;
+    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+        const aspectRatio = image.width / image.height;
+        let logoWidth = canvasWidth * 0.5;
+        let logoHeight = logoWidth / aspectRatio;
+
+        if (logoHeight > canvasHeight * 0.5) {
+            logoHeight = canvasHeight * 0.5;
+            logoWidth = logoHeight * aspectRatio;
         }
-      
-        if (drawHeight > maxHeight) {
-          drawHeight = maxHeight;
-          drawWidth = maxHeight * aspectRatio;
-        }
-      
-        ctx.drawImage(img, x, y, drawWidth, drawHeight);
-    
-      };
+
+        ctx.drawImage(image, x, y, logoWidth, logoHeight);
+    };
 
     return <canvas ref={canvasRef} width={950} height={550} />;
 };
