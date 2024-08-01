@@ -379,7 +379,7 @@ export default function Register() {
       <hr />
       <div className="container mx-auto flex items-center justify-center mt-8 w-full">
         <div className="bg-card p-10 rounded-lg shadow-lg w-full max-w-3xl justify-center items-center pl-[7.5rem]">
-          <h1 className="text-2xl font-bold text-foreground mb-6">Register</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-6">สมัครสมาชิก</h1>
           <form className="grid md:grid-cols-2 gap-4" onSubmit={uploadData}>
             <div>
               <Form.Label htmlFor="email">email</Form.Label>

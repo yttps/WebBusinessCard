@@ -105,7 +105,7 @@ export default function Login() {
     }
 
     useEffect(() => {
-        console.log("detailHrLogin updated", detailHrLogin); // Log when detailHrLogin updates
+        console.log("detailHrLogin updated", detailHrLogin); 
     }, [detailHrLogin]);
 
     return (
@@ -133,9 +133,9 @@ export default function Login() {
             <hr />
             <div className="flex items-center justify-center min-h-max bg-background mt-[5rem]">
                 <div className="bg-card p-8 rounded-lg shadow-lg w-full max-w-sm">
-                    <h1 className="text-2xl font-bold text-foreground">Login</h1>
+                    <h1 className="text-2xl font-bold text-foreground">เข้าสู่ระบบ</h1>
                     <br />
-                    <p className="text-muted-foreground">Hi, Welcome back 👋</p>
+                    <p className="text-muted-foreground">ยินดีต้อนรับ 👋</p>
 
                     <form className="mt-6" onSubmit={loginUserData}>
                         <label className="block text-muted-foreground" htmlFor="email">
@@ -154,7 +154,7 @@ export default function Login() {
                                 <span className="text-muted-foreground">Show Password</span>
                             </label>
                             <a href="#" className="text-primary hover:underline">
-                                Forgot Password?
+                                ลืมรหัสผ่าน?
                             </a>
                         </div>
 
@@ -164,9 +164,9 @@ export default function Login() {
                     </form>
 
                     <p className="text-muted-foreground mt-4">
-                        Not registered yet?{' '}
+                        ยังไม่มีบัญชี?{' '}
                         <Link to="/Register" className="text-primary hover:underline">
-                            Create an account
+                            สมัครสมาชิก
                         </Link>
                     </p>
                 </div>
