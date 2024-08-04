@@ -74,7 +74,6 @@ export class TemplateApi {
 
         try {
 
-
             const data = {
                 name: nameTemplate,
                 companyID: getCompanyId,

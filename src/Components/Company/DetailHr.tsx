@@ -88,6 +88,7 @@ export default function DetailHr() {
 
         e.preventDefault();
         const submitButton = document.getElementById("submitButton") as HTMLButtonElement;
+        const cancleButton = document.getElementById("cancleButton") as HTMLButtonElement;
 
         const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
         const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
@@ -153,7 +154,7 @@ export default function DetailHr() {
 
         setLoadingData(true);
         submitButton.style.visibility = 'hidden';
-
+        cancleButton.style.visibility = 'hidden';
         try {
 
             const resUpdateData = await hrapi.updateDataHR(
@@ -249,7 +250,6 @@ export default function DetailHr() {
             console.error(error);
         } finally {
             setLoadingData(false);
-            submitButton.style.visibility = 'hidden';
         }
     }
 
@@ -964,6 +964,7 @@ export default function DetailHr() {
                         <div className="flex justify-end mt-4">
                             {!loadingData ? (
                                 <button
+                                    id='cancleButton'
                                     type="button"
                                     onClick={() => nav('/ListHr')}
                                     className="bg-gray-500 text-red-50 hover:bg-gray-600 py-2 px-4 rounded-lg"

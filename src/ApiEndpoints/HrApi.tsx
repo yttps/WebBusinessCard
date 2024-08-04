@@ -176,7 +176,6 @@ export class HrApi {
                 district: districtElement,
                 province: provinceElement,
                 country: countryElement,
-
             }
 
             const res = await axios.put(`${url}/users/${HRId}`, dataHr);

@@ -77,8 +77,6 @@ export default function EditCompany() {
 
         e.preventDefault();
 
-
-
         const cancleBtn = document.getElementById('cancleBtn') as HTMLButtonElement;
         const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
 
@@ -99,6 +97,48 @@ export default function EditCompany() {
             email: emailElement.value !== '' ? emailElement.value : dataCompanyById?.email ?? '',
             status: '1'
         };
+
+        const emailRegex = new RegExp(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z0-9-]+\.)+[a-z]{2,}))$/
+        );
+        const websiteRegex = new RegExp(/^www\.[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-z]{2,}$/);
+        const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
+
+        if (!allValuesNotNull) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
+                icon: 'error',
+            });
+            return;
+        }
+
+        if (!emailRegex.test(formEdit.email)) {
+            Swal.fire({
+                title: 'Add Data Error!',
+                text: 'อีเมลต้องมี "@" และ ".com"',
+                icon: 'error',
+            });
+            return;
+        }
+        if (!websiteRegex.test(formEdit.website)) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'กรอกข้อมูลเว็บไซต์ให้ถูกต้อง!',
+                icon: 'error',
+            });
+            return;
+        }
+        if (!file) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'โปรดเลือกรูปภาพ',
+                icon: 'error',
+            });
+            return;
+        }
+
+    
 
         cancleBtn.style.visibility = 'hidden';
         submitBtn.style.visibility = 'hidden';
@@ -124,6 +164,8 @@ export default function EditCompany() {
                         formEdit.name, formEdit.website, formEdit.password, formEdit.businessType, formEdit.yearFounded,
                         formEdit.email, resUrlLogo, formEdit.status, CompanyId
                     );
+
+                     //check ซ้ำอีเมล
 
                     console.log('response update data company', resUpdateDataCompany);
 
@@ -159,6 +201,14 @@ export default function EditCompany() {
                                 window.location.reload();
                             }
                         }
+                    }
+                    //check ซ้ำ 0
+                    if(resUpdateDataCompany == 404){
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'ไม่พบข้อมูลบริษัท',
+                            icon: 'error',
+                        });
                     }
 
                 }
@@ -427,15 +477,15 @@ export default function EditCompany() {
         const aspectRatio = image.width / image.height;
         let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
         let logoHeight = logoWidth / aspectRatio;
-      
+
         // Ensure the logo fits within the canvas height
         if (logoHeight > canvasHeight * 0.5) {
-          logoHeight = canvasHeight * 0.5;
-          logoWidth = logoHeight * aspectRatio;
+            logoHeight = canvasHeight * 0.5;
+            logoWidth = logoHeight * aspectRatio;
         }
-      
+
         ctx.drawImage(image, x, y, logoWidth, logoHeight);
-      };
+    };
 
     async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
 

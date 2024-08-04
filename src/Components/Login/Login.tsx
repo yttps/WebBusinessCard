@@ -56,7 +56,7 @@ export default function Login() {
 
                 }
 
-                if (res.role === "user") {
+                if (res.role === "employee") {
 
                     localStorage.setItem("LoggedIn", JSON.stringify(res));
                     const response = await loginapi.GetDetailHRlogin();
@@ -111,10 +111,10 @@ export default function Login() {
     return (
         <>
             <nav className="bg-white border-gray-200 dark:bg-gray-900 pb-[10px] ">
-                <div className="max-w-screen-xxl flex flex-wrap items-center justify-between mx-auto p-3"> {/* Increased padding to 2 for more spacing */}
+                <div className="max-w-screen-xxl flex flex-wrap items-center justify-between mx-auto p-3"> 
                     <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                        <img src="https://flowbite.com/docs/images/logo.svg" className="h-6" alt="Flowbite Logo" /> {/* Reduced height of the logo */}
-                        <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">Business Card</span> {/* Reduced font size */}
+                        <img src="https://flowbite.com/docs/images/logo.svg" className="h-6" alt="Flowbite Logo" /> 
+                        <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">Business Card</span>
                     </div>
                     <button
                         data-collapse-toggle="navbar-default"
@@ -141,12 +141,16 @@ export default function Login() {
                         <label className="block text-muted-foreground" htmlFor="email">
                             Email
                         </label>
-                        <input ref={emailRef} type="email" id="email" className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" placeholder="you@example.com" required />
+                        <input ref={emailRef} type="email" id="email" 
+                        className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" 
+                        placeholder="you@example.com" required />
 
                         <label className="block text-muted-foreground mt-4" htmlFor="password">
                             Password
                         </label>
-                        <input type={showPass ? "text" : "password"} ref={passwordRef} id="password" className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" placeholder="Enter your password" required />
+                        <input type={showPass ? "text" : "password"} ref={passwordRef} id="password" 
+                        className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" 
+                        placeholder="Enter your password" required />
 
                         <div className="flex items-center justify-between mt-4">
                             <label className="flex items-center pt-2">
@@ -158,7 +162,8 @@ export default function Login() {
                             </a>
                         </div>
 
-                        <button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/80 w-full mt-6 p-2 rounded-lg">
+                        <button type="submit" 
+                        className="bg-primary text-primary-foreground hover:bg-primary/80 w-full mt-6 p-2 rounded-lg">
                             Login
                         </button>
                     </form>

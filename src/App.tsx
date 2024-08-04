@@ -19,6 +19,7 @@ import ListDetailBranchAndDepartment from './Components/Company/ListDetailBranch
 import ApprovalCompany from './Components/Admin/ApprovalCompany';
 import DetailCompanyAppproval from './Components/Admin/DetailCompanyAppproval';
 import EditCompany from './Components/Company/EditCompany';
+import ForgotPassword from './Components/ForgotPass/ForgotPassword';
 
 const App = () => {
 
@@ -43,6 +44,7 @@ const App = () => {
         <Route path="/ApprovalCompany" element={<ApprovalCompany />} />
         <Route path="/ApprovalCompany/:id" element={<DetailCompanyAppproval />} />
         <Route path="/EditCompany" element={<EditCompany />} />
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />
       </Routes>
     </>
   )

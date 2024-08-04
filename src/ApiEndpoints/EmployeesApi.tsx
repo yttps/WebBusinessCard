@@ -141,15 +141,10 @@ export class EmployeesApi {
             startwork: startworkValue,
             birthdate: birthdateValue
         }
-
-        console.log("form in context", dataEmployee);
-
         try {
 
             const endpoint = `${url}/users`;
             const res = await axios.post(endpoint, dataEmployee);
-
-            console.log('res in context', res.data.userId);
             return res.data.userId;
 
         } catch (error) {
@@ -171,10 +166,11 @@ export class EmployeesApi {
         }
     }
 
-    async updateDataEmployee(firstnameElement: string, lastnameElement: string, positionElement: string, genderElement: string,
-        birthdayElement: string, startworkElement: string, subdistrictElement: string, districtElement: string,
-        provinceElement: string, countryElement: string, telElement: string, emailElement: string,
-        branchElement: string, departmentElement: string, passwordElement: string, HRId: string
+    async updateDataEmployee(firstnameElement: string, lastnameElement: string, positionElement: string, 
+        genderElement: string,birthdayElement: string, startworkElement: string, subdistrictElement: 
+        string, districtElement: string,provinceElement: string, countryElement: string, telElement: string, 
+        emailElement: string,branchElement: string, departmentElement: string, passwordElement: string, 
+        HRId: string
     ) {
 
         try {

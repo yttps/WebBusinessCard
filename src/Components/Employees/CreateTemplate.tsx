@@ -298,7 +298,8 @@ const CreateTemplate: React.FC = () => {
         setAllPositions(prevPositions => ({
           ...prevPositions,
           [draggedItem]: {
-            x: scaledX, y: scaledY + 40, fontSize: fontSize || draggedPosition.fontSize, fontColor: selectedColor || draggedPosition.fontColor,
+            x: scaledX, y: scaledY + 40, fontSize: fontSize || draggedPosition.fontSize, 
+            fontColor: selectedColor || draggedPosition.fontColor,
             fontStyle: selectedFont || draggedPosition.fontStyle
           },
         }));
@@ -688,7 +689,8 @@ const CreateTemplate: React.FC = () => {
       setLoading(true);
 
       const status = '0';
-      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor, selectedFont)
+      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, 
+        allPositions, status, fontSize, selectedColor, selectedFont)
 
       if (uidTemplate) {
 
@@ -738,7 +740,8 @@ const CreateTemplate: React.FC = () => {
 
     try {
 
-      const res = await templateapi.uploadTemplateCompany(nameTemplate, getCompanyId, allPositions, status, fontSize, selectedColor, fontStyle);
+      const res = await templateapi.uploadTemplateCompany(nameTemplate, 
+        getCompanyId, allPositions, status, fontSize, selectedColor, fontStyle);
 
       return res;
 

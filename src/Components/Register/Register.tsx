@@ -202,10 +202,19 @@ export default function Register() {
     const CheckPassword = Object.values(validations).every(value => value == true);
 
 
-    if (!allValuesNotNull || !file) {
+    if (!allValuesNotNull) {
       Swal.fire({
         title: 'Error!',
         text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
+        icon: 'error',
+      });
+      return;
+    }
+    
+    if (!file) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'โปรดเลือกรูปภาพ',
         icon: 'error',
       });
       return;
@@ -492,7 +501,7 @@ export default function Register() {
             </div>
             <div className="md:col-span-2 flex justify-end mt-6">
               {!loading ?
-                <Link to="/Login">
+                <Link to="/">
                   <Button
                     variant="outline-secondary"
                   >ยกเลิก</Button>

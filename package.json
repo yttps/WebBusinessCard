@@ -46,7 +46,8 @@
     "sha256": "^0.2.0",
     "styled-components": "^6.1.11",
     "sweetalert": "^2.1.2",
-    "use-history": "^1.4.1"
+    "use-history": "^1.4.1",
+    "webbusinesscard": "file:"
   },
   "devDependencies": {
     "@types/http-proxy-middleware": "^1.0.0",

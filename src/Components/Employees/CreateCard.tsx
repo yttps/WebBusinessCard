@@ -169,7 +169,7 @@ export default function CreateCard() {
 
         const res = await Swal.fire({
           title: 'Success!',
-          text: 'ลบข้อมูลสำเร็จ!',
+          text: 'ลบเทมเพลตสำเร็จ!',
           icon: 'success',
         });
 
@@ -271,7 +271,6 @@ export default function CreateCard() {
         fontStyle: template.position.fontStyle,
       },
     };
-    console.log('positionsssss:', positions);
 
     if (getUserByCompanies) {
       const newGeneratedFiles: { file: File; uid: string }[] = [];
