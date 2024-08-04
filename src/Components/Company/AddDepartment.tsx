@@ -108,6 +108,9 @@ function AddDepartment() {
 
         }  //แผนกซ้ำ
         else if (resUploadData?.every((res) => res === 400)) {
+          cancleBtn.style.visibility = 'visible';
+          submitBtn.style.visibility = 'visible';
+          addDepart.style.visibility = 'visible';
           setLoading(false);
           Swal.fire({
             title: 'Error!',
@@ -116,6 +119,9 @@ function AddDepartment() {
           });
         }
       } else {
+        cancleBtn.style.visibility = 'visible';
+        submitBtn.style.visibility = 'visible';
+        addDepart.style.visibility = 'visible';
         setLoading(false);
         Swal.fire({
           title: 'Upload Error!',
@@ -127,6 +133,9 @@ function AddDepartment() {
     } catch (error) {
       console.error(error);
     } finally {
+      cancleBtn.style.visibility = 'visible';
+      submitBtn.style.visibility = 'visible';
+      addDepart.style.visibility = 'visible';
       setLoading(false);
     }
 

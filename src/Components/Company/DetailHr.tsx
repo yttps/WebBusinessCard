@@ -50,6 +50,7 @@ export default function DetailHr() {
         imageName: '',
         showImage: false,
     });
+    const today = new Date().toISOString().split('T')[0];
 
     function handleRemoveImage() {
         setImageData({
@@ -245,10 +246,22 @@ export default function DetailHr() {
                     }
                 }
             }
+            if(resUpdateData == 400){
+                submitButton.style.visibility = 'visible';
+                cancleButton.style.visibility = 'visible';
+                setLoadingData(false);(false);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'อีเมลซ้ำกับ User อื่น!',
+                    icon: 'error',
+                });
+            }
 
         } catch (error) {
             console.error(error);
         } finally {
+            submitButton.style.visibility = 'visible';
+            cancleButton.style.visibility = 'visible';
             setLoadingData(false);
         }
     }
@@ -801,6 +814,7 @@ export default function DetailHr() {
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             type='date'
                                             id="birthdayEdit"
+                                            max={today}
                                             value={hrById.birthdate ? hrById.birthdate : ''}
                                             onChange={(e) => setHrById({ ...hrById, birthdate: e.target.value })}
                                         />
@@ -810,6 +824,7 @@ export default function DetailHr() {
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             type='date'
                                             id="startworkEdit"
+                                            max={today}
                                             placeholder={hrById.startwork}
                                             value={hrById.startwork || ''}
                                             onChange={(e) => setHrById({ ...hrById, startwork: e.target.value })}

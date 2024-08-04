@@ -57,6 +57,8 @@ export default function DetailEmployees() {
         showImage: false,
     });
 
+    const today = new Date().toISOString().split('T')[0];
+
     function handleRemoveImage() {
         setImageData({
             base64textString: '',
@@ -244,7 +246,7 @@ export default function DetailEmployees() {
 
     async function SaveDetails(e: React.FormEvent<HTMLFormElement>, EMId: string) {
 
-        try {
+ 
 
             e.preventDefault();
 
@@ -315,7 +317,7 @@ export default function DetailEmployees() {
             setLoading(true);
             submitButton.style.visibility = 'hidden';
             cancleButton.style.visibility = 'hidden';
-
+        try {
             const resUpdateData = await employeeapi.updateDataEmployee(
                 formEdit.firstname,
                 formEdit.lastname,
@@ -403,11 +405,23 @@ export default function DetailEmployees() {
                     }
                 }
             }
+            if(resUpdateData == 400){
+                submitButton.style.visibility = 'visible';
+                cancleButton.style.visibility = 'visible';
+                setLoading(false);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'อีเมลซ้ำกับ User อื่น!',
+                    icon: 'error',
+                });
+            }
 
         } catch (error) {
             console.error(error);
         }
         finally {
+            submitButton.style.visibility = 'visible';
+            cancleButton.style.visibility = 'visible';
             setLoading(false);
         }
     }
@@ -788,6 +802,7 @@ export default function DetailEmployees() {
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 type='date'
                                                 id="birthdayEdit"
+                                                max={today}
                                                 value={dataemployeesById.birthdate ? dataemployeesById.birthdate : ''}
                                                 onChange={(e) => setDataEmployeesById({ ...dataemployeesById, birthdate: e.target.value })}
                                             />

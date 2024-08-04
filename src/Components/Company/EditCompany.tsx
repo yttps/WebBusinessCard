@@ -29,7 +29,7 @@ export default function EditCompany() {
     const [hasGetTemplateByCompanyId, setHasGetTemplateByCompanyId] = useState(false);
     const [checkLoading, setCheckLoading] = useState(false);
     const backgroundInputRef = useRef<HTMLInputElement>(null);
-
+    const today = new Date().toISOString().split('T')[0];
 
     const [imageData, setImageData] = useState({
         base64textString: '',
@@ -203,10 +203,16 @@ export default function EditCompany() {
                         }
                     }
                     //check ซ้ำ 0
-                    if(resUpdateDataCompany == 404){
+                    if(resUpdateDataCompany == 400){
+                        if (imageData.showImage) {
+                            const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+                            removeBtn.style.visibility = 'visible';
+                        }
+                        cancleBtn.style.visibility = 'visible';
+                        submitBtn.style.visibility = 'visible';
                         Swal.fire({
                             title: 'Error!',
-                            text: 'ไม่พบข้อมูลบริษัท',
+                            text: 'อีเมลซ้ำกับ User อื่น',
                             icon: 'error',
                         });
                     }
@@ -270,6 +276,12 @@ export default function EditCompany() {
         } catch (error) {
             console.error(error);
         } finally {
+            if (imageData.showImage) {
+                const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+                removeBtn.style.visibility = 'visible';
+            }
+            cancleBtn.style.visibility = 'visible';
+            submitBtn.style.visibility = 'visible';
             setCheckLoading(false);
         }
 
@@ -663,6 +675,7 @@ export default function EditCompany() {
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-4/5 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 type='date'
                                                 id="yearfoundedEdit"
+                                                max={today}
                                                 value={dataCompanyById.yearFounded ? dataCompanyById.yearFounded : ''}
                                                 onChange={(e) => setDataCompanyById({ ...dataCompanyById, yearFounded: e.target.value })}
                                             />

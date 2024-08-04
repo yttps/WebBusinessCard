@@ -68,6 +68,7 @@ const AddEmployees = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const today = new Date().toISOString().split('T')[0];
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = event.target.value;
@@ -240,11 +241,17 @@ const AddEmployees = () => {
       const resUploadData = await addData(formData);
 
       if (resUploadData === '0') {
+
         Swal.fire({
           title: 'Error!',
           text: 'อีเมลซ้ำ โปรดใช้อีเมลอื่น!',
           icon: 'error',
-        });
+        });        
+        if (selectedImage.showImage) {
+          const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+          removeBtn.style.visibility = 'visible';
+        }
+        submitBtn.style.visibility = 'visible';
         return;
       }
 
@@ -285,6 +292,11 @@ const AddEmployees = () => {
               text: 'อัปโหลดโลโก้ไม่สำเร็จ!',
               icon: 'error',
             });
+            if (selectedImage.showImage) {
+              const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+              removeBtn.style.visibility = 'visible';
+            }
+            submitBtn.style.visibility = 'visible';
           }
         }
       }
@@ -293,6 +305,11 @@ const AddEmployees = () => {
       console.error(error);
     } finally {
       setLoading(false);
+      if (selectedImage.showImage) {
+        const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+        removeBtn.style.visibility = 'visible';
+      }
+      submitBtn.style.visibility = 'visible';
     }
   };
 
@@ -758,6 +775,7 @@ const AddEmployees = () => {
                 type="date"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 id="birthdate"
+                max={today}
                 required
               />
             </div>

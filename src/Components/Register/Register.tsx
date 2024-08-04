@@ -30,8 +30,7 @@ export default function Register() {
   });
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
-
-
+  const today = new Date().toISOString().split('T')[0];
 
   console.log(companyID);
 
@@ -408,7 +407,12 @@ export default function Register() {
             </div>
             <div>
               <Form.Label htmlFor="yearFounded">ปีที่ก่อตั้ง</Form.Label>
-              <Form.Control className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" type="date" id="yearFounded" required />
+              <Form.Control 
+              className="mt-1 block w-full p-2 border border-border rounded-lg focus:ring focus:ring-ring" 
+              type="date" 
+              id="yearFounded" 
+              max={today}
+              required />
             </div>
             <div>
               <Form.Label htmlFor="phoneNumber">เบอร์โทรศัพท์ของบริษัท</Form.Label>

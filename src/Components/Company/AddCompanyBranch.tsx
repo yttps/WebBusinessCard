@@ -53,7 +53,8 @@ function AddCompanyBranch() {
 
 
   const uploadData = async (event: React.FormEvent<HTMLFormElement>) => {
-
+   
+    event.preventDefault();
     const cancleBtn = document.getElementById("cancleBtn") as HTMLButtonElement;
     const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement;
 
@@ -64,9 +65,18 @@ function AddCompanyBranch() {
       province: getProvinceValue(),
       country: getCountryValue(),
     };
-    console.log('check form data', formData);
 
-    event.preventDefault();
+    console.log('check form data', formData);
+    const phoneRegex = /^\d+$/;
+ 
+    if (phoneRegex.test(formData.name)) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'ชื่อสาขาต้องไม่เป็นตัวเลข!',
+        icon: 'error',
+      });
+      return;
+    }
 
     try {
 
@@ -101,7 +111,8 @@ function AddCompanyBranch() {
           handleClose();
         }
         if (resUploadData == 400) {
-
+          cancleBtn.style.visibility = 'visible';
+          submitBtn.style.visibility = 'visible';
           setLoading(false);
           Swal.fire({
             title: 'Error!',
@@ -113,6 +124,8 @@ function AddCompanyBranch() {
       }
       else {
 
+        cancleBtn.style.visibility = 'visible';
+        submitBtn.style.visibility = 'visible';
         setLoading(false);
         Swal.fire({
           title: 'Upload Error!',
@@ -123,6 +136,8 @@ function AddCompanyBranch() {
     } catch (error) {
       console.error(error);
     } finally {
+      cancleBtn.style.visibility = 'visible';
+      submitBtn.style.visibility = 'visible';
       setLoading(false);
     }
 

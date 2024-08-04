@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './Header.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { FaAngleDown } from 'react-icons/fa';
+import { AiOutlineLogout } from "react-icons/ai";
 
 export default function Header() {
 
@@ -57,7 +57,7 @@ export default function Header() {
                             type="button"
                             onClick={() => setDropdownVisible(!dropdownVisible)}
                         >
-                            <FaAngleDown size={20} />
+                            <AiOutlineLogout size={30}/>
                         </button>
                         <br />
                         <div id="multi-dropdown" className={`${dropdownVisible ? 'block' : 'hidden'} absolute right-0 z-10 mt-2 bg-white divide-y divide-gray-100 rounded-lg shadow w-80 dark:bg-gray-700`}>

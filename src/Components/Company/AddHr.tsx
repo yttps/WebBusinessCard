@@ -69,6 +69,7 @@ const AddHr = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const today = new Date().toISOString().split('T')[0];
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = event.target.value;
@@ -765,6 +766,7 @@ const AddHr = () => {
               <Form.Label htmlFor="birthdate">วันเกิด</Form.Label>
               <input
                 type="date"
+                max={today}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 id="birthdate"
                 required
@@ -874,6 +876,7 @@ const AddHr = () => {
               <Form.Label htmlFor="startwork">วันที่เริ่มงาน</Form.Label>
               <input
                 type="date"
+                max={today}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 id="startwork"
                 required
