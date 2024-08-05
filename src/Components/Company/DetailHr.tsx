@@ -219,6 +219,11 @@ export default function DetailHr() {
                             window.location.reload();
                         }
                     }
+                    else{
+                        submitButton.style.visibility = 'visible';
+                        cancleButton.style.visibility = 'visible';
+                        setLoadingData(false);
+                    }
                 }
 
                 if (!file) {
@@ -249,15 +254,19 @@ export default function DetailHr() {
             if(resUpdateData == 400){
                 submitButton.style.visibility = 'visible';
                 cancleButton.style.visibility = 'visible';
-                setLoadingData(false);(false);
+                setLoadingData(false);
                 Swal.fire({
                     title: 'Error!',
                     text: 'อีเมลซ้ำกับ User อื่น!',
                     icon: 'error',
                 });
             }
+            
 
         } catch (error) {
+            submitButton.style.visibility = 'visible';
+            cancleButton.style.visibility = 'visible';
+            setLoadingData(false);
             console.error(error);
         } finally {
             submitButton.style.visibility = 'visible';

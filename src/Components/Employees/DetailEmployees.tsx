@@ -417,6 +417,9 @@ export default function DetailEmployees() {
             }
 
         } catch (error) {
+            submitButton.style.visibility = 'visible';
+            cancleButton.style.visibility = 'visible';
+            setLoading(false);
             console.error(error);
         }
         finally {

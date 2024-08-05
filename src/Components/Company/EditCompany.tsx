@@ -267,6 +267,12 @@ export default function EditCompany() {
                     }
                 }
                 else {
+                    if (imageData.showImage) {
+                        const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+                        removeBtn.style.visibility = 'visible';
+                    }
+                    cancleBtn.style.visibility = 'visible';
+                    submitBtn.style.visibility = 'visible';
                     setCheckLoading(false);
                     console.error('logo not found!');
                     return;

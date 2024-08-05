@@ -74,6 +74,9 @@ export default function DetailCompanyAppproval() {
                     }
                 }
                 else {
+                    deleteBtn.style.visibility = 'visible';
+                    submitBtn.style.visibility = 'visible';
+                    setLoading(false);
                     Swal.fire({
                         title: 'Error!',
                         text: 'เกิดข้อผิดพลาดในการอนุมัติข้อมูล!',
@@ -85,6 +88,8 @@ export default function DetailCompanyAppproval() {
         } catch (error) {
             console.error(error);
         } finally {
+            deleteBtn.style.visibility = 'visible';
+            submitBtn.style.visibility = 'visible';
             setLoading(false);
         }
     }
@@ -131,9 +136,15 @@ export default function DetailCompanyAppproval() {
                     }
 
                 }
+            } else {
+                deleteBtn.style.visibility = 'visible';
+                submitBtn.style.visibility = 'visible';
+                setLoading(false);
             }
         } catch (error) {
-
+            deleteBtn.style.visibility = 'visible';
+            submitBtn.style.visibility = 'visible';
+            setLoading(false);
             console.error('Error deleting general user:', error);
             await Swal.fire({
                 title: 'Error!',
@@ -141,6 +152,8 @@ export default function DetailCompanyAppproval() {
                 icon: 'error',
             });
         } finally {
+            deleteBtn.style.visibility = 'visible';
+            submitBtn.style.visibility = 'visible';
             setLoading(false);
         }
     }
@@ -148,12 +161,6 @@ export default function DetailCompanyAppproval() {
     useEffect(() => {
 
         fetchData();
-
-
-
-
-        // const interval = setInterval(fetchData, 10000);
-        // return () => clearInterval(interval);
 
     }, [fetchData]);
 

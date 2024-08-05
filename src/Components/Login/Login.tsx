@@ -24,10 +24,13 @@ export default function Login() {
         const email = emailRef.current!.value;
         const password = passwordRef.current!.value;
 
+        const loginBtn  = document.getElementById('loginBtn') as HTMLButtonElement;
+
         try {
 
             const res = await loginapi.LoginUserData(email, password);
             console.log(email, password);
+            loginBtn.style.visibility = 'hidden';
 
             if (res) {
 
@@ -81,6 +84,7 @@ export default function Login() {
             }
 
             else {
+                loginBtn.style.visibility = 'visible';
                 Swal.fire({
                     title: 'Login Error',
                     text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง!',
@@ -89,6 +93,7 @@ export default function Login() {
             }
 
         } catch (error) {
+            loginBtn.style.visibility = 'visible';
             console.log(error);
             Swal.fire({
                 title: 'Error',
@@ -162,7 +167,7 @@ export default function Login() {
                             </a>
                         </div>
 
-                        <button type="submit" 
+                        <button id='loginBtn' type="submit" 
                         className="bg-primary text-primary-foreground hover:bg-primary/80 w-full mt-6 p-2 rounded-lg">
                             Login
                         </button>

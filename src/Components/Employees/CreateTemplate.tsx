@@ -76,7 +76,7 @@ const CreateTemplate: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const [selectedFont, setSelectedFont] = useState('');
+  const [selectedFont, setSelectedFont] = useState('20');
   // const [uploadedFonts, setUploadedFonts] = useState<{ name: string, url: string }[]>([]);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -84,6 +84,8 @@ const CreateTemplate: React.FC = () => {
   const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | null>(null);
   const [logoPosition, setLogoPosition] = useState<{ x: number; y: number } | null>(null);
   const [logoImage, setLogoImage] = useState<HTMLImageElement | null>(null);
+  const [selectedText, setSelectedText] = useState<{ key: string, x: number, y: number, width: number, height: number } | null>(null);
+
 
   const setNameTem = (e: ChangeEvent<HTMLFormElement>) => {
     console.log(e.target.value);
@@ -94,19 +96,38 @@ const CreateTemplate: React.FC = () => {
     setFontSize((prevSize) => {
       const newSize = Math.min(parseInt(prevSize) + 1, 100); // +step 1 max 100
       console.log('up size', newSize);
+      if (selectedText) {
+        setAllPositions((prevPositions) => ({
+          ...prevPositions,
+          [selectedText.key]: 
+          { ...prevPositions[selectedText.key], 
+            fontSize:  newSize.toString()},
+        }));
+        redrawCanvas(backgroundImage);
+      }
       return newSize.toString();
     });
+
+
   };
 
   const handleDecrement = () => {
     setFontSize((prevSize) => {
       const newSize = Math.max(parseInt(prevSize) - 1, 15); // -step 1 min 15
+      if (selectedText) {
+        setAllPositions((prevPositions) => ({
+          ...prevPositions,
+          [selectedText.key]: 
+          { ...prevPositions[selectedText.key], 
+            fontSize:  newSize.toString()},
+        }));
+        redrawCanvas(backgroundImage);
+      }
       console.log('down size', newSize);
       return newSize.toString();
     });
+
   };
-
-
 
   useEffect(() => {
     if (getLogoCompany) {
@@ -115,8 +136,6 @@ const CreateTemplate: React.FC = () => {
       img.src = getLogoCompany;
     }
   }, [getLogoCompany]);
-
-
 
 
   // const handleFontUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,7 +170,23 @@ const CreateTemplate: React.FC = () => {
   // };
 
   const handleFontChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+
+    const checkSelectedFont = event.target.value;
+
+    if(checkSelectedFont == '') return;
+
     setSelectedFont(event.target.value);
+    const font = event.target.value;
+    
+    if (selectedText) {
+      setAllPositions((prevPositions) => ({
+        ...prevPositions,
+        [selectedText.key]: 
+        { ...prevPositions[selectedText.key], 
+          fontStyle:  font.toString()},
+      }));
+      redrawCanvas(backgroundImage);
+    }
   };
 
 
@@ -298,7 +333,7 @@ const CreateTemplate: React.FC = () => {
         setAllPositions(prevPositions => ({
           ...prevPositions,
           [draggedItem]: {
-            x: scaledX, y: scaledY + 40, fontSize: fontSize || draggedPosition.fontSize, 
+            x: scaledX, y: scaledY + 40, fontSize: fontSize || draggedPosition.fontSize,
             fontColor: selectedColor || draggedPosition.fontColor,
             fontStyle: selectedFont || draggedPosition.fontStyle
           },
@@ -324,7 +359,7 @@ const CreateTemplate: React.FC = () => {
         //const height = 120;
 
         image.onload = () => {
-          
+
           drawLogo(ctx, image, x, y, canvas.width, canvas.height);
           //ctx.drawImage(image, scaledX - 110, scaledY - 60, width, height);
 
@@ -436,12 +471,31 @@ const CreateTemplate: React.FC = () => {
   // };
 
   const handleSizeFonstChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFontSize(event.target.value);
-    console.log('size', fontSize);
+
+    const selectedFontSize = event.target.value;
+    setFontSize(selectedFontSize);
+
+    if (selectedText) {
+      setAllPositions((prevPositions) => ({
+        ...prevPositions,
+        [selectedText.key]: 
+        { ...prevPositions[selectedText.key], 
+          fontSize:  selectedFontSize},
+      }));
+      redrawCanvas(backgroundImage);
+    }
   }
 
   const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedColor(event.target.value);
+    const fontColor = event.target.value;
+    if (selectedText) {
+      setAllPositions((prevPositions) => ({
+        ...prevPositions,
+        [selectedText.key]: { ...prevPositions[selectedText.key], fontColor },
+      }));
+      redrawCanvas(backgroundImage);
+    }
     console.log('Color', selectedColor);
   }
 
@@ -586,15 +640,32 @@ const CreateTemplate: React.FC = () => {
 
     if (draggedItem === 'logo') {
       setLogoPosition({ x: scaledX, y: scaledY });
-    } else { 
+    } else {
       setAllPositions((prevPositions) => ({
         ...prevPositions,
         [draggedItem]: { ...prevPositions[draggedItem], x: scaledX, y: scaledY },
       }));
+
+      const { fontSize } = allPositions[draggedItem];
+      const parsedFontSize = parseInt(fontSize);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.font = `${fontSize}px ${allPositions[draggedItem].fontStyle}`;
+      const textWidth = ctx.measureText(textMappings[draggedItem]).width;
+
+      setSelectedText({
+        key: draggedItem,
+        x: scaledX,
+        y: scaledY,
+        width: textWidth,
+        height: parsedFontSize
+      });
     }
 
     redrawCanvas(backgroundImage);
   };
+
 
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -623,12 +694,14 @@ const CreateTemplate: React.FC = () => {
       const { x, y, fontSize, fontColor, fontStyle } = position;
 
       if (x !== 0 && y !== 0 && text) {
+        console.log('font size', fontSize);
         ctx.fillStyle = fontColor;
         ctx.textBaseline = 'middle';
         ctx.font = `${fontSize}px ${fontStyle}`;
         ctx.fillText(text, x, y);
       }
     }
+
     if (logoImage && logoPosition) {
 
       drawLogo(ctx, logoImage, logoPosition.x, logoPosition.y, canvas.width, canvas.height);
@@ -638,6 +711,83 @@ const CreateTemplate: React.FC = () => {
         ['logo']: { x: logoPosition.x, y: logoPosition.y, fontSize: fontSize, fontColor: '', fontStyle: '' },
       }));
     }
+    if (selectedText) {
+      ctx.strokeStyle = 'gray';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(selectedText.x, selectedText.y - selectedText.height / 2, selectedText.width, selectedText.height);
+    }
+  };
+
+  const handleCanvasClick = (event: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const scaledX = x * scaleX;
+    const scaledY = y * scaleY;
+
+    let clickedOnText = false;
+
+    for (const key in allPositions) {
+
+      const position = allPositions[key];
+      const { x: posX, y: posY, fontSize, fontColor, fontStyle } = position;
+
+      ctx.font = `${fontSize}px ${fontStyle}`;
+      ctx.fillStyle = fontColor;
+
+      const parsedFontSize = parseInt(fontSize);
+      const textWidth = ctx.measureText(textMappings[key]).width;
+
+      if (
+        scaledX >= posX &&
+        scaledX <= posX + textWidth &&
+        scaledY >= posY - parsedFontSize / 2 &&
+        scaledY <= posY + parsedFontSize / 2
+      ) {
+        setSelectedText({
+          key,
+          x: posX,
+          y: posY,
+          width: textWidth,
+          height: parsedFontSize,
+        });
+        setFontSize(fontSize);
+        setSelectedColor(fontColor);
+        clickedOnText = true;
+        break;
+      }
+    }
+
+    if (logoPosition && logoImage) {
+      const aspectRatio = logoImage.width / logoImage.height;
+      const logoWidth = canvas.width * 0.5;
+      const logoHeight = logoWidth / aspectRatio;
+
+      if (
+        scaledX >= logoPosition.x &&
+        scaledX <= logoPosition.x + logoWidth &&
+        scaledY >= logoPosition.y &&
+        scaledY <= logoPosition.y + logoHeight
+      ) {
+        console.log('Clicked logo object');
+        clickedOnText = true;
+      }
+    }
+
+    if (!clickedOnText) {
+      setSelectedText(null);
+    }
+    redrawCanvas(backgroundImage);
   };
 
   const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
@@ -646,11 +796,11 @@ const CreateTemplate: React.FC = () => {
     let logoHeight = logoWidth / aspectRatio;
 
     if (logoHeight > canvasHeight * 0.5) {
-        logoHeight = canvasHeight * 0.5;
-        logoWidth = logoHeight * aspectRatio;
+      logoHeight = canvasHeight * 0.5;
+      logoWidth = logoHeight * aspectRatio;
     }
     ctx.drawImage(image, x, y, logoWidth, logoHeight);
-};
+  };
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
@@ -689,7 +839,7 @@ const CreateTemplate: React.FC = () => {
       setLoading(true);
 
       const status = '0';
-      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId, 
+      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId,
         allPositions, status, fontSize, selectedColor, selectedFont)
 
       if (uidTemplate) {
@@ -714,6 +864,8 @@ const CreateTemplate: React.FC = () => {
 
       if (!background && !logo) {
 
+        uploadBtn.style.visibility = 'visible';
+        resetBtn.style.visibility = 'visible';
         setLoading(false);
         Swal.fire({
           title: 'Error!',
@@ -725,6 +877,8 @@ const CreateTemplate: React.FC = () => {
     }
     else {
 
+      uploadBtn.style.visibility = 'visible';
+      resetBtn.style.visibility = 'visible';
       setLoading(false);
       Swal.fire({
         title: 'Error!',
@@ -740,7 +894,7 @@ const CreateTemplate: React.FC = () => {
 
     try {
 
-      const res = await templateapi.uploadTemplateCompany(nameTemplate, 
+      const res = await templateapi.uploadTemplateCompany(nameTemplate,
         getCompanyId, allPositions, status, fontSize, selectedColor, fontStyle);
 
       return res;
@@ -773,8 +927,6 @@ const CreateTemplate: React.FC = () => {
     }
   }, [companyapi]);
 
-
-
   useEffect(() => {
 
     const loggedInData = localStorage.getItem("LoggedIn");
@@ -792,8 +944,7 @@ const CreateTemplate: React.FC = () => {
   }, [allPositions, getDataCompanyById])
 
   useEffect(() => {
-    console.log('Font size Update', fontSize);
-  }, [fontSize]);
+  }, [fontSize, selectedColor]);
 
   useEffect(() => {
 
@@ -968,6 +1119,7 @@ const CreateTemplate: React.FC = () => {
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
+                    onClick={handleCanvasClick}
                     style={{ border: '1px solid #000000' }}>
                   </canvas>
                 </div>

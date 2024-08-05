@@ -68,8 +68,14 @@ export default function DetailGeneralUser() {
 
                 }
             }
+            else
+            {
+                deleteBtn.style.visibility = 'visible';
+                setLoading(false); 
+            }
         } catch (error) {
-
+            deleteBtn.style.visibility = 'visible';
+            setLoading(false);
             console.error('Error deleting general user:', error);
             await Swal.fire({
                 title: 'Error!',
@@ -77,6 +83,7 @@ export default function DetailGeneralUser() {
                 icon: 'error',
             });
         } finally {
+            deleteBtn.style.visibility = 'visible';
             setLoading(false);
         }
     };

@@ -68,9 +68,16 @@ export default function DetailCompany() {
                     if (res) {
                         nav('/ListCompany', { replace: true });
                     }
+                }else{
+                    deleteBtn.style.visibility = 'visible';
+                    setLoading(false);
                 }
+            } else {
+                deleteBtn.style.visibility = 'visible';
+                setLoading(false);
             }
         } catch (error) {
+            deleteBtn.style.visibility = 'visible';
             setLoading(false);
             console.error('Error deleting general user:', error);
             await Swal.fire({
