@@ -481,6 +481,7 @@ export default function Register() {
                     ref={backgroundInputRef}
                     type="file"
                     onChange={handleFileChange}
+                    accept=".jpg, .jpeg, .png"
                   />
                 </Form.Group>
               </div>

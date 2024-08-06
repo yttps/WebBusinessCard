@@ -467,9 +467,9 @@ const AddHr = () => {
 
           logoImg.onload = () => {
             if (positions.logo) {
-              const { x, y } = positions.logo;
-              drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
-              // ctx.drawImage(logoImg, x, y, 200, 100);
+              const { x, y, fontSize } = positions.logo;
+              //ctx.drawImage(logoImg, x, y, 200, 100);
+              drawLogo(ctx, logoImg, x, y, parseInt(fontSize));
 
               canvas.toBlob((blob) => {
                 if (blob) {
@@ -497,17 +497,11 @@ const AddHr = () => {
     });
   };
 
-  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
     const aspectRatio = image.width / image.height;
-    let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
-    let logoHeight = logoWidth / aspectRatio;
-  
-    // Ensure the logo fits within the canvas height
-    if (logoHeight > canvasHeight * 0.5) {
-      logoHeight = canvasHeight * 0.5;
-      logoWidth = logoHeight * aspectRatio;
-    }
-  
+    const logoWidth = logoSize;
+    const logoHeight = logoWidth / aspectRatio;
+
     ctx.drawImage(image, x, y, logoWidth, logoHeight);
   };
 
@@ -931,6 +925,7 @@ const AddHr = () => {
                     className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                     type="file"
                     id='selectImg'
+                    accept=".jpg, .jpeg, .png"
                     onChange={handleFileChange}
                     ref={backgroundInputRef}
                   />

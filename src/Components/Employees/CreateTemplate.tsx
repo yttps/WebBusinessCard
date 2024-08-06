@@ -10,6 +10,13 @@ import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { CompanyApi } from "@/ApiEndpoints/CompanyApi";
 
+// import Template1 from '@/BackgroundTemplate/1.png';
+// import Template2 from '@/BackgroundTemplate/2.png';
+// import Template3 from '@/BackgroundTemplate/3.png';
+// import Template4 from '@/BackgroundTemplate/4.png';
+// import Template5 from '@/BackgroundTemplate/5.png';
+// import Template6 from '@/BackgroundTemplate/6.png';
+
 interface CanvasOperation {
   type: 'text' | 'image';
   data: string;
@@ -54,9 +61,21 @@ const CreateTemplate: React.FC = () => {
     logo: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' }
   });
 
+  const resetAllPositions = () => ({
+    fullname: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    companyName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    companyAddress: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    position: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    email: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    phoneDepartment: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    phone: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    departmentName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
+    logo: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' }
+  });
+
+  // const templates = [Template1, Template2, Template3, Template4, Template5, Template6];
 
   const templateapi = new TemplateApi();
-
   const nav = useNavigate();
   const companyapi = useMemo(() => new CompanyApi(), []);
   const [getLogoCompany, setGetLogoCompany] = useState('');
@@ -76,7 +95,7 @@ const CreateTemplate: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const [selectedFont, setSelectedFont] = useState('20');
+  const [selectedFont, setSelectedFont] = useState('');
   // const [uploadedFonts, setUploadedFonts] = useState<{ name: string, url: string }[]>([]);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -85,42 +104,106 @@ const CreateTemplate: React.FC = () => {
   const [logoPosition, setLogoPosition] = useState<{ x: number; y: number } | null>(null);
   const [logoImage, setLogoImage] = useState<HTMLImageElement | null>(null);
   const [selectedText, setSelectedText] = useState<{ key: string, x: number, y: number, width: number, height: number } | null>(null);
+  const [logoSize, setLogoSize] = useState(100); // Default logo size
 
+  // const [currentPage, setCurrentPage] = useState(0);
+  // const itemsPerPage = 2; 
+
+  // const totalPages = Math.ceil(templates.length / itemsPerPage);
+
+  // const handleNext = () => {
+  //   setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
+  // };
+
+  // const handlePrev = () => {
+  //   setCurrentPage((prevPage) => (prevPage - 1 + totalPages) % totalPages);
+  // };
+
+  // const startIndex = currentPage * itemsPerPage;
+  // const displayedTemplates = templates.slice(startIndex, startIndex + itemsPerPage);
 
   const setNameTem = (e: ChangeEvent<HTMLFormElement>) => {
     console.log(e.target.value);
     setNameTemplate(e.target.value);
   };
 
+  const handleLogoSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(event.target.value, 10);
+    setLogoSize(newSize);
+
+    setAllPositions((prevPositions) => ({
+      ...prevPositions,
+      logo: { ...prevPositions.logo, fontSize: newSize.toString() },
+    }));
+
+    redrawCanvas(backgroundImage);
+  };
+
+
   const handleIncrement = () => {
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     setFontSize((prevSize) => {
       const newSize = Math.min(parseInt(prevSize) + 1, 100); // +step 1 max 100
-      console.log('up size', newSize);
       if (selectedText) {
         setAllPositions((prevPositions) => ({
           ...prevPositions,
-          [selectedText.key]: 
-          { ...prevPositions[selectedText.key], 
-            fontSize:  newSize.toString()},
+          [selectedText.key]:
+          {
+            ...prevPositions[selectedText.key],
+            fontSize: newSize.toString()
+          },
         }));
+
+        const updatedText = textMappings[selectedText.key];
+        ctx.font = `${newSize}px ${allPositions[selectedText.key].fontStyle}`;
+        const textWidth = ctx.measureText(updatedText).width;
+
+        setSelectedText({
+          ...selectedText,
+          width: textWidth,
+          height: newSize,
+        });
         redrawCanvas(backgroundImage);
       }
       return newSize.toString();
     });
-
-
   };
 
   const handleDecrement = () => {
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     setFontSize((prevSize) => {
       const newSize = Math.max(parseInt(prevSize) - 1, 15); // -step 1 min 15
       if (selectedText) {
         setAllPositions((prevPositions) => ({
           ...prevPositions,
-          [selectedText.key]: 
-          { ...prevPositions[selectedText.key], 
-            fontSize:  newSize.toString()},
+          [selectedText.key]:
+          {
+            ...prevPositions[selectedText.key],
+            fontSize: newSize.toString()
+          },
         }));
+
+        const updatedText = textMappings[selectedText.key];
+        ctx.font = `${newSize}px ${allPositions[selectedText.key].fontStyle}`;
+        const textWidth = ctx.measureText(updatedText).width;
+
+        setSelectedText({
+          ...selectedText,
+          width: textWidth,
+          height: newSize,
+        });
         redrawCanvas(backgroundImage);
       }
       console.log('down size', newSize);
@@ -169,25 +252,44 @@ const CreateTemplate: React.FC = () => {
   //   }
   // };
 
+  //not working for border rectangcle
   const handleFontChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedFontStyle = event.target.value;
 
-    const checkSelectedFont = event.target.value;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    if(checkSelectedFont == '') return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    setSelectedFont(event.target.value);
-    const font = event.target.value;
-    
+    if (selectedFontStyle === '') return;
+
+    setSelectedFont(selectedFontStyle);
+
     if (selectedText) {
       setAllPositions((prevPositions) => ({
         ...prevPositions,
-        [selectedText.key]: 
-        { ...prevPositions[selectedText.key], 
-          fontStyle:  font.toString()},
+        [selectedText.key]: {
+          ...prevPositions[selectedText.key],
+          fontStyle: selectedFontStyle
+        },
       }));
+
+      const updatedText = textMappings[selectedText.key];
+      const { fontSize } = allPositions[selectedText.key];
+      ctx.font = `${fontSize}px ${selectedFontStyle}`;
+      const textWidth = ctx.measureText(updatedText).width;
+
+      setSelectedText({
+        ...selectedText,
+        width: textWidth,
+        height: parseInt(fontSize),
+      });
+
       redrawCanvas(backgroundImage);
     }
   };
+
 
 
   //STEP 1 WHEN CLICK AND DRAGGING
@@ -240,18 +342,18 @@ const CreateTemplate: React.FC = () => {
 
   const handleDragStartLogo = (event: React.DragEvent, item: string) => {
 
-    const checkMoveLogo = Object.values(allPositions).every(
-      position => position.x == 0 && position.y == 0
-    );
+    // const checkMoveLogo = Object.values(allPositions).every(
+    //   position => position.x == 0 && position.y == 0
+    // );
 
-    if (checkMoveLogo) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'กำหนดค่า Text ก่อน',
-        icon: 'error',
-      });
-      return;
-    }
+    // if (checkMoveLogo) {
+    //   Swal.fire({
+    //     title: 'Error!',
+    //     text: 'กำหนดค่า Text ก่อน',
+    //     icon: 'error',
+    //   });
+    //   return;
+    // }
 
     const allPositionsNotNull = Object.values(allPositions).every(
       position => position.x !== 0 && position.y !== 0
@@ -360,7 +462,7 @@ const CreateTemplate: React.FC = () => {
 
         image.onload = () => {
 
-          drawLogo(ctx, image, x, y, canvas.width, canvas.height);
+          drawLogo(ctx, image, x, y, logoSize);
           //ctx.drawImage(image, scaledX - 110, scaledY - 60, width, height);
 
           setAllPositions(prevPositions => ({
@@ -385,6 +487,84 @@ const CreateTemplate: React.FC = () => {
     setCanvasHistory([...canvasHistory, operation]);
   }
 
+  // const handleClickLogo = (event: React.MouseEvent<HTMLImageElement>) => {
+
+  //   event.preventDefault();
+
+  //   const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
+  //   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+
+  //   if(!canvas || !ctx) return;
+
+  //   const draggedPosition = allPositions['logo'];
+
+  //   if(!background){
+  //     Swal.fire({
+  //       title: 'Error!',
+  //       text: `เลือกพื้นหลังก่อน!`,
+  //       icon: 'error',
+  //     });
+  //     return;
+  //   }
+
+  //   if (draggedPosition && (draggedPosition.x !== 0 || draggedPosition.y !== 0)) {
+  //     Swal.fire({
+  //       title: 'Error!',
+  //       text: `Logo ถูกเซ็ตค่าแล้ว!`,
+  //       icon: 'error',
+  //     });
+  //     return;
+  //   }
+
+  //   const image = new Image();
+  //   image.src = getLogoCompany;
+
+  //   const width = 220;
+  //   //const height = 120;
+
+  //   image.onload = () => {
+
+  //     drawLogo(ctx, image, 100 , 100 , canvas.width, canvas.height);
+  //     //ctx.drawImage(image, scaledX - 110, scaledY - 60, width, height);
+
+  //     setAllPositions(prevPositions => ({
+  //       ...prevPositions,
+  //       ['logo']: { x: 100, y: 100, fontSize: width.toString(), fontColor: '', fontStyle: '' },
+  //     }));
+
+  //     addToCanvasHistory({
+  //       type: 'image',
+  //       data: getLogoCompany,
+  //       position: { x: 100, y: 100 },
+  //     });
+  //   };
+
+
+  // }
+
+  // const handleSelectedBackground = (event: React.MouseEvent<HTMLImageElement>, templateUrl: string) => {
+
+  //   event.preventDefault();
+
+  //   console.log('logo position', allPositions);
+  //   setAllPositions(resetAllPositions());
+
+  //   fetch(templateUrl)
+  //     .then(response => response.blob())
+  //     .then(blob => {
+  //       const file = new File([blob], 'selected-background.png', { type: blob.type });
+  //       setBackground(file);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching the image:', error);
+  //       Swal.fire({
+  //         title: 'Error!',
+  //         text: 'ไม่สามารถตั้งค่าพื้นหลังได้',
+  //         icon: 'error',
+  //       });
+  //     });
+  // };
+
   const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
     e.preventDefault();
@@ -393,22 +573,13 @@ const CreateTemplate: React.FC = () => {
     setBackground(null);
 
     //add fontstyle
-    setAllPositions({
-      fullname: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      companyName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      companyAddress: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      position: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      email: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      phoneDepartment: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      phone: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      departmentName: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' },
-      logo: { x: 0, y: 0, fontSize: '0', fontColor: '#000000', fontStyle: '' }
-    });
+    setAllPositions(resetAllPositions());
 
     setCanvasHistory([]);
-    setFontSize('0');
+    setFontSize('20');
     setSelectedColor('#000000');
     setSelectedFont('');
+
     // Clear the canvas
     const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
@@ -423,6 +594,8 @@ const CreateTemplate: React.FC = () => {
     if (backgroundInputRef.current) {
       backgroundInputRef.current.value = "";
     }
+
+    window.location.reload();
   }
 
 
@@ -478,9 +651,11 @@ const CreateTemplate: React.FC = () => {
     if (selectedText) {
       setAllPositions((prevPositions) => ({
         ...prevPositions,
-        [selectedText.key]: 
-        { ...prevPositions[selectedText.key], 
-          fontSize:  selectedFontSize},
+        [selectedText.key]:
+        {
+          ...prevPositions[selectedText.key],
+          fontSize: selectedFontSize
+        },
       }));
       redrawCanvas(backgroundImage);
     }
@@ -498,6 +673,8 @@ const CreateTemplate: React.FC = () => {
     }
     console.log('Color', selectedColor);
   }
+
+
 
   const handleImageBackgroundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 
@@ -530,8 +707,6 @@ const CreateTemplate: React.FC = () => {
     const reader = new FileReader();
     const img = new Image();
 
-
-
     reader.onload = (e) => {
       img.src = e.target?.result as string;
     };
@@ -539,10 +714,6 @@ const CreateTemplate: React.FC = () => {
     img.onload = () => {
       const width = img.width;
       const height = img.height;
-
-      console.log('width', width);
-      console.log('height', width);
-
 
       if (width === 1000 && height === 600) {
         setBackground(file);
@@ -602,10 +773,8 @@ const CreateTemplate: React.FC = () => {
     }
 
     if (logoPosition && logoImage) {
-      const logoWidth = logoImage.width;
-      const logoHeight = logoImage.height;
-
-      console.log('position logo', scaledX - logoPosition.x);
+      const logoWidth = canvas.width * 0.5;
+      const logoHeight = logoWidth / (logoImage.width / logoImage.height);
 
       if (
         scaledX >= logoPosition.x &&
@@ -638,8 +807,21 @@ const CreateTemplate: React.FC = () => {
     const scaledX = x * scaleX - dragOffset.x;
     const scaledY = y * scaleY - dragOffset.y;
 
-    if (draggedItem === 'logo') {
+    if (draggedItem === 'logo' && logoImage) {
       setLogoPosition({ x: scaledX, y: scaledY });
+
+      const aspectRatio = logoImage.width / logoImage.height;
+      const logoWidth = logoSize;
+      const logoHeight = logoWidth / aspectRatio;
+
+      setSelectedText({
+        key: 'logo',
+        x: scaledX,
+        y: scaledY,
+        width: logoWidth,
+        height: logoHeight,
+      });
+
     } else {
       setAllPositions((prevPositions) => ({
         ...prevPositions,
@@ -673,6 +855,7 @@ const CreateTemplate: React.FC = () => {
   };
 
   const redrawCanvas = (bgImage: HTMLImageElement | null) => {
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -694,24 +877,36 @@ const CreateTemplate: React.FC = () => {
       const { x, y, fontSize, fontColor, fontStyle } = position;
 
       if (x !== 0 && y !== 0 && text) {
-        console.log('font size', fontSize);
+
         ctx.fillStyle = fontColor;
         ctx.textBaseline = 'middle';
         ctx.font = `${fontSize}px ${fontStyle}`;
         ctx.fillText(text, x, y);
+
       }
     }
 
     if (logoImage && logoPosition) {
 
-      drawLogo(ctx, logoImage, logoPosition.x, logoPosition.y, canvas.width, canvas.height);
-      //ctx.drawImage(logoImage, logoPosition.x, logoPosition.y, logoImage.width, logoImage.height);
+      drawLogo(ctx, logoImage, logoPosition.x, logoPosition.y, logoSize);      //ctx.drawImage(logoImage, logoPosition.x, logoPosition.y, logoImage.width, logoImage.height);
+      
       setAllPositions(prevPositions => ({
         ...prevPositions,
-        ['logo']: { x: logoPosition.x, y: logoPosition.y, fontSize: fontSize, fontColor: '', fontStyle: '' },
+        ['logo']: { x: logoPosition.x, y: logoPosition.y, fontSize: logoSize.toString(), fontColor: '', fontStyle: '' },
       }));
+
+      if (selectedText && selectedText.key === 'logo') {
+        const aspectRatio = logoImage.width / logoImage.height;
+        const logoWidth = logoSize;
+        const logoHeight = logoWidth / aspectRatio;
+
+        ctx.strokeStyle = 'gray';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(logoPosition.x, logoPosition.y, logoWidth, logoHeight);
+      }
     }
-    if (selectedText) {
+
+    if (selectedText && selectedText.key !== 'logo') {
       ctx.strokeStyle = 'gray';
       ctx.lineWidth = 2;
       ctx.strokeRect(selectedText.x, selectedText.y - selectedText.height / 2, selectedText.width, selectedText.height);
@@ -719,6 +914,7 @@ const CreateTemplate: React.FC = () => {
   };
 
   const handleCanvasClick = (event: React.MouseEvent) => {
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -770,7 +966,7 @@ const CreateTemplate: React.FC = () => {
 
     if (logoPosition && logoImage) {
       const aspectRatio = logoImage.width / logoImage.height;
-      const logoWidth = canvas.width * 0.5;
+      const logoWidth = logoSize;
       const logoHeight = logoWidth / aspectRatio;
 
       if (
@@ -779,7 +975,13 @@ const CreateTemplate: React.FC = () => {
         scaledY >= logoPosition.y &&
         scaledY <= logoPosition.y + logoHeight
       ) {
-        console.log('Clicked logo object');
+        setSelectedText({
+          key: 'logo',
+          x: logoPosition.x,
+          y: logoPosition.y,
+          width: logoWidth,
+          height: logoHeight,
+        });
         clickedOnText = true;
       }
     }
@@ -790,17 +992,14 @@ const CreateTemplate: React.FC = () => {
     redrawCanvas(backgroundImage);
   };
 
-  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
     const aspectRatio = image.width / image.height;
-    let logoWidth = canvasWidth * 0.5;
-    let logoHeight = logoWidth / aspectRatio;
+    const logoWidth = logoSize;
+    const logoHeight = logoWidth / aspectRatio;
 
-    if (logoHeight > canvasHeight * 0.5) {
-      logoHeight = canvasHeight * 0.5;
-      logoWidth = logoHeight * aspectRatio;
-    }
     ctx.drawImage(image, x, y, logoWidth, logoHeight);
   };
+
 
   const handleUploadTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
@@ -809,74 +1008,75 @@ const CreateTemplate: React.FC = () => {
     const uploadBtn = document.getElementById('uploadBtn') as HTMLButtonElement;
     const resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
 
+    const allPositionsNotNull = Object.values(allPositions).every(
+      position => position.x !== 0 && position.y !== 0
+    );
 
-    if (background && getLogoCompany) {
+    if (!allPositionsNotNull) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'กรุณากำหนดค่าให้ครบ!',
+        icon: 'error',
+      });
+      return;
+    }
 
-      const allPositionsNotNull = Object.values(allPositions).every(
-        position => position.x !== 0 && position.y !== 0
-      );
+    if (background) {
 
-      if (!allPositionsNotNull) {
-        Swal.fire({
-          title: 'Error!',
-          text: 'กรุณากำหนดค่าให้ครบ!',
-          icon: 'error',
-        });
-        return;
-      }
+      if (getLogoCompany) {
 
-      if (nameTemplate == '') {
-        Swal.fire({
-          title: 'Error!',
-          text: 'กรุณากำหนดชื่อเทมเพลต!',
-          icon: 'error',
-        });
-        return;
-      }
-
-      uploadBtn.style.visibility = 'hidden';
-      resetBtn.style.visibility = 'hidden';
-      setLoading(true);
-
-      const status = '0';
-      const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId,
-        allPositions, status, fontSize, selectedColor, selectedFont)
-
-      if (uidTemplate) {
-
-        const resUrlTemplate = await uploadBgCompany(background, uidTemplate);
-
-        if (resUrlTemplate) {
-
-          setLoading(false);
-          const res = await Swal.fire({
-            title: 'Success!',
-            text: 'สร้างเทมเพลตสำเร็จ!',
-            icon: 'success',
+        if (nameTemplate == '') {
+          Swal.fire({
+            title: 'Error!',
+            text: 'กรุณากำหนดชื่อเทมเพลต!',
+            icon: 'error',
           });
+          return;
+        }
 
-          if (res) {
-            nav('/ListEmployees', { replace: true });
-            window.location.reload();
+        uploadBtn.style.visibility = 'hidden';
+        resetBtn.style.visibility = 'hidden';
+        setLoading(true);
+
+        const status = '0';
+        const uidTemplate = await uploadTemplateCompany(nameTemplate, getCompanyId,
+          allPositions, status, fontSize, selectedColor, selectedFont)
+
+        if (uidTemplate) {
+
+          const resUrlTemplate = await uploadBgCompany(background, uidTemplate);
+
+          if (resUrlTemplate) {
+
+            setLoading(false);
+            const res = await Swal.fire({
+              title: 'Success!',
+              text: 'สร้างเทมเพลตสำเร็จ!',
+              icon: 'success',
+            });
+
+            if (res) {
+              nav('/ListEmployees', { replace: true });
+              window.location.reload();
+            }
           }
         }
-      }
 
-      if (!background && !logo) {
+        if (!background && !logo) {
 
-        uploadBtn.style.visibility = 'visible';
-        resetBtn.style.visibility = 'visible';
-        setLoading(false);
-        Swal.fire({
-          title: 'Error!',
-          text: 'สร้างเทมเพลตล้มเหลว!',
-          icon: 'error',
-        });
-        return;
+          uploadBtn.style.visibility = 'visible';
+          resetBtn.style.visibility = 'visible';
+          setLoading(false);
+          Swal.fire({
+            title: 'Error!',
+            text: 'สร้างเทมเพลตล้มเหลว!',
+            icon: 'error',
+          });
+          return;
+        }
       }
     }
     else {
-
       uploadBtn.style.visibility = 'visible';
       resetBtn.style.visibility = 'visible';
       setLoading(false);
@@ -903,7 +1103,6 @@ const CreateTemplate: React.FC = () => {
       console.error(error);
     }
   }
-
 
   const uploadBgCompany = async (background: File, uidTemplate: string) => {
 
@@ -950,7 +1149,6 @@ const CreateTemplate: React.FC = () => {
 
     if (background) {
 
-      console.log('check file', background.size);
       const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
 
       if (canvas) {
@@ -986,7 +1184,6 @@ const CreateTemplate: React.FC = () => {
   }, [background]);
 
   console.log(allPositions);
-
 
   return (
     <>
@@ -1044,7 +1241,7 @@ const CreateTemplate: React.FC = () => {
                       <option value="Fantasy" style={{ fontFamily: 'Fantasy' }}>Fantasy</option>
                       {/* {uploadedFonts.map((font, index) => (
                         <option key={index} value={font.name}>
-                          {font.name}
+                          ฟอนต์ที่อัปโหลด - {font.name}
                         </option>
                       ))} */}
                     </select>
@@ -1102,7 +1299,7 @@ const CreateTemplate: React.FC = () => {
             {/* col-2*/}
           </Col>
           <Col xs={6}>
-            <div className="flex-1 bg-gray-100 border-l border-zinc-300 pl-4 pt-4 pb-5">
+            <div className="flex-1 bg-gray-100 rounded-lg border-zinc-300 pl-4 pt-4 pb-5 mt-4">
               <h1 className="text-xl font-bold mb-4">Preview Template</h1>
               <br />
               <hr />
@@ -1132,8 +1329,25 @@ const CreateTemplate: React.FC = () => {
                 </div>
               )}
             </div>
-
-
+            {/* <div className="flex flex-col bg-gray-100 rounded-lg border-zinc-300 pl-4 pt-4 pb-5 mt-4">
+              <p className="text-xl mb-2">Example Template</p>
+              <hr className="mb-2" />
+              <div className="flex flex-row flex-wrap space-x-4 justify-center">
+                {displayedTemplates.map((template, index) => (
+                  <div key={index} className="max-w-sl p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                    <img
+                      onClick={(e) => handleSelectedBackground(e, template)}
+                      src={template}
+                      alt={`Template ${index + 1}`}
+                      className="object-contain h-48 w-70" />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-3 ">
+                <button onClick={handlePrev} className="px-4 py-2 bg-gray-200 rounded-lg">Previous</button>
+                <button onClick={handleNext} className="px-4 py-2 bg-gray-200 rounded-lg">Next</button>
+              </div>
+            </div> */}
             {/* col-3*/}
           </Col>
           <Col>
@@ -1205,9 +1419,22 @@ const CreateTemplate: React.FC = () => {
                       onChange={handleColorChange} />
                   </Card.Body>
                 </Card>
+                <Card style={{ width: '12rem', textAlign: 'center' }}>
+                  <Card.Body>
+                    <Card.Title style={{ fontSize: '15px' }}>Size Logo</Card.Title>
+                    <input
+                      type="range"
+                      min="10"
+                      max="400"
+                      value={logoSize}
+                      onChange={handleLogoSizeChange}
+                      style={{ display: selectedText?.key === 'logo' ? 'block' : 'none' }}
+                    />
+                  </Card.Body>
+                </Card>
               </div>
               <br />
-              <h2 className="text-lg font-bold mb-4">Preview Logo</h2>
+              <h2 className="text-lg font-bold mb-1">Preview Logo</h2>
               <div className="flex justify-center items-center">
                 <div draggable onDragStart={(e: React.DragEvent) => handleDragStartLogo(e, 'image')}>
                   <Card style={{ width: '15rem', textAlign: 'center' }}>
@@ -1215,14 +1442,19 @@ const CreateTemplate: React.FC = () => {
                       <Card.Title style={{ fontSize: '15px' }}>Preview Logo</Card.Title>
                       <hr />
                       <div id="preview-logo">
-                        {getLogoCompany && <img src={getLogoCompany} alt="Logo Preview" style={{ maxWidth: '100%' }} />}
+                        {getLogoCompany &&
+                          <img
+                            // onClick={(e) => handleClickLogo(e)}
+                            src={getLogoCompany}
+                            alt="Logo Preview"
+                            style={{ maxWidth: '100%' }} />}
                       </div>
                     </Card.Body>
                   </Card>
                 </div>
               </div>
               <br />
-              <h2 className="text-lg font-bold mb-4">Selected Background</h2>
+              <h2 className="text-lg font-bold mb-1">Selected Background</h2>
               <div className="flex justify-center items-center">
                 <Card style={{ width: '20rem', textAlign: 'center' }}>
                   <Card.Body className="w-[20rem]">
@@ -1262,11 +1494,6 @@ const CreateTemplate: React.FC = () => {
         </Row>
 
 
-
-        {/* <div className="min-h-screen h-[160vh] rounded-lg px-3 p-6 py-4 overflow-y-hidden bg-card bg-gray-50 shadow-lg dark:bg-gray-800">
-          <div className="grid grid-cols-3 gap-4 h-full">
-          </div>
-        </div> */}
       </div>
     </>
   );

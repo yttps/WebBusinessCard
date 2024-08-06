@@ -234,89 +234,94 @@ export default function DetailEmployees() {
             }
         } catch (error) {
             console.error('Error deleting general user:', error);
+            deleteButton.style.visibility = 'visible';
+            editButton.style.visibility = 'visible'
+            setLoading(false);
             await Swal.fire({
                 title: 'Error!',
                 text: 'เกิดข้อผิดพลาดในการลบข้อมูล!',
                 icon: 'error',
             });
         } finally {
+            deleteButton.style.visibility = 'visible';
+            editButton.style.visibility = 'visible'
             setLoading(false);
         }
     }
 
     async function SaveDetails(e: React.FormEvent<HTMLFormElement>, EMId: string) {
 
- 
-
-            e.preventDefault();
-
-            const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
-            const cancleButton = document.getElementById('cancleButton') as HTMLButtonElement;
 
 
-            const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
-            const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
-            const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
-            const birthdayElement = document.getElementById('birthdayEdit') as HTMLInputElement;
-            const startworkElement = document.getElementById('startworkEdit') as HTMLInputElement;
-            const subdistrictElement = document.getElementById('subdistrictEdit') as HTMLInputElement;
-            const districtElement = document.getElementById('districtEdit') as HTMLInputElement;
-            const provinceElement = document.getElementById('provinceEdit') as HTMLInputElement;
-            const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
-            const telElement = document.getElementById('telEdit') as HTMLInputElement;
-            const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
+        e.preventDefault();
 
-            const formEdit = {
-                firstname: firstnameElement.value !== '' ? firstnameElement.value : dataemployeesById?.firstname ?? '',
-                lastname: lastnameElement.value !== '' ? lastnameElement.value : dataemployeesById?.lastname ?? '',
-                position: positionElement.value !== '' ? positionElement.value : dataemployeesById?.position ?? '',
-                gender: genderValue !== '' ? genderValue : dataemployeesById?.gender ?? '',
-                birthdate: birthdayElement.value !== '' ? birthdayElement.value : dataemployeesById?.birthdate ?? '',
-                startwork: startworkElement.value !== '' ? startworkElement.value : dataemployeesById?.startwork ?? '',
-                subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
-                district: districtElement.value !== '' ? districtElement.value : district ?? '',
-                province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
-                country: countryElement.value !== '' ? countryElement.value : country ?? '',
-                phone: telElement.value !== '' ? telElement.value : dataemployeesById?.phone ?? '',
-                email: emailElement.value !== '' ? emailElement.value : dataemployeesById?.email ?? '',
-                password: dataemployeesById?.password ?? '',
-                branch: branchValue !== '' ? branchValue : dataemployeesById?.companybranch?.id ?? '',
-                department: departmentValue !== '' ? departmentValue : dataemployeesById?.department.id ?? ''
-            }
+        const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
+        const cancleButton = document.getElementById('cancleButton') as HTMLButtonElement;
 
-            const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
-            const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
-            const phoneRegex = /^\d+$/;
 
-            if (!allValuesNotNull) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
-                    icon: 'error',
-                });
-                return;
-            }
+        const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
+        const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
+        const positionElement = document.getElementById('positionEdit') as HTMLInputElement;
+        const birthdayElement = document.getElementById('birthdayEdit') as HTMLInputElement;
+        const startworkElement = document.getElementById('startworkEdit') as HTMLInputElement;
+        const subdistrictElement = document.getElementById('subdistrictEdit') as HTMLInputElement;
+        const districtElement = document.getElementById('districtEdit') as HTMLInputElement;
+        const provinceElement = document.getElementById('provinceEdit') as HTMLInputElement;
+        const countryElement = document.getElementById('countryEdit') as HTMLInputElement;
+        const telElement = document.getElementById('telEdit') as HTMLInputElement;
+        const emailElement = document.getElementById('emailEdit') as HTMLInputElement;
 
-            if (!emailRegex.test(emailElement.value)) {
-                Swal.fire({
-                    title: 'Add Data Error!',
-                    text: 'อีเมลต้องมี "@" และ ".com"',
-                    icon: 'error',
-                });
-                return;
-            }
-            if (!phoneRegex.test(telElement.value)) {
-                Swal.fire({
-                    title: 'Add Data Error!',
-                    text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
-                    icon: 'error',
-                });
-                return;
-            }
+        const formEdit = {
+            firstname: firstnameElement.value !== '' ? firstnameElement.value : dataemployeesById?.firstname ?? '',
+            lastname: lastnameElement.value !== '' ? lastnameElement.value : dataemployeesById?.lastname ?? '',
+            position: positionElement.value !== '' ? positionElement.value : dataemployeesById?.position ?? '',
+            gender: genderValue !== '' ? genderValue : dataemployeesById?.gender ?? '',
+            birthdate: birthdayElement.value !== '' ? birthdayElement.value : dataemployeesById?.birthdate ?? '',
+            startwork: startworkElement.value !== '' ? startworkElement.value : dataemployeesById?.startwork ?? '',
+            subdistrict: subdistrictElement.value !== '' ? subdistrictElement.value : subdistrict ?? '',
+            district: districtElement.value !== '' ? districtElement.value : district ?? '',
+            province: provinceElement.value !== '' ? provinceElement.value : province ?? '',
+            country: countryElement.value !== '' ? countryElement.value : country ?? '',
+            phone: telElement.value !== '' ? telElement.value : dataemployeesById?.phone ?? '',
+            email: emailElement.value !== '' ? emailElement.value : dataemployeesById?.email ?? '',
+            password: dataemployeesById?.password ?? '',
+            branch: branchValue !== '' ? branchValue : dataemployeesById?.companybranch?.id ?? '',
+            department: departmentValue !== '' ? departmentValue : dataemployeesById?.department.id ?? ''
+        }
 
-            setLoading(true);
-            submitButton.style.visibility = 'hidden';
-            cancleButton.style.visibility = 'hidden';
+        const allValuesNotNull = Object.values(formEdit).every(value => value !== null && value !== '');
+        const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+        const phoneRegex = /^\d+$/;
+
+        if (!allValuesNotNull) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
+                icon: 'error',
+            });
+            return;
+        }
+
+        if (!emailRegex.test(emailElement.value)) {
+            Swal.fire({
+                title: 'Add Data Error!',
+                text: 'อีเมลต้องมี "@" และ ".com"',
+                icon: 'error',
+            });
+            return;
+        }
+        if (!phoneRegex.test(telElement.value)) {
+            Swal.fire({
+                title: 'Add Data Error!',
+                text: 'ต้องใส่เบอร์โทรเป็นตัวเลขเท่านั้น',
+                icon: 'error',
+            });
+            return;
+        }
+
+        setLoading(true);
+        submitButton.style.visibility = 'hidden';
+        cancleButton.style.visibility = 'hidden';
         try {
             const resUpdateData = await employeeapi.updateDataEmployee(
                 formEdit.firstname,
@@ -405,7 +410,7 @@ export default function DetailEmployees() {
                     }
                 }
             }
-            if(resUpdateData == 400){
+            if (resUpdateData == 400) {
                 submitButton.style.visibility = 'visible';
                 cancleButton.style.visibility = 'visible';
                 setLoading(false);
@@ -585,8 +590,7 @@ export default function DetailEmployees() {
 
     }
 
-    const drawImage = (background: string, textMappings: { [key: string]: string },
-        positions: { [key: string]: { x: number; y: number, fontSize: string, fontColor: string, fontStyle: string } }, logo: string) => {
+    const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number; fontSize: string; fontColor: string; fontStyle: string } }, logo: string) => {
         return new Promise<string>((resolve, reject) => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext('2d');
@@ -604,7 +608,7 @@ export default function DetailEmployees() {
 
                     Object.keys(textMappings).forEach((key) => {
                         if (positions[key]) {
-                            const { x, y, fontSize, fontColor, fontStyle } = positions[key];
+                            const { x, y, fontColor, fontSize, fontStyle } = positions[key];
                             ctx.font = `${fontSize}px ${fontStyle}`;
                             ctx.fillStyle = `${fontColor}`;
                             ctx.fillText(textMappings[key], x, y);
@@ -619,9 +623,9 @@ export default function DetailEmployees() {
 
                     logoImg.onload = () => {
                         if (positions.logo) {
-                            const { x, y } = positions.logo;
+                            const { x, y, fontSize } = positions.logo;
                             //ctx.drawImage(logoImg, x, y, 200, 100);
-                            drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
+                            drawLogo(ctx, logoImg, x, y, parseInt(fontSize));
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -649,19 +653,13 @@ export default function DetailEmployees() {
         });
     };
 
-    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
         const aspectRatio = image.width / image.height;
-        let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
-        let logoHeight = logoWidth / aspectRatio;
-      
-        // Ensure the logo fits within the canvas height
-        if (logoHeight > canvasHeight * 0.5) {
-          logoHeight = canvasHeight * 0.5;
-          logoWidth = logoHeight * aspectRatio;
-        }
-      
+        const logoWidth = logoSize;
+        const logoHeight = logoWidth / aspectRatio;
+
         ctx.drawImage(image, x, y, logoWidth, logoHeight);
-      };
+    };
 
     async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
 
@@ -931,6 +929,7 @@ export default function DetailEmployees() {
                                                         className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                                         type="file"
                                                         id='selectImg'
+                                                        accept=".jpg, .jpeg, .png"
                                                         onChange={handleFileChange}
                                                     />
                                                 </label>

@@ -37,24 +37,19 @@ const CanvasTemplate: React.FC<CanvasTemplateProps> = ({ background, textMapping
                 logoImg.src = logo;
                 logoImg.onload = () => {
                     if (positions.logo) {
-                        const { x, y } = positions.logo;
+                        const { x, y , fontSize} = positions.logo;
                         //ctx.drawImage(logoImg, x, y, 200, 180);
-                        drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
+                        drawLogo(ctx, logoImg, x, y, parseInt(fontSize));
                     }
                 }
             };
         }
     }, [background, textMappings, positions, logo]);
 
-    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
         const aspectRatio = image.width / image.height;
-        let logoWidth = canvasWidth * 0.5;
-        let logoHeight = logoWidth / aspectRatio;
-
-        if (logoHeight > canvasHeight * 0.5) {
-            logoHeight = canvasHeight * 0.5;
-            logoWidth = logoHeight * aspectRatio;
-        }
+        const logoWidth = logoSize;
+        const logoHeight = logoWidth / aspectRatio;
 
         ctx.drawImage(image, x, y, logoWidth, logoHeight);
     };

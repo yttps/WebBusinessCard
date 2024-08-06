@@ -219,7 +219,7 @@ export default function DetailHr() {
                             window.location.reload();
                         }
                     }
-                    else{
+                    else {
                         submitButton.style.visibility = 'visible';
                         cancleButton.style.visibility = 'visible';
                         setLoadingData(false);
@@ -251,7 +251,7 @@ export default function DetailHr() {
                     }
                 }
             }
-            if(resUpdateData == 400){
+            if (resUpdateData == 400) {
                 submitButton.style.visibility = 'visible';
                 cancleButton.style.visibility = 'visible';
                 setLoadingData(false);
@@ -261,7 +261,7 @@ export default function DetailHr() {
                     icon: 'error',
                 });
             }
-            
+
 
         } catch (error) {
             submitButton.style.visibility = 'visible';
@@ -536,7 +536,7 @@ export default function DetailHr() {
 
     }
 
-    const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number; fontSize: string, fontColor: string, fontStyle: string } }, logo: string) => {
+    const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number; fontSize: string; fontColor: string; fontStyle: string } }, logo: string) => {
         return new Promise<string>((resolve, reject) => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext('2d');
@@ -569,9 +569,9 @@ export default function DetailHr() {
 
                     logoImg.onload = () => {
                         if (positions.logo) {
-                            const { x, y } = positions.logo;
-                            //ctx.drawImage(logoImg, x, y, 180, 100);
-                            drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
+                            const { x, y, fontSize } = positions.logo;
+                            //ctx.drawImage(logoImg, x, y, 200, 100);
+                            drawLogo(ctx, logoImg, x, y, parseInt(fontSize));
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -599,19 +599,13 @@ export default function DetailHr() {
         });
     };
 
-    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
         const aspectRatio = image.width / image.height;
-        let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
-        let logoHeight = logoWidth / aspectRatio;
-      
-        // Ensure the logo fits within the canvas height
-        if (logoHeight > canvasHeight * 0.5) {
-          logoHeight = canvasHeight * 0.5;
-          logoWidth = logoHeight * aspectRatio;
-        }
-      
+        const logoWidth = logoSize;
+        const logoHeight = logoWidth / aspectRatio;
+
         ctx.drawImage(image, x, y, logoWidth, logoHeight);
-      };
+    };
 
     async function uploadSelectedTemplate(cardUsers: { file: File, uid: string }[], temId: string) {
 
@@ -950,6 +944,7 @@ export default function DetailHr() {
                                                     className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                                     type="file"
                                                     id='selectImg'
+                                                    accept=".jpg, .jpeg, .png"
                                                     onChange={handleFileChange}
                                                     ref={backgroundInputRef}
                                                 />

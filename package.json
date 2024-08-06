@@ -50,6 +50,7 @@
     "webbusinesscard": "file:"
   },
   "devDependencies": {
+    "@rollup/plugin-image": "^3.0.3",
     "@types/http-proxy-middleware": "^1.0.0",
     "@types/node": "^20.14.2",
     "@types/react": "^18.2.66",

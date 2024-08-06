@@ -304,7 +304,16 @@ export default function CreateCard() {
 
           newGeneratedFiles.push(data);
         } catch (error) {
+          deleteTemplate.style.visibility = 'visible';
+          addTemplate.style.visibility = 'visible';
+          selectedTemplate.style.visibility = 'visible';
+          setLoading(false);
           console.error('Error generating image:', error);
+        } finally {
+          deleteTemplate.style.visibility = 'visible';
+          addTemplate.style.visibility = 'visible';
+          selectedTemplate.style.visibility = 'visible';
+          setLoading(false);
         }
       }
 

@@ -138,7 +138,7 @@ export default function EditCompany() {
             return;
         }
 
-    
+
 
         cancleBtn.style.visibility = 'hidden';
         submitBtn.style.visibility = 'hidden';
@@ -165,7 +165,7 @@ export default function EditCompany() {
                         formEdit.email, resUrlLogo, formEdit.status, CompanyId
                     );
 
-                     //check ซ้ำอีเมล
+                    //check ซ้ำอีเมล
 
                     console.log('response update data company', resUpdateDataCompany);
 
@@ -203,7 +203,7 @@ export default function EditCompany() {
                         }
                     }
                     //check ซ้ำ 0
-                    if(resUpdateDataCompany == 400){
+                    if (resUpdateDataCompany == 400) {
                         if (imageData.showImage) {
                             const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
                             removeBtn.style.visibility = 'visible';
@@ -427,8 +427,7 @@ export default function EditCompany() {
 
     }
 
-    const drawImage = (background: string, textMappings: { [key: string]: string },
-        positions: { [key: string]: { x: number; y: number, fontSize: string, fontColor: string, fontStyle: string } }, logo: string) => {
+    const drawImage = (background: string, textMappings: { [key: string]: string }, positions: { [key: string]: { x: number; y: number; fontSize: string; fontColor: string; fontStyle: string } }, logo: string) => {
         return new Promise<string>((resolve, reject) => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext('2d');
@@ -446,7 +445,7 @@ export default function EditCompany() {
 
                     Object.keys(textMappings).forEach((key) => {
                         if (positions[key]) {
-                            const { x, y, fontSize, fontColor, fontStyle } = positions[key];
+                            const { x, y, fontColor, fontSize, fontStyle } = positions[key];
                             ctx.font = `${fontSize}px ${fontStyle}`;
                             ctx.fillStyle = `${fontColor}`;
                             ctx.fillText(textMappings[key], x, y);
@@ -461,9 +460,9 @@ export default function EditCompany() {
 
                     logoImg.onload = () => {
                         if (positions.logo) {
-                            const { x, y } = positions.logo;
+                            const { x, y, fontSize } = positions.logo;
                             //ctx.drawImage(logoImg, x, y, 200, 100);
-                            drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
+                            drawLogo(ctx, logoImg, x, y, parseInt(fontSize));
 
                             canvas.toBlob((blob) => {
                                 if (blob) {
@@ -491,16 +490,10 @@ export default function EditCompany() {
         });
     };
 
-    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
+    const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
         const aspectRatio = image.width / image.height;
-        let logoWidth = canvasWidth * 0.5; // Example width, adjust as needed
-        let logoHeight = logoWidth / aspectRatio;
-
-        // Ensure the logo fits within the canvas height
-        if (logoHeight > canvasHeight * 0.5) {
-            logoHeight = canvasHeight * 0.5;
-            logoWidth = logoHeight * aspectRatio;
-        }
+        const logoWidth = logoSize;
+        const logoHeight = logoWidth / aspectRatio;
 
         ctx.drawImage(image, x, y, logoWidth, logoHeight);
     };
@@ -703,6 +696,7 @@ export default function EditCompany() {
                                                     className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                                     type="file"
                                                     id='selectImg'
+                                                    accept=".jpg, .jpeg, .png"
                                                     onChange={handleFileChange}
                                                     ref={backgroundInputRef}
                                                 />
