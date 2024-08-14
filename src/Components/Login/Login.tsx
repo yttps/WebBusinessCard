@@ -162,7 +162,7 @@ export default function Login() {
                                 <input onClick={handleShowPassword} id="showpass" type="checkbox" className="mr-2" />
                                 <span className="text-muted-foreground">Show Password</span>
                             </label>
-                            <a href="#" className="text-primary hover:underline">
+                            <a href="/ForgotPassword" className="text-primary hover:underline">
                                 ลืมรหัสผ่าน?
                             </a>
                         </div>

@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useEffect, useRef, useCallback, useMemo } from 'react';
+import React ,{ useState, ChangeEvent, useEffect, useRef, useCallback, useMemo } from 'react';
 import '@/Components/Company/CSS/AddHr.css';
 import { HrApi } from '@/ApiEndpoints/HrApi';
 import Swal from 'sweetalert2';
@@ -394,9 +394,9 @@ const AddHr = () => {
         "companyAddress": `${addressBranch}`,
         "position": `${formData.position}`,
         "email": `${formData.email}`,
-        "phoneDepartment": `${telDepartment}`,
+        "phoneDepartment": `Department phone:${telDepartment}`,
         "phone": `${formData.phone}`,
-        "departmentName": `${departName}`,
+        "departmentName": `Department name:${departName}`,
       };
 
       console.log('em in updateDetailCard', employeeId);

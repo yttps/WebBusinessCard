@@ -37,13 +37,13 @@ type AllPosition = {
 
 const textMappings: { [key: string]: string } = {
   "fullname": "Firstname Lastname",
-  "companyName": "Company",
-  "companyAddress": "Company Address",
+  "companyName": "Company name",
+  "companyAddress": "Company address",
   "position": "Position",
   "email": "Personal email",
   "phoneDepartment": "Phone Department",
   "phone": "Phone personal",
-  "departmentName": "Department Name"
+  "departmentName": "Department name"
 };
 
 const CreateTemplate: React.FC = () => {
@@ -481,11 +481,54 @@ const CreateTemplate: React.FC = () => {
     setDraggedItem('');
   };
 
-
-  // Function to add operation to canvas history
   const addToCanvasHistory = (operation: CanvasOperation) => {
     setCanvasHistory([...canvasHistory, operation]);
   }
+
+  //   const handleClickText = (event: React.MouseEvent<HTMLImageElement>, item: string) => {
+
+  //   event.preventDefault();
+
+  //   const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement;
+  //   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+
+  //   if(!canvas || !ctx) return;
+
+  //   const draggedPosition = allPositions[item];
+
+  //   if (draggedPosition && (draggedPosition.x !== 0 || draggedPosition.y !== 0)) {
+  //     Swal.fire({
+  //       title: 'Error!',
+  //       text: `Logo ถูกเซ็ตค่าแล้ว!`,
+  //       icon: 'error',
+  //     });
+  //     return;
+  //   }
+
+  //   const image = new Image();
+  //   image.src = getLogoCompany;
+
+  //   image.onload = () => {
+
+  //     ctx.fillText(item, 100, 100);
+
+  //     addToCanvasHistory({ type: 'text', data: item, position: { x: 100 , y: 100 } });
+
+  //     setAllPositions(prevPositions => ({
+  //       ...prevPositions,
+  //       [draggedItem]: {
+  //         x: 100 , y: 100 , fontSize: fontSize || draggedPosition.fontSize,
+  //         fontColor: selectedColor || draggedPosition.fontColor,
+  //         fontStyle: selectedFont || draggedPosition.fontStyle
+  //       },
+  //     }));
+
+  //   };
+  // }
+
+
+
+
 
   // const handleClickLogo = (event: React.MouseEvent<HTMLImageElement>) => {
 
@@ -1259,6 +1302,7 @@ const CreateTemplate: React.FC = () => {
                     <div
                       key={index}
                       draggable
+                      //onClick={(e) => handleClickText(e, item)}
                       onDragStart={(e) => handleDragStart(e, item)}
                       className="mb-[-20px]"
                       style={{ backgroundColor: "transparent" }}>
@@ -1268,14 +1312,13 @@ const CreateTemplate: React.FC = () => {
                           height: '5rem', margin: '0 auto', backgroundColor: isPositionSet ? 'gray' : 'white'
                         }}>
                         <Card.Body style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                          <Card.Title style={{ fontSize: '15px' }}>{item}</Card.Title>
+                          <Card.Title style={{ fontSize: '15px' }}>{textMappings[item]}</Card.Title>
                           <CIcon icon={icon.cilText} size="xl" className="text-success" />
                         </Card.Body>
                       </Card>
                       <br />
                     </div>
                   );
-
                 })}
               </div>
               {/* <br />
@@ -1308,8 +1351,8 @@ const CreateTemplate: React.FC = () => {
                   <canvas
                     className="scroll-ml-20px ml-[20px]"
                     id="imageCanvas"
-                    width="850px"
-                    height="410px"
+                    width="950px"
+                    height="550px"
                     ref={canvasRef}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
@@ -1492,8 +1535,6 @@ const CreateTemplate: React.FC = () => {
             </div>
           </Col>
         </Row>
-
-
       </div>
     </>
   );

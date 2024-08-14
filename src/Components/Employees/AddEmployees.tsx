@@ -439,9 +439,9 @@ const AddEmployees = () => {
         "companyAddress": `${addressBranch}`,
         "position": `${departName}`,
         "email": `${formEdit.email}`,
-        "phoneDepartment": `${telDepartment}`,
+        "phoneDepartment": `Department phone:${telDepartment}`,
         "phone": `${formEdit.phone}`,
-        "departmentName": `${departName}`,
+        "departmentName": `Department phone:${departName}`,
       };
 
       console.log('textMappings', textMappingsArray);
@@ -499,7 +499,8 @@ const AddEmployees = () => {
               const { x, y, fontColor, fontSize, fontStyle } = positions[key];
               ctx.font = `${fontSize}px ${fontStyle}`;
               ctx.fillStyle = `${fontColor}`;
-              ctx.fillText(textMappings[key], x, y);
+              //ctx.fillText(textMappings[key], x, y);
+              wrapText(ctx, textMappings[key], x, y, canvas.width - x, parseInt(fontSize));
             } else {
               console.log(`Position for key ${key} not found`);
             }
@@ -539,6 +540,35 @@ const AddEmployees = () => {
         reject('Canvas or context not found');
       }
     });
+  };
+
+  const wrapText = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number
+  ) => {
+    const words = text.split(' ');
+    let line = '';
+    let lineNumber = 0;
+
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+
+      if (testWidth > maxWidth && n > 0) {
+        ctx.fillText(line, x, y + lineNumber * lineHeight);
+        line = words[n] + ' ';
+        lineNumber++;
+      } else {
+        line = testLine;
+      }
+    }
+
+    ctx.fillText(line, x, y + lineNumber * lineHeight);
   };
 
   const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
@@ -948,7 +978,6 @@ const AddEmployees = () => {
                 )}
               </div>
             </div>
-
             <div>
               <div id="preview-logo">
                 {selectedImage.showImage ? (

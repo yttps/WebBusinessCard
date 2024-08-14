@@ -57,7 +57,6 @@ export default function Register() {
   function handleShowPassword() {
 
     setShowPass(!showPass);
-
   }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {

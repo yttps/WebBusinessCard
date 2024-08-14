@@ -38,6 +38,7 @@ const CanvasTemplate: React.FC<CanvasTemplateProps> = ({ background, textMapping
                 logoImg.onload = () => {
                     if (positions.logo) {
                         const { x, y , fontSize} = positions.logo;
+                        console.log('logo size' , fontSize);
                         //ctx.drawImage(logoImg, x, y, 200, 180);
                         drawLogo(ctx, logoImg, x, y, parseInt(fontSize));
                     }

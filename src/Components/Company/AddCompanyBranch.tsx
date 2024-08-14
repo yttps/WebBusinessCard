@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React,{ useState } from 'react'
 import '@/Components/Admin/CSS/AddCompany.css'
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
 import Swal from 'sweetalert2';

@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent, useRef, useCallback, useMemo } from 'react'
+import React ,{ useEffect, useState, ChangeEvent, useRef, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { HrApi } from '@/ApiEndpoints/HrApi';
 import { GetDataHrById } from '@/Model/GetDataHrById';
@@ -503,9 +503,9 @@ export default function DetailHr() {
                 "companyAddress": `${addressBranch ? addressBranch : hrById.companybranch.address}`, //
                 "position": `${formEdit.position}`, //
                 "email": `${formEdit.email}`,
-                "phoneDepartment": `${telDepartment ? telDepartment : hrById.department.phone}`, //
+                "phoneDepartment": `Department phone:${telDepartment ? telDepartment : hrById.department.phone}`, //
                 "phone": `${formEdit.phone}`,
-                "departmentName": `${departName ? departName : hrById.department.name}`, //
+                "departmentName": `Department name:${departName ? departName : hrById.department.name}`, //
             };
 
             console.log('textMappings', textMappingsArray);
@@ -557,7 +557,9 @@ export default function DetailHr() {
                             const { x, y, fontColor, fontSize, fontStyle } = positions[key];
                             ctx.font = `${fontSize}px ${fontStyle}`;
                             ctx.fillStyle = `${fontColor}`;
-                            ctx.fillText(textMappings[key], x, y);
+                            //ctx.fillText(textMappings[key], x, y);
+                            wrapText(ctx, textMappings[key], x, y, canvas.width - x, parseInt(fontSize));
+
                         } else {
                             console.log(`Position for key ${key} not found`);
                         }
@@ -598,6 +600,35 @@ export default function DetailHr() {
             }
         });
     };
+
+    const wrapText = (
+        ctx: CanvasRenderingContext2D,
+        text: string,
+        x: number,
+        y: number,
+        maxWidth: number,
+        lineHeight: number
+      ) => {
+        const words = text.split(' ');
+        let line = '';
+        let lineNumber = 0;
+      
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+      
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y + lineNumber * lineHeight);
+            line = words[n] + ' ';
+            lineNumber++;
+          } else {
+            line = testLine;
+          }
+        }
+      
+        ctx.fillText(line, x, y + lineNumber * lineHeight);
+      };
 
     const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
         const aspectRatio = image.width / image.height;

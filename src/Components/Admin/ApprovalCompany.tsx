@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import HeaderAdmin from '@/Components/Header/HeaderAdmin';
 import { Row, Col } from 'react-bootstrap';
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi';
@@ -21,8 +21,8 @@ export default function ApprovalCompany() {
             const res = await companyApi.GetAllCompanyNoAccept(); 
             setDataCompany(res);console.log('getdata');
             setDataFetched(false);
-           console.log('set chk');
         } catch (error) {
+            setDataFetched(true);
             console.error('Error fetching general users:', error);
         }
     }, [companyApi]);

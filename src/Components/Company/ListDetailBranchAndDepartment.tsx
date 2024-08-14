@@ -1,6 +1,6 @@
 import { GetCompanyBranchesById } from "@/Model/GetCompanyBranchesById";
 import { GetDepartmentByComId } from "@/Model/GetDepartmentByComId";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React,{ useState, useEffect, useCallback, useMemo } from "react";
 import { CompanyApi } from "@/ApiEndpoints/CompanyApi";
 import Header from "../Header/Header";
 import Swal from 'sweetalert2';

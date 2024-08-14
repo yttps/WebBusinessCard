@@ -66,7 +66,8 @@ export default function CreateCard() {
               const { x, y, fontSize, fontColor, fontStyle } = positions[key];
               ctx.font = `${fontSize}px ${fontStyle}`;
               ctx.fillStyle = `${fontColor}`;
-              ctx.fillText(textMappings[key], x, y);
+              //ctx.fillText(textMappings[key], x, y);
+              wrapText(ctx, textMappings[key], x, y, canvas.width - x, parseInt(fontSize));
             } else {
               console.log(`Position for key ${key} not found`);
             }
@@ -78,9 +79,9 @@ export default function CreateCard() {
 
           logoImg.onload = () => {
             if (positions.logo) {
-              const { x, y } = positions.logo;
+              const { x, y, fontSize } = positions.logo;
               // ctx.drawImage(logoImg, x, y, 200, 100);
-              drawLogo(ctx, logoImg, x, y, canvas.width, canvas.height);
+              drawLogo(ctx, logoImg, x, y, parseInt(fontSize));
 
               canvas.toBlob((blob) => {
                 if (blob) {
@@ -109,24 +110,48 @@ export default function CreateCard() {
     });
   };
 
-  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, canvasWidth: number, canvasHeight: number) => {
-    const aspectRatio = image.width / image.height;
-    let logoWidth = canvasWidth * 0.5;
-    let logoHeight = logoWidth / aspectRatio;
-
-    if (logoHeight > canvasHeight * 0.5) {
-        logoHeight = canvasHeight * 0.5;
-        logoWidth = logoHeight * aspectRatio;
+  const wrapText = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number
+  ) => {
+    const words = text.split(' ');
+    let line = '';
+    let lineNumber = 0;
+  
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+  
+      if (testWidth > maxWidth && n > 0) {
+        ctx.fillText(line, x, y + lineNumber * lineHeight);
+        line = words[n] + ' ';
+        lineNumber++;
+      } else {
+        line = testLine;
+      }
     }
+  
+    ctx.fillText(line, x, y + lineNumber * lineHeight);
+  };
+
+  const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
+    const aspectRatio = image.width / image.height;
+    const logoWidth = logoSize;
+    const logoHeight = logoWidth / aspectRatio;
 
     ctx.drawImage(image, x, y, logoWidth, logoHeight);
-};
+  };
 
   const handleDeleteTemplate = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, templateId: string, templateStatus: number) => {
 
     e.preventDefault();
 
-    if(templateStatus == 1){
+    if (templateStatus == 1) {
       Swal.fire({
         title: 'เทมเพลตนี้ใช้อยู่',
         text: 'โปรดเลือกเทมเพลตใหม่หรือสร้างเทมเพลตใหม่!',
@@ -285,12 +310,13 @@ export default function CreateCard() {
           "companyAddress": `${user.companybranch.address}`,
           "position": `${user.position}`,
           "email": `${user.email}`,
-          "phoneDepartment": `${user.department.phone}`,
+          "phoneDepartment": `Department phone:${user.department.phone}`,
           "phone": `${user.phone}`,
-          "departmentName": `${user.department.name}`,
+          "departmentName": `Department name:${user.department.name}`,
         };
 
         try {
+
           const imageUrl = await drawImage(template.background, textMappings, positions, UrlLogocompany);
 
           const response = await fetch(imageUrl);
@@ -388,7 +414,7 @@ export default function CreateCard() {
     nav('/CreateTemplate');
   }
 
-  
+
 
   useEffect(() => {
     if (!isFetch) {
@@ -575,16 +601,16 @@ export default function CreateCard() {
                               </div>
                               <Card.Title className="pt-2">Name Template : {template.name}</Card.Title>
                               {template.status == 0 ? (
-                              <div className="flex justify-center space-x-4">
-                                <Button
-                                  id="selectedTemplate"
-                                  onClick={(e) => handleSelectedTemplate(e, template)}
-                                  className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg">เลือกเทมเพลต</Button>
-                                <Button
-                                  id="deleteTemplate"
-                                  onClick={(e) => handleDeleteTemplate(e, template.id, template.status)}
-                                  className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg">ลบเทมเพลต</Button>
-                              </div>
+                                <div className="flex justify-center space-x-4">
+                                  <Button
+                                    id="selectedTemplate"
+                                    onClick={(e) => handleSelectedTemplate(e, template)}
+                                    className="bg-green-500 text-red-50 hover:bg-green-600 py-2 px-4 rounded-lg">เลือกเทมเพลต</Button>
+                                  <Button
+                                    id="deleteTemplate"
+                                    onClick={(e) => handleDeleteTemplate(e, template.id, template.status)}
+                                    className="bg-red-500 text-red-50 hover:bg-red-600 py-2 px-4 rounded-lg">ลบเทมเพลต</Button>
+                                </div>
                               ) : (
                                 null
                               )}

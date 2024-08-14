@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, ChangeEvent, useRef } from 'react'
+import React ,{ useState, useEffect, useCallback, useMemo, ChangeEvent, useRef } from 'react'
 import { CompanyApi } from '@/ApiEndpoints/CompanyApi'
 import { GetDataCompanyById } from '@/Model/GetCompanyById';
 import Header from '../Header/Header';
@@ -392,9 +392,9 @@ export default function EditCompany() {
                     "companyAddress": `${user.companybranch.address}`,
                     "position": `${user.position}`,
                     "email": `${user.email}`,
-                    "phoneDepartment": `${user.department.phone}`,
+                    "phoneDepartment": `Department phone:${user.department.phone}`,
                     "phone": `${user.phone}`,
-                    "departmentName": `${user.department.name}`,
+                    "departmentName": `Department name:${user.department.name}`,
                 };
 
                 try {
@@ -448,7 +448,8 @@ export default function EditCompany() {
                             const { x, y, fontColor, fontSize, fontStyle } = positions[key];
                             ctx.font = `${fontSize}px ${fontStyle}`;
                             ctx.fillStyle = `${fontColor}`;
-                            ctx.fillText(textMappings[key], x, y);
+                            //ctx.fillText(textMappings[key], x, y);
+                            wrapText(ctx, textMappings[key], x, y, canvas.width - x, parseInt(fontSize));
                         } else {
                             console.log(`Position for key ${key} not found`);
                         }
@@ -489,6 +490,35 @@ export default function EditCompany() {
             }
         });
     };
+
+    const wrapText = (
+        ctx: CanvasRenderingContext2D,
+        text: string,
+        x: number,
+        y: number,
+        maxWidth: number,
+        lineHeight: number
+      ) => {
+        const words = text.split(' ');
+        let line = '';
+        let lineNumber = 0;
+      
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+      
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y + lineNumber * lineHeight);
+            line = words[n] + ' ';
+            lineNumber++;
+          } else {
+            line = testLine;
+          }
+        }
+      
+        ctx.fillText(line, x, y + lineNumber * lineHeight);
+      };
 
     const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
         const aspectRatio = image.width / image.height;

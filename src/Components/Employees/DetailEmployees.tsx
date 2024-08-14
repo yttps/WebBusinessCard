@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent, useRef, useCallback, useMemo } from 'react'
+import React ,{ useEffect, useState, ChangeEvent, useRef, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { GetEmployeeById } from '@/Model/GetEmployeeById';
 import Header from '../Header/Header';
@@ -251,13 +251,10 @@ export default function DetailEmployees() {
 
     async function SaveDetails(e: React.FormEvent<HTMLFormElement>, EMId: string) {
 
-
-
         e.preventDefault();
 
         const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
         const cancleButton = document.getElementById('cancleButton') as HTMLButtonElement;
-
 
         const firstnameElement = document.getElementById('firstnameEdit') as HTMLInputElement;
         const lastnameElement = document.getElementById('lastnameEdit') as HTMLInputElement;
@@ -557,9 +554,9 @@ export default function DetailEmployees() {
                 "companyAddress": `${addressBranch ? addressBranch : dataemployeesById.companybranch.address}`,
                 "position": `${formEdit.position}`,
                 "email": `${formEdit.email}`,
-                "phoneDepartment": `${telDepartment ? telDepartment : dataemployeesById.department.phone}`,
+                "phoneDepartment": `Departmet phone:${telDepartment ? telDepartment : dataemployeesById.department.phone}`,
                 "phone": `${formEdit.phone}`,
-                "departmentName": `${departName ? departName : dataemployeesById.department.name}`,
+                "departmentName": `Department name:${departName ? departName : dataemployeesById.department.name}`,
             };
 
             console.log('textMappings', textMappingsArray);
@@ -611,7 +608,8 @@ export default function DetailEmployees() {
                             const { x, y, fontColor, fontSize, fontStyle } = positions[key];
                             ctx.font = `${fontSize}px ${fontStyle}`;
                             ctx.fillStyle = `${fontColor}`;
-                            ctx.fillText(textMappings[key], x, y);
+                            wrapText(ctx, textMappings[key], x, y, canvas.width - x, parseInt(fontSize));
+                            //ctx.fillText(textMappings[key], x, y);
                         } else {
                             console.log(`Position for key ${key} not found`);
                         }
@@ -652,6 +650,35 @@ export default function DetailEmployees() {
             }
         });
     };
+
+    const wrapText = (
+        ctx: CanvasRenderingContext2D,
+        text: string,
+        x: number,
+        y: number,
+        maxWidth: number,
+        lineHeight: number
+      ) => {
+        const words = text.split(' ');
+        let line = '';
+        let lineNumber = 0;
+      
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+      
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y + lineNumber * lineHeight);
+            line = words[n] + ' ';
+            lineNumber++;
+          } else {
+            line = testLine;
+          }
+        }
+      
+        ctx.fillText(line, x, y + lineNumber * lineHeight);
+      };
 
     const drawLogo = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, logoSize: number) => {
         const aspectRatio = image.width / image.height;
