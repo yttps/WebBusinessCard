@@ -171,9 +171,6 @@ export class CompanyApi {
                 logo: 'logo',
                 status: '0'
             }
-
-            console.log('data com in context', dataCompany);
-
             const res = await axios.post(`${url}/companies`, dataCompany);
             console.log("upload data in context", res.data.companyId);
             return res.data.companyId;

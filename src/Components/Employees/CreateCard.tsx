@@ -18,12 +18,14 @@ export default function CreateCard() {
   const [TemplateBycompanyId, setTemplateBycompanyId] = useState<GetTemplateCompanyId[]>([]);
   const [UrlLogocompany, setUrlLogocompany] = useState('');
   const [isFetch, setIsFetch] = useState(false);
-  const [positions, setPositions] = useState<{ [key: string]: { x: number; y: number; fontSize: string; fontColor: string; fontStyle: string } }[]>([]);
   const [index, setIndex] = useState(0);
-  const [getUserByCompanies, setGetUserByCompanies] = useState<GetUsersByCompany[] | null>(null);
   const [companyId, setCompanyId] = useState('');
-  const nav = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [positions, setPositions] = useState<{ [key: string]: { x: number; y: number; fontSize: string; fontColor: string; fontStyle: string } }[]>([]);
+  const [getUserByCompanies, setGetUserByCompanies] = useState<GetUsersByCompany[] | null>(null);
+
+  const nav = useNavigate();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const textMappings: { [key: string]: string } = {

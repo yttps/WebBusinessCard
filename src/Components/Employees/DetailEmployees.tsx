@@ -1088,10 +1088,10 @@ export default function DetailEmployees() {
                             </div>
                         </div>
 
-                        <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-4">
+                        <div className="w-2/3 bg-gray-50 p-4 rounded-lg ml-5">
                             <h2 className="text-lg font-semibold mb-4">รายละเอียดพนักงานฝ่ายบุคคล</h2>
                             <br />
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-3 gap-4 relative">
                                 <div>
                                     <p className="text-muted-foreground">เพศ:</p>
                                     <p>{dataemployeesById.gender}</p>
@@ -1111,7 +1111,7 @@ export default function DetailEmployees() {
                                     <p className="text-muted-foreground">สาขาบริษัท:</p>
                                     <p>{dataemployeesById.companybranch.name}</p>
                                 </div>
-                                <div>
+                                <div className='ml-20'>
                                     <p className="text-muted-foreground">แผนก:</p>
                                     <p>{dataemployeesById.department.name}</p>
                                     <br />

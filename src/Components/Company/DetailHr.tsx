@@ -1106,7 +1106,7 @@ export default function DetailHr() {
                                         <p className="text-muted-foreground">สาขาบริษัท:</p>
                                         <p>{hrById.companybranch.name}</p>
                                     </div>
-                                    <div>
+                                    <div className='ml-20'>
                                         <p className="text-muted-foreground">แผนก:</p>
                                         <p>{hrById.department.name}</p>
                                         <br />
